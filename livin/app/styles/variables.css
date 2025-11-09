@@ -1,0 +1,23 @@
+:root {
+  /* 🎨 컬러 팔레트 */
+  --color-primary: #112d4e; /* 메인 브랜드 컬러 */
+  --color-secondary: #dbe2ef;
+  --color--third: #3f72af;
+  --color--fourth: #9db2ce;
+  --color-background: #ffffff;
+  --color-text: #000000;
+  --color-error: #e42e00;
+
+  /* ✍️ 폰트 */
+  --font-main: 'Pretendard', sans-serif;
+  --font-accent: 'Montserrat', sans-serif;
+
+  /* 📏 레이아웃 기준 */
+  --max-width: 380px; /* 모바일 기준 */
+  --min-height: 800px; /* 세로 길이 기준 */
+
+  /* ⚙️ 여백/라운드 등 */
+  --radius-base: 10px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

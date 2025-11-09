@@ -1,10 +1,9 @@
-import type { Metadata } from 'next';
-import './styles/globals.css';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Livin',
-  description: '대학생 주거 리뷰 플랫폼',
-};
+import React from 'react';
+import GlobalStyle from './styles/GlobalStyle';
+import { ThemeProvider } from 'styled-components';
+import { theme } from './styles/theme';
 
 export default function RootLayout({
   children,
@@ -13,7 +12,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='ko'>
-      <body>{children}</body>
+      <body>
+        <ThemeProvider theme={theme}>
+          <GlobalStyle />
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

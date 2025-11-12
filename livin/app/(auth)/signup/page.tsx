@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Livin_logo from '../../../public/livin_logo.svg';
 import Image from 'next/image';
+import ShowMoreIcon from '../../../public/showmore.svg';
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
@@ -15,10 +16,10 @@ export default function SignupPage() {
   const [confirmPw, setConfirmPw] = useState('');
   const [timer, setTimer] = useState(59);
   const [isError, setIsError] = useState(false); // 인증번호 불일치 여부
+  const [schoolOpen, setSchoolOpen] = useState(false);
 
   // 인증번호 예시 (백엔드에서 받은 값이라고 가정)
   const correctCode = '1886';
-
   // 비밀번호 유효성 검사 (영문, 숫자, 특수문자 포함 8자 이상)
   const isValidPassword = (pw: string) => {
     const regex =
@@ -79,13 +80,35 @@ export default function SignupPage() {
             </InputBox>
             <InputBox>
               <Label>학교 선택</Label>
-              <Select
-                value={school}
-                onChange={(e) => setSchool(e.target.value)}
-              >
-                <option value=''>학교명</option>
-                <option value='이화여자대학교'>이화여자대학교</option>
-              </Select>
+              <SelectWrapper>
+                <SelectButton onClick={() => setSchoolOpen(!schoolOpen)}>
+                  {school || '학교명'}
+                  <Arrow $open={schoolOpen}>
+                    <Image src={ShowMoreIcon} alt='arrow' priority />
+                  </Arrow>
+                </SelectButton>
+
+                {schoolOpen && (
+                  <SelectList>
+                    {[
+                      '이화여자대학교',
+                      '연세대학교',
+                      '고려대학교',
+                      '서울대학교',
+                    ].map((uni) => (
+                      <ListItem
+                        key={uni}
+                        onClick={() => {
+                          setSchool(uni);
+                          setSchoolOpen(false);
+                        }}
+                      >
+                        {uni}
+                      </ListItem>
+                    ))}
+                  </SelectList>
+                )}
+              </SelectWrapper>
             </InputBox>
 
             <InputBox>
@@ -138,7 +161,7 @@ export default function SignupPage() {
               <Label>비밀번호 입력</Label>
               <Input
                 type='password'
-                placeholder='********'
+                placeholder='비밀번호 입력'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 $isError={!!password && !isValidPassword(password)} // 조건 불만족 시 빨간 테두리
@@ -153,7 +176,7 @@ export default function SignupPage() {
               <Label>비밀번호 재입력</Label>
               <Input
                 type='password'
-                placeholder='********'
+                placeholder='비밀번호 재입력'
                 value={confirmPw}
                 onChange={(e) => setConfirmPw(e.target.value)}
                 $isError={!!confirmPw && password !== confirmPw} // 불일치 시 빨간 테두리
@@ -266,26 +289,90 @@ const Input = styled.input<{ $isError?: boolean }>`
   &::placeholder {
     color: #b2bcc9;
   }
+
+  &:focus {
+    outline: none;
+    border-color: #f4f4f6;
+  }
 `;
 
-const Select = styled.select`
-  display: flex;
-  padding: 17px 16px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  height: 60px;
+const SelectWrapper = styled.div`
+  position: relative;
   width: 327px;
-  border-radius: 16px;
-  border: 1px solid var(--BG-BG-1, #f4f4f6);
-  background: var(--Gray-Gray-4, #fafafc);
-  font-size: 16px;
-  font-style: normal;
   font-weight: 400;
   line-height: 160%;
-  color: #000000;
-  &::placeholder {
-    color: #b2bcc9;
+  background: var(--Gray-Gray-4, #fafafc);
+`;
+
+const SelectButton = styled.button<{ $open?: boolean }>`
+  width: 100%;
+  border: 1px solid var(--BG-BG-1, #f4f4f6);
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 16px;
+  background: var(--Gray-Gray-4, #fafafc);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.25s ease;
+
+  &:hover {
+    background: #fefaff;
+  }
+`;
+
+const Arrow = styled.span<{ $open?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  color: #b2bcc9;
+  transform: ${({ $open }) => ($open ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transform-origin: center;
+`;
+
+const SelectList = styled.ul`
+  position: absolute;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 16px;
+  margin: 6px 0 0 0;
+  padding: 6px 0;
+  box-shadow: 4px 4px 14px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  animation: fadeIn 0.15s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const ListItem = styled.li`
+  font-size: 15px;
+  padding: 10px 16px;
+  margin: 2px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  color: #333;
+
+  &:hover {
+    background: #eeeeee;
   }
 `;
 
@@ -310,6 +397,10 @@ const EmailInput = styled.input`
   color: #000000;
   &::placeholder {
     color: #b2bcc9;
+  }
+  &:focus {
+    outline: none;
+    border-color: #f4f4f6;
   }
 
   /* Body/Regular */

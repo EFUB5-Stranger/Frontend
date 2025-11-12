@@ -212,7 +212,6 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  font-family: ${({ theme }) => theme.fonts.main};
 `;
 
 const StepBox = styled.div`
@@ -345,7 +344,6 @@ const CodeInformText = styled.p`
   text-align: center;
 
   /* Body/Regular */
-  font-family: 'Open Sans';
   font-size: 16px;
   font-style: normal;
   font-weight: 400;

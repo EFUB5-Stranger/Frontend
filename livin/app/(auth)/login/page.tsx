@@ -86,7 +86,6 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  font-family: ${({ theme }) => theme.fonts.main};
 `;
 
 const Title = styled.h2`

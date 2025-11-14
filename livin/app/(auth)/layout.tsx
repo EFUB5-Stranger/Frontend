@@ -7,7 +7,7 @@ import { theme } from '../styles/theme';
 import { Open_Sans } from 'next/font/google';
 import { Noto_Sans_KR } from 'next/font/google';
 
-const opensans = Open_Sans({ subsets: ['latin'] });
+const opensans = Open_Sans({ subsets: ['latin', 'latin-ext'] });
 const notosansKR = Noto_Sans_KR({ subsets: ['latin'] });
 
 export const fonts = `${opensans.className} ${notosansKR.className}`;

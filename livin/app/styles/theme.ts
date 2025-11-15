@@ -15,7 +15,7 @@ export const theme = {
   },
 
   layout: {
-    maxWidth: '380px',
+    maxWidth: '360px',
     minHeight: '800px',
   },
 

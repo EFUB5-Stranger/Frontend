@@ -7,6 +7,10 @@ export const theme = {
     background: '#ffffff',
     text: '#000000',
     error: '#e42e00',
+    primaryFilter:
+      'brightness(0) saturate(100%) invert(13%) sepia(43%) saturate(1700%) hue-rotate(184deg) brightness(95%) contrast(95%)',
+    fourthFilter:
+      'brightness(0) saturate(100%) invert(79%) sepia(8%) saturate(500%) hue-rotate(183deg) brightness(92%) contrast(88%)',
   },
 
   fonts: {

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-type TagType = '자취방' | '하숙집';
+export type TagType = '자취방' | '하숙집';
 
 export default function RoomTag({ type }: { type: TagType }) {
   return <Tag $type={type}>{type}</Tag>;

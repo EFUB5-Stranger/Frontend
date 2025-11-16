@@ -1,0 +1,162 @@
+/* 전체 페이지 */
+.mapPage {
+  width: 22.5rem;
+  height: 50rem;
+  background: #FFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.topBar {
+  display: flex;
+  flex-direction: column;
+  width: 22.5rem;
+  padding-top: 1.75rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.searchBar {
+  display: flex;
+  width: 20rem;
+  height: 2.1875rem;
+  padding: 0.625rem 0.875rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.9375rem;
+  border: 1px solid #CBCBCB;
+  background: #FFF;
+}
+
+/* 지도 영역 */
+.mapArea {
+  width: 22.5rem;
+  height: 29rem;
+  flex-shrink: 0;
+  position: relative;
+  background-color: #AAA;
+}
+
+.mapContainer {
+  width: 100%;
+  height: 100%;
+}
+
+/* 지도 위 플로팅 버튼 */
+.floatingButtons {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filterBtn {
+  width: 6.25rem;
+  height: 2.0625rem;
+  border-radius: 0.9375rem;
+  border: none;
+  background: #F9F7F7;
+}
+
+.filterBtn.active {
+  background: #112D4E;
+  color: #FFF;
+}
+
+.locationBtn {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid #AAA;
+  background: #FFF;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+}
+/* 상단 필터 팝업 */
+.filterPopup {
+  width: 20.3125rem;
+  height: 6.625rem;
+  border-radius: 0.9375rem;
+  border: 1px solid #112D4E;
+  background: #FFF;
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.subFilter {
+  width: 4.0625rem;
+  height: 2.0625rem;
+  border-radius: 0.9375rem;
+  background: #DBE2EF;
+  border: none;
+}
+
+.subFilter.selected {
+  background: #112D4E;
+  color: #FFF;
+}
+
+.applyBtn {
+  width: 4.625rem;
+  height: 2.0625rem;
+  border-radius: 0.9375rem;
+  background: #112D4E;
+  color: #FFF;
+  border: none;
+}
+
+/* 하단 팝업 */
+.bottomPopup {
+  position: absolute;
+  bottom: 0;
+  width: 22.5rem;
+  height: 12.625rem;
+  border-radius: 1.25rem 1.25rem 0 0;
+  border: 1px solid #000;
+  background: #FFF;
+  display: flex;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.buildingImg {
+  width: 6.25rem;
+  height: 6.25rem;
+  border-radius: 0.9375rem;
+  background: #D9D9D9;
+}
+
+.buildingInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.buildingName {
+  font-size: 1.5rem;
+  color: #111;
+}
+
+.buildingAddress {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.reviewBtn {
+  width: 20.75rem;
+  height: 3.125rem;
+  border-radius: 0.9375rem;
+  background: #112D4E;
+  color: #FFF;
+  border: none;
+}

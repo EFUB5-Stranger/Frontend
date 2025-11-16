@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import styled from "styled-components";
 
 // ✅ Wrapper, TopBar, BackIcon, Title, SubmitButton은 이전 페이지와 동일하게 유지
@@ -42,6 +43,7 @@ const BackIcon = styled.div`
   transform: translateY(-50%);
   width: 0.5625rem;
   height: 0.9375rem;
+  cursor: pointer;
 `;
 
 const Title = styled.h1`
@@ -119,10 +121,11 @@ const SubmitButton = styled.button`
 `;
 
 export default function NewHouseStep2() {
+    const router = useRouter();
   return (
     <Wrapper>
       <TopBar>
-        <BackIcon>
+        <BackIcon onClick={() => router.back()}>
           <svg xmlns="http://www.w3.org/2000/svg" width="9" height="15" viewBox="0 0 9 15" fill="none">
             <path d="M9 1.22591L7.66147 0L0.37084 6.68119C0.253319 6.78824 0.160052 6.91555 0.0964085 7.05578C0.0327647 7.196 0 7.34638 0 7.49826C0 7.65015 0.0327647 7.80053 0.0964085 7.94075C0.160052 8.08098 0.253319 8.20829 0.37084 8.31534L7.66147 15L8.99874 13.7741L2.15597 7.5L9 1.22591Z" fill="black"/>
           </svg>

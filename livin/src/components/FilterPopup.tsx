@@ -1,27 +1,54 @@
-import { useFilter } from '@/hooks/useFilter';
+'use client';
+import { useFilter } from '@/hooks/FilterContext';
 import styles from '@/styles/mapPage.module.css';
 
 export default function FilterPopup() {
   const { activeFilter, subFilters, toggleSubFilter, applyFilters } = useFilter();
 
-  if (!activeFilter) return null;
-
-  const options =
-    activeFilter === 'facility'
-      ? ['카페', '편의점', '식당', '교통']
-      : ['자취방', '하숙'];
+  if (!activeFilter) return null; // 필터 선택 안 했으면 팝업 안 뜸
 
   return (
     <div className={styles.filterPopup}>
-      {options.map((opt) => (
-        <button
-          key={opt}
-          className={`${styles.subFilter} ${subFilters.includes(opt) ? styles.selected : ''}`}
-          onClick={() => toggleSubFilter(opt)}
-        >
-          {opt}
-        </button>
-      ))}
+      {activeFilter === 'building' && (
+        <>
+          <button
+            className={`${styles.subFilter} ${subFilters.includes('자취방') ? styles.selected : ''}`}
+            onClick={() => toggleSubFilter('자취방')}
+          >
+            자취방
+          </button>
+          <button
+            className={`${styles.subFilter} ${subFilters.includes('기숙사') ? styles.selected : ''}`}
+            onClick={() => toggleSubFilter('기숙사')}
+          >
+            기숙사
+          </button>
+          <button
+            className={`${styles.subFilter} ${subFilters.includes('하숙') ? styles.selected : ''}`}
+            onClick={() => toggleSubFilter('하숙')}
+          >
+            하숙
+          </button>
+        </>
+      )}
+
+      {activeFilter === 'facility' && (
+        <>
+          <button
+            className={`${styles.subFilter} ${subFilters.includes('편의점') ? styles.selected : ''}`}
+            onClick={() => toggleSubFilter('편의점')}
+          >
+            편의점
+          </button>
+          <button
+            className={`${styles.subFilter} ${subFilters.includes('카페') ? styles.selected : ''}`}
+            onClick={() => toggleSubFilter('카페')}
+          >
+            카페
+          </button>
+        </>
+      )}
+
       <button className={styles.applyBtn} onClick={applyFilters}>
         적용하기
       </button>

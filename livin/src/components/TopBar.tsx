@@ -6,7 +6,9 @@ export default function TopBar() {
   return (
     <div className={styles.topBar}>
       {/* 상단바 타이틀 */}
-      <h1>지도</h1>
+      <div className="map-header">
+        <div className="map-title">지도</div>
+        </div>
 
       {/* 검색바 */}
       <div className={styles.searchBar}>

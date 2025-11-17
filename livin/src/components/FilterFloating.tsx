@@ -1,4 +1,5 @@
-import { useFilter } from '@/hooks/useFilter';
+'use client';
+import { useFilter } from '@/hooks/FilterContext';
 import styles from '@/styles/mapPage.module.css';
 
 export default function FilterFloating() {

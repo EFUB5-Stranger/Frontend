@@ -1,19 +1,23 @@
-import { useMap } from '@/hooks/useMap';
+'use client';
+import { useMapContext } from '@/hooks/MapContext';
 import styles from '@/styles/mapPage.module.css';
 
 export default function BottomPopup() {
-  const { selectedBuilding } = useMap();
+  const { selectedBuilding } = useMapContext();
 
   if (!selectedBuilding) return null;
 
   return (
     <div className={styles.bottomPopup}>
-      <img src={selectedBuilding.thumbnailUrl} className={styles.buildingImg} />
+      <img
+        src={selectedBuilding.thumbnailUrl || '/default.png'}
+        alt={selectedBuilding.name}
+        className={styles.buildingImg}
+      />
       <div className={styles.buildingInfo}>
         <h2 className={styles.buildingName}>{selectedBuilding.name}</h2>
         <p className={styles.buildingAddress}>{selectedBuilding.address}</p>
-        <div className={styles.ratingStars}>⭐️⭐️⭐️⭐️☆</div>
-        <button className={styles.reviewBtn}>리뷰 확인하기</button>
+        <button className={styles.reviewBtn}>리뷰 보기</button>
       </div>
     </div>
   );

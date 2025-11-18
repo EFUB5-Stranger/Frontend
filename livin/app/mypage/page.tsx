@@ -9,6 +9,11 @@ import { useState } from 'react';
 
 export default function MyPage() {
   const router = useRouter();
+
+  const [nickname, setNickname] = useState('퍼비');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [newNickname, setNewNickname] = useState(nickname);
+
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
@@ -22,7 +27,12 @@ export default function MyPage() {
         <ProfileCard>
           <ProfileImage />
           <ProfileText>
-            <Name>퍼비</Name>
+            <NameRow>
+              <Name>{nickname}</Name>
+              <EditBtn onClick={() => setShowEditModal(true)}>
+                <Image src='/edit.svg' width={10} height={10} alt='edit' />
+              </EditBtn>
+            </NameRow>
             <Email>KFB232323@ewha.ac.kr</Email>
             <School>이화여자대학교</School>
           </ProfileText>
@@ -74,6 +84,34 @@ export default function MyPage() {
             <Image src='/more.svg' width={6.63} height={14.5} alt='more' />
           </MenuItem>
         </MenuSection>
+
+        {showEditModal && (
+          <ModalBackground onClick={() => setShowEditModal(false)}>
+            <ModalBox onClick={(e) => e.stopPropagation()}>
+              <ModalText>닉네임 수정</ModalText>
+
+              <EditInput
+                value={newNickname}
+                onChange={(e) => setNewNickname(e.target.value)}
+                placeholder='새 닉네임을 입력하세요'
+              />
+
+              <ModalButtons>
+                <CancelBtn onClick={() => setShowEditModal(false)}>
+                  취소
+                </CancelBtn>
+                <ConfirmBtn
+                  onClick={() => {
+                    setNickname(newNickname);
+                    setShowEditModal(false);
+                  }}
+                >
+                  저장
+                </ConfirmBtn>
+              </ModalButtons>
+            </ModalBox>
+          </ModalBackground>
+        )}
 
         {showLogoutModal && (
           <ModalBackground onClick={() => setShowLogoutModal(false)}>
@@ -132,6 +170,19 @@ const ProfileText = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
+`;
+
+const NameRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+`;
+
+const EditBtn = styled.div`
+  font-size: 12px;
+  color: #696969;
+  cursor: pointer;
 `;
 
 const Name = styled.div`
@@ -282,4 +333,18 @@ const ConfirmBtn = styled.button`
   border: none;
   cursor: pointer;
   font-family: ${({ theme }) => theme.fonts.main};
+`;
+
+const EditInput = styled.input`
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: ${({ theme }) => theme.fonts.main};
+  outline: none;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
 `;

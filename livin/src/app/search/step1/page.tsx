@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styled from "styled-components";
+import TopBar from "@/components/TopBar";
 
 const Wrapper = styled.div`
   max-width: 22.5rem;
@@ -13,35 +14,6 @@ const Wrapper = styled.div`
   flex-direction: column;
   padding: 0 1rem;
   box-sizing: border-box;
-`;
-
-const TopBar = styled.div`
-  position: relative;
-  width: 100%;
-  padding-top: 1.75rem;
-  padding-bottom: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const BackIcon = styled.div`
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0.5625rem;
-  height: 0.9375rem;
-  cursor: pointer;
-`;
-
-const Title = styled.h1`
-  color: #000;
-  text-align: center;
-  font-family: 'Pretendard', sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1rem;
 `;
 
 const Label = styled.p`
@@ -97,8 +69,6 @@ export default function SearchStep1() {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  const isSearchEnabled = selectedType !== null;
-
   const handleSelectType = (selectedType: string) => {
     if (!selectedType) return alert("검색할 타입을 선택해주세요!");
     if (selectedType === "기숙사") {
@@ -110,14 +80,8 @@ export default function SearchStep1() {
 
   return (
     <Wrapper>
-      <TopBar>
-        <BackIcon onClick={() => router.back()}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="9" height="15" viewBox="0 0 9 15" fill="none">
-            <path d="M9 1.22591L7.66147 0L0.37084 6.68119L7.66147 15L8.99874 13.7741L2.15597 7.5L9 1.22591Z" fill="black"/>
-          </svg>
-        </BackIcon>
-        <Title>검색</Title>
-      </TopBar>
+      {/* 공용 TopBar 사용 */}
+      <TopBar title="검색" showSearch={false} showBack={true} />
 
       <Label>검색하고자 하는 타입을 선택하세요.</Label>
       <TypeGroup>

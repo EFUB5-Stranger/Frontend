@@ -1,11 +1,24 @@
 'use client';
+import { useRef,useEffect } from 'react';
 import { useMapContext } from '@/hooks/MapContext';
 import styles from '@/styles/mapPage.module.css';
-
-export default function BottomPopup() {
+interface BottomPopupProps {
+  onHeightChange?: (height: number) => void;
+}
+export default function BottomPopup({ onHeightChange }: BottomPopupProps) {
   const { selectedBuilding } = useMapContext();
+  const popupRef = useRef<HTMLDivElement | null>(null);
 
-  if (!selectedBuilding) return null;
+  useEffect(() => {
+    if (popupRef.current && onHeightChange) {
+      onHeightChange(popupRef.current.offsetHeight);
+    }
+  }, [selectedBuilding, onHeightChange]);
+
+  if (!selectedBuilding) {
+    if (onHeightChange) onHeightChange(0);
+    return null;
+  }
 
   return (
     <div className={styles.bottomPopup}>

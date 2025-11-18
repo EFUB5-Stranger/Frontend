@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
 import { Range } from "react-range";
+import TopBar from "@/components/TopBar"; 
 
 const PRICE_MIN = 30;
 const PRICE_MAX = 150;
@@ -20,35 +21,6 @@ const Wrapper = styled.div`
   flex-direction: column;
   padding: 0 1rem;
   box-sizing: border-box;
-`;
-
-const TopBar = styled.div`
-  position: relative;
-  width: 100%;
-  padding-top: 1.75rem;
-  padding-bottom: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const BackIcon = styled.div`
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0.5625rem;
-  height: 0.9375rem;
-  cursor: pointer;
-`;
-
-const Title = styled.h1`
-  color: #000;
-  text-align: center;
-  font-family: 'Pretendard', sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1rem;
 `;
 
 const Label = styled.p`
@@ -118,29 +90,23 @@ export default function SearchStep2() {
   const [priceRange, setPriceRange] = useState([50, 120]);
   const [ratingRange, setRatingRange] = useState([1.0, 4.5]);
 
-    useEffect(() => {
-        const type = searchParams.get("type");
-        if (type) setSelected(type);
-    }, [searchParams]);
+  useEffect(() => {
+    const type = searchParams.get("type");
+    if (type) setSelected(type);
+  }, [searchParams]);
 
-    const isSearchEnabled = !!selected && priceRange.length === 2 && ratingRange.length === 2;
+  const isSearchEnabled = !!selected && priceRange.length === 2 && ratingRange.length === 2;
 
-    const handleSearch = () => {
-        if (!isSearchEnabled) return;
-        alert(
-        `검색 조건\n타입: ${selected}\n가격대: ${priceRange[0]} ~ ${priceRange[1]}만원\n별점: ${ratingRange[0].toFixed(1)} ~ ${ratingRange[1].toFixed(1)}점`
-        );
-    };    
+  const handleSearch = () => {
+    if (!isSearchEnabled) return;
+    alert(
+      `검색 조건\n타입: ${selected}\n가격대: ${priceRange[0]} ~ ${priceRange[1]}만원\n별점: ${ratingRange[0].toFixed(1)} ~ ${ratingRange[1].toFixed(1)}점`
+    );
+  };
+
   return (
     <Wrapper>
-      <TopBar>
-        <BackIcon onClick={() => router.back()}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="9" height="15" viewBox="0 0 9 15" fill="none">
-            <path d="M9 1.22591L7.66147 0L0.37084 6.68119C0.253319 6.78824 0.160052 6.91555 0.0964085 7.05578C0.0327647 7.196 0 7.34638 0 7.49826C0 7.65015 0.0327647 7.80053 0.0964085 7.94075C0.160052 8.08098 0.253319 8.20829 0.37084 8.31534L7.66147 15L8.99874 13.7741L2.15597 7.5L9 1.22591Z" fill="black"/>
-          </svg>
-        </BackIcon>
-        <Title>검색</Title>
-      </TopBar>
+      <TopBar title="검색" showSearch={false} showBack={true} />
 
       <Label>검색하고자 하는 타입을 선택하세요.</Label>
       <TypeGroup>
@@ -153,119 +119,26 @@ export default function SearchStep2() {
         <>
           <Section>
             <Label>검색할 방의 가격대를 선택하세요.</Label>
-            <Range
-              step={10}
-              min={PRICE_MIN}
-              max={PRICE_MAX}
-              values={priceRange}
-              onChange={(values) => setPriceRange(values)}
-              renderTrack={({ props, children }) => (
-                <div
-                  {...props}
-                  style={{
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center", 
-                    height: "4px",
-                    width: "100%",
-                    background: `linear-gradient(
-                      to right,
-                      #d9d9d9 ${(priceRange[0] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN) * 100}%,
-                      #112d4e ${(priceRange[0] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN) * 100}%,
-                      #112d4e ${(priceRange[1] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN) * 100}%,
-                      #d9d9d9 ${(priceRange[1] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN) * 100}%
-                    )`,
-                    borderRadius: "2px",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  {children}
-                </div>
-              )}
-              renderThumb={({ props, index }) => {
-                const { key, ...rest } = props;
-                return (
-                  <div
-                    key={index}
-                    {...rest}
-                    style={{
-                      height: "20px",
-                      width: "20px",
-                      backgroundColor: "#112d4e",
-                      borderRadius: "50%",
-                      cursor: "pointer",
-                      top: "50%", 
-                      transform: "translateY(-50%)", 
-                      position: "absolute", 
-                      marginTop: "-3px",
-                    }}
-                  />
-                );
-              }}
-            />
-            <ValueText>{priceRange[0]}만원 ~ {priceRange[1]}만원</ValueText>
+            <Range 
+            step={10} 
+            min={PRICE_MIN} 
+            max={PRICE_MAX} 
+            values={priceRange} 
+            onChange={(values) => setPriceRange(values)} 
+            renderTrack={({ props, children }) => ( 
+              <div {...props} 
+              style={{ position: "relative", display: "flex", alignItems: "center", height: "4px", width: "100%", background: `linear-gradient( to right, #d9d9d9 ${(priceRange[0] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN) * 100}%, #112d4e ${(priceRange[0] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN) * 100}%, #112d4e ${(priceRange[1] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN) * 100}%, #d9d9d9 ${(priceRange[1] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN) * 100}% )`, borderRadius: "2px", marginBottom: "1rem", }} > {children} </div> )} renderThumb={({ props, index }) => { const { key, ...rest } = props; return ( <div key={index} {...rest} style={{ height: "20px", width: "20px", backgroundColor: "#112d4e", borderRadius: "50%", cursor: "pointer", top: "50%", transform: "translateY(-50%)", position: "absolute", marginTop: "-3px", }} /> ); }} /> <ValueText>{priceRange[0]}만원 ~ {priceRange[1]}만원</ValueText>
+
           </Section>
 
           <Section>
             <Label>검색할 방의 최소 별점을 선택하세요.</Label>
-            <Range
-              step={0.5}
-              min={RATING_MIN}
-              max={RATING_MAX}
-              values={ratingRange}
-              onChange={(values) => setRatingRange(values)}
-              renderTrack={({ props, children }) => (
-                <div
-                  {...props}
-                  style={{
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center", 
-                    height: "4px",
-                    width: "100%",
-                    background: `linear-gradient(
-                      to right,
-                      #d9d9d9 ${(ratingRange[0] - RATING_MIN) / (RATING_MAX - RATING_MIN) * 100}%,
-                      #112d4e ${(ratingRange[0] - RATING_MIN) / (RATING_MAX - RATING_MIN) * 100}%,
-                                           #112d4e ${(ratingRange[1] - RATING_MIN) / (RATING_MAX - RATING_MIN) * 100}%,
-                      #d9d9d9 ${(ratingRange[1] - RATING_MIN) / (RATING_MAX - RATING_MIN) * 100}%
-                    )`,
-                    borderRadius: "2px",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  {children}
-                </div>
-              )}
-              renderThumb={({ props, index }) => {
-                const { key, ...rest } = props;
-                return (
-                  <div
-                    key={index}
-                    {...rest}
-                    style={{
-                      height: "20px",
-                      width: "20px",
-                      backgroundColor: "#112d4e",
-                      borderRadius: "50%",
-                      cursor: "pointer",
-                      top: "50%", 
-                      transform: "translateY(-50%)", 
-                      position: "absolute", 
-                      marginTop: "-3px",
-                    }}
-                  />
-                );
-              }}
-            />
-            <ValueText>
-              {ratingRange[0].toFixed(1)}점 ~ {ratingRange[1].toFixed(1)}점
-            </ValueText>
+            <Range step={0.5} min={RATING_MIN} max={RATING_MAX} values={ratingRange} onChange={(values) => setRatingRange(values)} renderTrack={({ props, children }) => ( <div {...props} style={{ position: "relative", display: "flex", alignItems: "center", height: "4px", width: "100%", background: `linear-gradient( to right, #d9d9d9 ${(ratingRange[0] - RATING_MIN) / (RATING_MAX - RATING_MIN) * 100}%, #112d4e ${(ratingRange[0] - RATING_MIN) / (RATING_MAX - RATING_MIN) * 100}%, #112d4e ${(ratingRange[1] - RATING_MIN) / (RATING_MAX - RATING_MIN) * 100}%, #d9d9d9 ${(ratingRange[1] - RATING_MIN) / (RATING_MAX - RATING_MIN) * 100}% )`, borderRadius: "2px", marginBottom: "1rem", }} > {children} </div> )} renderThumb={({ props, index }) => { const { key, ...rest } = props; return ( <div key={index} {...rest} style={{ height: "20px", width: "20px", backgroundColor: "#112d4e", borderRadius: "50%", cursor: "pointer", top: "50%", transform: "translateY(-50%)", position: "absolute", marginTop: "-3px", }} /> ); }} /> <ValueText> {ratingRange[0].toFixed(1)}점 ~ {ratingRange[1].toFixed(1)}점 </ValueText>
           </Section>
         </>
       )}
 
-        <SearchButton
+      <SearchButton
         onClick={isSearchEnabled ? handleSearch : undefined}
         style={{
           backgroundColor: isSearchEnabled ? "#112d4e" : "#DBE2EF",

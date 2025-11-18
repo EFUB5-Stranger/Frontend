@@ -2,6 +2,7 @@
 
 import styled from "styled-components";
 
+
 const houses = Array.from({ length: 10 }, (_, i) => ({
   id: `${i + 1}`,
   type: i % 2 === 0 ? "자취방" : "하숙",

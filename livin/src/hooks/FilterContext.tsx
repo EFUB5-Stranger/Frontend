@@ -1,15 +1,15 @@
 'use client';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState,Dispatch,SetStateAction } from 'react';
 
 type FilterType = 'building' | 'facility' | null;
 
 interface FilterContextType {
-  activeFilter: FilterType;
+  activeFilter: string | null;
+   setActiveFilter: Dispatch<SetStateAction<FilterType>>;
+  toggleFilter: (filter: FilterType) => void;
   subFilters: string[];
-  toggleFilter: (type: FilterType) => void;
-  toggleSubFilter: (name: string) => void;
-  applyFilters: () => void;
-}
+  toggleSubFilter: (filter: string) => void;
+  applyFilters: () => void;}
 
 const FilterContext = createContext<FilterContextType | null>(null);
 
@@ -35,7 +35,13 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <FilterContext.Provider
-      value={{ activeFilter, subFilters, toggleFilter, toggleSubFilter, applyFilters }}
+      value={{ 
+        activeFilter,
+        setActiveFilter,  
+        subFilters, 
+        toggleFilter, 
+        toggleSubFilter, 
+        applyFilters }}
     >
       {children}
     </FilterContext.Provider>

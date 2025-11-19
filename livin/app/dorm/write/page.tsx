@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Dropdown from '@/app/components/Dorm/Dropdown';
 import EvaluationItem from '@/app/components/Dorm/EvaluationItem';
 import StarRating from '@/app/components/Dorm/StarRating';
+import ImageUpload from '@/app/components/Common/ImageUpload';
 
 export default function DormWritePage() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function DormWritePage() {
   const [overallRating, setOverallRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [images, setImages] = useState<string[]>([]);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   // 드롭다운 옵션
   const buildingOptions = ['E-HOUSE', '한우리집', 'I-HOUSE'];
@@ -190,30 +192,13 @@ export default function DormWritePage() {
               <VerticalLine src='/line.svg' alt='line' width={4} height={20} />
               <SectionTitle>사진 첨부 (선택, 최대 5장)</SectionTitle>
             </SectionHeader>
-            <ImageUploadSection>
-              {images.map((img, idx) => (
-                <ImageBox key={idx}>
-                  <RemoveButton>×</RemoveButton>
-                  <ImagePreview>📷</ImagePreview>
-                  <ImageCount>0 / 5</ImageCount>
-                </ImageBox>
-              ))}
-              {images.length < 5 && (
-                <AddImageBox onClick={handleImageAdd}>
-                  <PlusIcon>+</PlusIcon>
-                </AddImageBox>
-              )}
-            </ImageUploadSection>
-            <ImageFooter>
-              <div></div>
-              <CheckboxWrapper>
-                <CheckboxLabel>
-                  <Checkbox type="checkbox" />
-                  <CheckIcon>✓</CheckIcon>
-                  익명
-                </CheckboxLabel>
-              </CheckboxWrapper>
-            </ImageFooter>
+            <ImageUpload
+              imageCount={images.length}
+              maxImages={5}
+              onAddImage={handleImageAdd}
+              isAnonymous={isAnonymous}
+              onToggleAnonymous={setIsAnonymous}
+            />
           </Section>
         </Content>
 
@@ -342,118 +327,6 @@ const CharCount = styled.div`
   text-align: right;
   font-size: 12px;
   color: #999;
-`;
-
-const ImageUploadSection = styled.div`
-  display: flex;
-  gap: 10px;
-`;
-
-const ImageBox = styled.div`
-  position: relative;
-  width: 70px;
-  height: 70px;
-  border-radius: 8px;
-  border: 2px dashed #d0d0d0;
-  background: #f8f8f8;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-`;
-
-const ImagePreview = styled.div`
-  font-size: 24px;
-`;
-
-const ImageCount = styled.div`
-  font-size: 10px;
-  color: #999;
-`;
-
-const RemoveButton = styled.button`
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #000;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const AddImageBox = styled.button`
-  width: 70px;
-  height: 70px;
-  border-radius: 8px;
-  border: 2px dashed #d0d0d0;
-  background: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primary};
-    background: #f8f8f8;
-  }
-`;
-
-const PlusIcon = styled.span`
-  font-size: 28px;
-  color: #999;
-`;
-
-const ImageFooter = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const CheckboxWrapper = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const Checkbox = styled.input`
-  display: none;
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #000;
-  cursor: pointer;
-`;
-
-const CheckIcon = styled.span`
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  border: 1.5px solid #d0d0d0;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: transparent;
-  
-  ${Checkbox}:checked + & {
-    background: ${({ theme }) => theme.colors.primary};
-    border-color: ${({ theme }) => theme.colors.primary};
-    color: #fff;
-  }
 `;
 
 const SubmitButton = styled.button`

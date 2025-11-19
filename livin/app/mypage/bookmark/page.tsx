@@ -3,10 +3,10 @@
 import styled from 'styled-components';
 import Image from 'next/image';
 import RoomCard from '@/app/components/Home/Rooms/RoomCard';
-import { useState } from 'react';
+import { useBookmarkStore } from '../../stores/useBookmarkStore';
 
 export default function BookmarkPage() {
-  const [bookmarked1, setBookmarked1] = useState(false);
+  const bookmarks = useBookmarkStore((state) => state.bookmarks);
 
   return (
     <Wrapper>
@@ -19,54 +19,9 @@ export default function BookmarkPage() {
 
       <ScrollArea>
         <BookmarkGrid>
-          <RoomCard
-            type='자취방'
-            title='신촌 럭키아파트'
-            address='서울 서대문구 이화여대길 50-12'
-            rate={4.3}
-            bookmarked={true}
-            onToggleBookmark={() => setBookmarked1(!bookmarked1)}
-          />
-          <RoomCard
-            type='자취방'
-            title='신촌 럭키아파트'
-            address='서울 서대문구 이화여대길 50-12'
-            rate={4.3}
-            bookmarked={true}
-            onToggleBookmark={() => setBookmarked1(!bookmarked1)}
-          />
-          <RoomCard
-            type='자취방'
-            title='신촌 럭키아파트'
-            address='서울 서대문구 이화여대길 50-12'
-            rate={4.3}
-            bookmarked={true}
-            onToggleBookmark={() => setBookmarked1(!bookmarked1)}
-          />
-          <RoomCard
-            type='자취방'
-            title='신촌 럭키아파트'
-            address='서울 서대문구 이화여대길 50-12'
-            rate={4.3}
-            bookmarked={true}
-            onToggleBookmark={() => setBookmarked1(!bookmarked1)}
-          />
-          <RoomCard
-            type='자취방'
-            title='신촌 럭키아파트'
-            address='서울 서대문구 이화여대길 50-12'
-            rate={4.3}
-            bookmarked={true}
-            onToggleBookmark={() => setBookmarked1(!bookmarked1)}
-          />
-          <RoomCard
-            type='자취방'
-            title='신촌 럭키아파트'
-            address='서울 서대문구 이화여대길 50-12'
-            rate={4.3}
-            bookmarked={true}
-            onToggleBookmark={() => setBookmarked1(!bookmarked1)}
-          />
+          {bookmarks.map((room) => (
+            <RoomCard key={room.id} {...room} />
+          ))}
         </BookmarkGrid>
       </ScrollArea>
     </Wrapper>

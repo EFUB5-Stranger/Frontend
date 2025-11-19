@@ -3,24 +3,19 @@
 import styled from 'styled-components';
 import Image from 'next/image';
 import RoomTag, { TagType } from './TagComponents';
+import { useBookmarkStore } from '../../../stores/useBookmarkStore';
 
 interface Props {
+  id: string;
   type: TagType;
   title: string;
   address: string;
   rate: number;
-  bookmarked: boolean;
-  onToggleBookmark: () => void;
 }
 
-export default function RoomCard({
-  type,
-  title,
-  address,
-  rate,
-  bookmarked,
-  onToggleBookmark,
-}: Props) {
+export default function RoomCard({ id, type, title, address, rate }: Props) {
+  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
+  const isBookmarked = useBookmarkStore((state) => state.isBookmarked(id));
   return (
     <Wrapper>
       <Thumb>
@@ -33,11 +28,13 @@ export default function RoomCard({
         <TitleBox>
           <RoomTitle>{title}</RoomTitle>
           <BookmarkIcon
-            src={bookmarked ? '/bookmark_filled.svg' : '/bookmark_unfilled.svg'}
-            alt='bookmark'
+            src={
+              isBookmarked ? '/bookmark_filled.svg' : '/bookmark_unfilled.svg'
+            }
             width={13}
             height={17}
-            onClick={onToggleBookmark}
+            alt='bookmark'
+            onClick={() => toggleBookmark({ id, type, title, address, rate })}
           />
         </TitleBox>
 

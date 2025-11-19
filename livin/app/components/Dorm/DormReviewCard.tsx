@@ -95,7 +95,7 @@ export default function DormReviewCard({
 const Card = styled.div`
   display: flex;
   gap: 14px;
-  height: 85px;
+  height: 105px;
   width: 100%;
   justify-content: space-between;
   align-items: center;

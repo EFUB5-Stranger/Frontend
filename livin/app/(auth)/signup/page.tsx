@@ -17,6 +17,17 @@ export default function SignupPage() {
   const [timer, setTimer] = useState(59);
   const [isError, setIsError] = useState(false); // 인증번호 불일치 여부
   const [schoolOpen, setSchoolOpen] = useState(false);
+  const [isNameError, setIsNameError] = useState(false);
+
+  const checkNameDuplicate = async (nickname: string) => {
+    // 실제 API 요청 예:
+    // const res = await fetch(`/api/check-nickname?name=${nickname}`);
+    // const data = await res.json();
+    // return data.isDuplicate;
+
+    const existingNames = ['퍼비', 'livin', 'test']; // 예시
+    return existingNames.includes(nickname);
+  };
 
   // 인증번호 예시 (백엔드에서 받은 값이라고 가정)
   const correctCode = '1886';
@@ -34,23 +45,35 @@ export default function SignupPage() {
     }
   }, [step, timer]);
 
-  const handleNext = () => {
-    if (step === 1 && (!name || !school || !emailId)) {
-      alert('모든 정보를 입력해주세요.');
-      return;
+  const handleNext = async () => {
+    // STEP 1: 닉네임 중복 체크
+    if (step === 1) {
+      if (!name || !school || !emailId) {
+        alert('모든 정보를 입력해주세요.');
+        return;
+      }
+
+      const isDuplicate = await checkNameDuplicate(name);
+      if (isDuplicate) {
+        setIsNameError(true);
+        return;
+      }
+      setIsNameError(false);
     }
 
-    if (step === 3 && (password !== confirmPw || !password)) {
-      alert('비밀번호를 다시 확인해주세요.');
-      return;
-    }
-
+    // STEP 2
     if (step === 2) {
       if (code !== correctCode) {
         setIsError(true);
         return;
       }
       setIsError(false);
+    }
+
+    // STEP 3
+    if (step === 3 && (password !== confirmPw || !password)) {
+      alert('비밀번호를 다시 확인해주세요.');
+      return;
     }
 
     setStep(step + 1);
@@ -75,8 +98,13 @@ export default function SignupPage() {
                 type='text'
                 placeholder='이름'
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setIsNameError(false);
+                }}
+                $isError={isNameError}
               />
+              {isNameError && <ErrorText>중복되는 닉네임입니다.</ErrorText>}
             </InputBox>
             <InputBox>
               <Label>학교 선택</Label>
@@ -90,12 +118,7 @@ export default function SignupPage() {
 
                 {schoolOpen && (
                   <SelectList>
-                    {[
-                      '이화여자대학교',
-                      '연세대학교',
-                      '고려대학교',
-                      '서울대학교',
-                    ].map((uni) => (
+                    {['이화여자대학교'].map((uni) => (
                       <ListItem
                         key={uni}
                         onClick={() => {

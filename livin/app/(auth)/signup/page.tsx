@@ -70,7 +70,7 @@ export default function SignupPage() {
           <Step1Box>
             <Title $step={step}>회원가입</Title>
             <InputBox>
-              <Label>이름/닉네임 입력</Label>
+              <Label>닉네임 입력</Label>
               <Input
                 type='text'
                 placeholder='이름'

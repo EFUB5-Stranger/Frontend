@@ -17,10 +17,10 @@ export default function TopSection() {
         </DarkBlue>
       </Title>
 
-      <SearchBox>
+      {/* <SearchBox>
         <SearchIcon src='/search.svg' alt='검색' width={18} height={18} />
         <input placeholder='원하는 자취방/하숙을 검색해주세요.' />
-      </SearchBox>
+      </SearchBox> */}
     </Wrapper>
   );
 }
@@ -55,37 +55,37 @@ const DarkBlue = styled.span`
   font-weight: 600;
 `;
 
-const SearchBox = styled.div`
-  display: flex;
-  width: 320px;
-  height: 35px;
-  margin-top: 18px;
-  padding: 10px 14px;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 10px;
-  flex-shrink: 0;
-  border-radius: 15px;
-  border: 1px solid ${({ theme }) => theme.colors.secondary};
-  background: #fff;
+// const SearchBox = styled.div`
+//   display: flex;
+//   width: 320px;
+//   height: 35px;
+//   margin-top: 18px;
+//   padding: 10px 14px;
+//   flex-direction: row;
+//   align-items: flex-start;
+//   gap: 10px;
+//   flex-shrink: 0;
+//   border-radius: 15px;
+//   border: 1px solid ${({ theme }) => theme.colors.secondary};
+//   background: #fff;
 
-  input {
-    flex: 1;
-    border: none;
-    outline: none;
-    color: var(--gray-300, #b6b6b6);
-    font-family: ${({ theme }) => theme.fonts.main};
-    font-size: 13px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 18px;
-    letter-spacing: 0.65px;
-  }
-`;
+//   input {
+//     flex: 1;
+//     border: none;
+//     outline: none;
+//     color: var(--gray-300, #b6b6b6);
+//     font-family: ${({ theme }) => theme.fonts.main};
+//     font-size: 13px;
+//     font-style: normal;
+//     font-weight: 500;
+//     line-height: 18px;
+//     letter-spacing: 0.65px;
+//   }
+// `;
 
-const SearchIcon = styled(Image)`
-  width: 13px;
-  height: 13px;
-  stroke-width: 2px;
-  stroke: var(--main-pri, #112d4e);
-`;
+// const SearchIcon = styled(Image)`
+//   width: 13px;
+//   height: 13px;
+//   stroke-width: 2px;
+//   stroke: var(--main-pri, #112d4e);
+// `;

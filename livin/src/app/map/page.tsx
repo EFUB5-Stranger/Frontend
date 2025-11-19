@@ -16,16 +16,17 @@ export default function MapPage() {
     <FilterProvider>
       <MapProvider>
         <div className={styles.mapPage}>
-          {/* 상단바 */}
-          <TopBar title="지도" showSearch={true} />
+          <TopBar 
+            title="지도" 
+            showSearch={true} 
+            searchPlaceholder="건물명, 주소, 키워드 검색" 
+          />
 
-          {/* 지도 뷰 (popupHeight 전달) */}
+
           <MapView popupHeight={popupHeight} />
 
-          {/* 필터 팝업 */}
           <FilterPopup />
 
-          {/* 하단 팝업 (높이 변경 시 setPopupHeight 호출) */}
           <BottomPopup onHeightChange={setPopupHeight} />
         </div>
       </MapProvider>

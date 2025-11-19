@@ -5,10 +5,13 @@ import styles from '@/styles/mapPage.module.css';
 export default function FilterPopup() {
   const { activeFilter, subFilters, toggleSubFilter, applyFilters } = useFilter();
 
-  if (!activeFilter) return null; // 필터 선택 안 했으면 팝업 안 뜸
+  if (!activeFilter) return null; 
+  console.log("현재 activeFilter:", activeFilter);
+
 
   return (
     <div className={styles.filterPopup}>
+       <div className={styles.subFilterRow}>
       {activeFilter === 'building' && (
         <>
           <button
@@ -48,10 +51,12 @@ export default function FilterPopup() {
           </button>
         </>
       )}
-
+      </div>
+      <div className={styles.applyRow}>
       <button className={styles.applyBtn} onClick={applyFilters}>
         적용하기
       </button>
+      </div>
     </div>
   );
 }

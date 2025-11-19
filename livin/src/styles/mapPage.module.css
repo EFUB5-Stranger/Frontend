@@ -85,24 +85,26 @@
 /* 지도 위 플로팅 버튼 */
 .floatingButtons {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: 20px;    
+  left: 20px;
   display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
+  gap: 10px;
+  z-index: 1000;   
 }
 
 .filterBtn {
-  width: 6.25rem;
-  height: 2.0625rem;
+  width: 6.25rem;         /* 100px 정도 */
+  height: 2.0625rem;      /* 약 33px */
+  flex-shrink: 0;
   border-radius: 0.9375rem;
-  border: none;
-  background: #F9F7F7;
+  border: 1px solid transparent;
+  background: #F9F7F7;    /* 기본 배경 */
+  cursor: pointer;
 }
 
 .filterBtn.active {
-  background: #112D4E;
-  color: #FFF;
+  background: var(--main-pri, #112D4E);
+  color: #fff;
 }
 
 /* 현위치 버튼 */
@@ -128,39 +130,58 @@
 }
 
 /* 필터 팝업: 버튼 아래쪽에만 */
+.filterBtnWrapper {
+  position: relative; 
+}
 .filterPopup {
+  margin-top: 10px;
+  width: 18rem;       /* 325px */
+  height: 6.rem;        /* 106px */
+  border-radius: 0.9375rem;
+  border: 1px solid var(--main-pri, #112D4E);
+  background: #FFF;
+  display: flex;
+  flex-direction: column;  /* 세로 배치 */
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
   position: absolute;
-  top: calc(100% + 0.5rem); /* 버튼 바로 아래 */
+  top: 100%;               /* 버튼 바로 아래 */
   left: 0;
-  width: 200px;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  z-index: 999;
+  z-index: 2000;        /* 지도 위에 표시 */
+}
+.subFilterRow {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start; /* 왼쪽 정렬 */
 }
 
 .subFilter {
-  width: 4.0625rem;
-  height: 2.0625rem;
+  width: 4.0625rem;        /* 65px */
+  height: 2.0625rem;       /* 33px */
   border-radius: 0.9375rem;
-  background: #DBE2EF;
-  border: none;
+  border: 1px solid transparent;
+  background: var(--main-sec, #DBE2EF);
+  cursor: pointer;
 }
 
 .subFilter.selected {
-  background: #112D4E;
-  color: #FFF;
+  border: 1px solid var(--main-pri, #112D4E);
+}
+
+.applyRow {
+  display: flex;
+  justify-content: flex-end; /* 오른쪽 정렬 */
 }
 
 .applyBtn {
-  width: 4.625rem;
-  height: 2.0625rem;
+  width: 4.625rem;         /* 74px */
+  height: 2.0625rem;       /* 33px */
   border-radius: 0.9375rem;
-  background: #112D4E;
+  border: 1px solid transparent;
+  background: var(--main-pri, #112D4E);
   color: #FFF;
-  border: none;
+  cursor: pointer;
 }
-
 /* 하단 팝업 */
 .bottomPopup {
   position: absolute;

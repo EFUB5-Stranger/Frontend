@@ -5,6 +5,7 @@ import { useMapContext } from '@/hooks/MapContext';
 import FilterFloating from './FilterFloating';
 import FilterPopup from './FilterPopup';
 import styles from '@/styles/mapPage.module.css';
+import { FilterProvider } from '@/hooks/FilterContext';
 interface MapViewProps {
   popupHeight?: number;
 }
@@ -69,8 +70,9 @@ export default function MapView({ popupHeight = 0 }: MapViewProps) {
   };
 
   return (
+    <FilterProvider>
     <div className={styles.mapArea}>
-      {/* 카카오 지도 SDK 스크립트 */}
+      {/* 카카오 지도 SDK 스크립트  */}
       <Script
         src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}`}
         strategy="afterInteractive"
@@ -78,14 +80,11 @@ export default function MapView({ popupHeight = 0 }: MapViewProps) {
         onError={(e) => console.error("카카오 SDK 로드 실패:", e)}
       />
 
-      {/* 지도 영역 */}
       <div ref={mapRef} className={styles.mapContainer} />
 
-      {/* 필터 버튼 */}
       <FilterFloating />
       <FilterPopup />
 
-      {/* 현위치 버튼 */}
       <button
         className={styles.locationBtn}
         onClick={handleCurrentLocation}
@@ -115,5 +114,6 @@ export default function MapView({ popupHeight = 0 }: MapViewProps) {
         </svg>
       </button>
     </div>
+    </FilterProvider>
   );
 }

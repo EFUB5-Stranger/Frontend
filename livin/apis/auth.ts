@@ -43,3 +43,9 @@ export const loginApi = async (email: string, password: string) => {
   });
   return res.data;
 };
+
+// 로그아웃
+export const logoutApi = async () => {
+  const res = await axiosInstance.post('/auth/logout');
+  return res.data;
+};

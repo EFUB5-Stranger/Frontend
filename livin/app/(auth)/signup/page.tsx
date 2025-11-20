@@ -6,6 +6,7 @@ import Livin_logo from '../../../public/livin_logo.svg';
 import Image from 'next/image';
 import ShowMoreIcon from '../../../public/showmore.svg';
 import { signupRequestApi, verifyEmailApi, signupFinalApi } from '@/apis/auth';
+import axios, { AxiosError } from 'axios';
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
@@ -20,14 +21,26 @@ export default function SignupPage() {
   const [schoolOpen, setSchoolOpen] = useState(false);
   const [isNameError, setIsNameError] = useState(false);
 
-  const checkNameDuplicate = async (nickname: string) => {
-    // 실제 API 요청 예:
-    // const res = await fetch(`/api/check-nickname?name=${nickname}`);
-    // const data = await res.json();
-    // return data.isDuplicate;
+  const checkNameDuplicate = async (
+    nickname: string,
+    school: string,
+    email: string
+  ): Promise<boolean> => {
+    try {
+      await signupRequestApi(nickname, school, email);
+      return false; // 중복 아님
+    } catch (error) {
+      const err = error as AxiosError<{ errorCode: string }>;
 
-    const existingNames = ['퍼비', 'livin', 'test']; // 예시
-    return existingNames.includes(nickname);
+      if (
+        err.response?.status === 409 &&
+        err.response?.data?.errorCode === 'NICKNAME_DUPLICATED'
+      ) {
+        return true;
+      }
+
+      throw err;
+    }
   };
 
   // 인증번호 예시 (백엔드에서 받은 값이라고 가정)
@@ -55,13 +68,15 @@ export default function SignupPage() {
         return;
       }
 
-      const isDuplicate = await checkNameDuplicate(name);
+      // 1) 닉네임 중복 체크
+      const isDuplicate = await checkNameDuplicate(name, school, emailId);
       if (isDuplicate) {
         setIsNameError(true);
         return;
       }
       setIsNameError(false);
 
+      // 2) 실제 회원가입(이메일 인증번호 발송)
       try {
         await signupRequestApi(name, school, emailId);
         setStep(2);

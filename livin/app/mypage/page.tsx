@@ -5,21 +5,52 @@ import NavigationBar from '../components/NavigationBar/NavigationBar';
 import DormReviewCard from '../components/Dorm/DormReviewCard';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getUserProfileApi, updateUserProfileApi } from '@/apis/users';
+import { logoutApi } from '@/apis/auth';
 
 export default function MyPage() {
   const router = useRouter();
 
-  const [nickname, setNickname] = useState('퍼비');
+  const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
+  const [school, setSchool] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [newNickname, setNewNickname] = useState(nickname);
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
-    // 실제 로그아웃 로직 필요 시 여기서 처리 (토큰 삭제 등)
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      // 서버에 로그아웃 요청
+      await logoutApi();
+
+      // 로컬 토큰 삭제
+      localStorage.removeItem('token');
+
+      // 로그인 페이지로 이동
+      router.push('/login');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      alert('로그아웃 중 문제가 발생했습니다.');
+    }
   };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getUserProfileApi();
+        setNickname(data.nickname);
+        setNewNickname(data.nickname);
+        setEmail(data.email);
+        setSchool(data.school);
+      } catch (error) {
+        console.error('프로필 조회 실패:', error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   return (
     <>
@@ -33,8 +64,8 @@ export default function MyPage() {
                 <Image src='/edit.svg' width={10} height={10} alt='edit' />
               </EditBtn>
             </NameRow>
-            <Email>KFB232323@ewha.ac.kr</Email>
-            <School>이화여자대학교</School>
+            <Email>{email}</Email>
+            <School>{school}</School>
           </ProfileText>
         </ProfileCard>
 
@@ -101,9 +132,15 @@ export default function MyPage() {
                   취소
                 </CancelBtn>
                 <ConfirmBtn
-                  onClick={() => {
-                    setNickname(newNickname);
-                    setShowEditModal(false);
+                  onClick={async () => {
+                    try {
+                      const updated = await updateUserProfileApi(newNickname);
+                      setNickname(updated.nickname);
+                      setShowEditModal(false);
+                    } catch (error) {
+                      console.error('닉네임 수정 실패:', error);
+                      alert('닉네임 수정에 실패했습니다.');
+                    }
                   }}
                 >
                   저장

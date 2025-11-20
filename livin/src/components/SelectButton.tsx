@@ -9,12 +9,12 @@ const SelectWrapper = styled.div`
 `;
 
 const StyledSelect = styled.select<{ isActive?: boolean }>`
-  background: transparent;
   border: 1px solid ${({ isActive }) => (isActive ? "#112D4E" : "#d9d9d9")};
   border-radius: 0.5rem;
   padding: 0.4rem 2rem 0.4rem 0.8rem;
   font-size: 0.9rem;
-  color: ${({ isActive }) => (isActive ? "#112D4E" : "#333")};
+  background: ${({ isActive }) => (isActive ? "#112D4E" : "transparent")};
+  color: ${({ isActive }) => (isActive ? "#FFFFFF" : "#333")};
   cursor: pointer;
   margin-right: 0.5rem;
 
@@ -24,7 +24,12 @@ const StyledSelect = styled.select<{ isActive?: boolean }>`
 
   &:focus {
     outline: none;
-    border-color:#112D4E;
+    border-color: #112D4E;
+  }
+
+  option {
+    background: #fff;
+    color: #333;
   }
 `;
 

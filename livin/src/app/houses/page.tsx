@@ -4,6 +4,7 @@ import styled from "styled-components";
 import TopBar from "@/components/TopBar";
 import styles from '@/styles/mapPage.module.css';
 import SearchBar from "@/components/SearchBar";
+import Link from "next/link";
 
 const StyledSelect = styled.select`
   background: transparent;
@@ -164,7 +165,7 @@ const HouseAddress = styled.span`
 
 const HouseRating = styled.span`
   color: #000;
-  font-size: 0.5625rem;
+  font-size: 0.8rem;
 `;
 
 const FloatingButton = styled.button`
@@ -323,7 +324,11 @@ const toggleSort = () => {
                 </BookmarkButton>
                 </TitleRow>
                 <HouseAddress>{house.address}</HouseAddress>
-                <HouseRating>★ {house.rating}</HouseRating>
+                <HouseRating>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none">
+  <path d="M6.18188 0L7.64123 4.49139H12.3638L8.54315 7.26722L10.0025 11.7586L6.18188 8.98278L2.36128 11.7586L3.82062 7.26722L1.7643e-05 4.49139H4.72254L6.18188 0Z" fill="#F5BF4B"/>
+</svg>
+                  {house.rating}</HouseRating>
               </CardText>
             </Card>
 
@@ -331,7 +336,9 @@ const toggleSort = () => {
         </CardList>
       </ScrollArea>
 
-      <FloatingButton>+ 직접 추가</FloatingButton>
+      <Link href="/houses/new/step1">
+  <FloatingButton>+ 직접 추가</FloatingButton>
+</Link>
     </Wrapper>
   );
 }

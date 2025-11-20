@@ -63,6 +63,7 @@ const Label = styled.label`
   line-height: 1.4rem;
   margin-bottom: 0.25rem;
   display: block;
+  
 `;
 
 const InputBox = styled.input`
@@ -74,6 +75,7 @@ const InputBox = styled.input`
   font-family: 'Pretendard', sans-serif;
   margin-bottom: 1rem;
   box-sizing: border-box;
+   cursor: pointer;
 `;
 
 const RadioGroup = styled.div`
@@ -81,6 +83,7 @@ const RadioGroup = styled.div`
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  
 `;
 
 const RadioOption = styled.label`
@@ -90,6 +93,7 @@ const RadioOption = styled.label`
   font-size: 0.875rem;
   font-family: 'Pretendard', sans-serif;
   color: #000;
+  
 `;
 
 const CheckboxGroup = styled.div`
@@ -118,6 +122,7 @@ const SubmitButton = styled.button`
   font-size: 0.875rem;
   font-family: 'Pretendard', sans-serif;
   border: none;
+   cursor: pointer;
 `;
 
 export default function NewHouseStep2() {

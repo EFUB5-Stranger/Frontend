@@ -1,6 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
+import { useState } from "react";
+interface ResidenceTypeProps {
+  $isSelected?: boolean;
+}
 
 const Wrapper = styled.div`
   max-width: 22.5rem;
@@ -72,23 +76,28 @@ const Required = styled.span`
 
 const ResidenceTypeGroup = styled.div`
   display: flex;
-  width: 12.625rem;
+  
   gap: 0.3125rem;
   margin-bottom: 1rem;
 `;
 
-const ResidenceType = styled.button`
+const ResidenceType = styled.button<ResidenceTypeProps>`
+  width:flex;
   display: flex;
   padding: 0.375rem 1rem;
   justify-content: center;
   align-items: center;
   gap: 0.4375rem;
   border-radius: 1.25rem;
-  background: #dbe2ef;
-  border: none;
+  background-color: ${({ $isSelected }) => ($isSelected ? "#112D4E" : "transparent")};
+  color: ${({ $isSelected }) => ($isSelected ? "#FFFFFF" : "#333")};
+  border: 1px solid ${({ $isSelected }) => ($isSelected ? "#112D4E" : "#d9d9d9")};
   font-size: 0.75rem;
   font-family: 'Pretendard', sans-serif;
   cursor: pointer;
+  &:hover {
+    border-color: #112D4E;
+  }
 `;
 
 const InputBox = styled.input`
@@ -101,7 +110,7 @@ const InputBox = styled.input`
   margin-bottom: 1rem;
   box-sizing: border-box;
 `;
-const ImageUploadBox = styled.div`
+const ImageUploadBox = styled.label`
   width: 5.5rem;
   height: 5.5rem;
   padding: 2.125rem 2.0625rem;
@@ -111,8 +120,23 @@ const ImageUploadBox = styled.div`
   justify-content: center;
   align-items: center;
   margin-bottom: 2rem;
+   cursor: pointer;
+   overflow: hidden;
+  svg {
+    width: 40px;
+    height: 40px;
+    fill: #7d7d7d;
+  }
+`;
+const HiddenInput = styled.input`
+  display: none;
 `;
 
+const PreviewImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
 const NextButton = styled.button`
   position: fixed;
   bottom: 1rem;
@@ -129,10 +153,25 @@ const NextButton = styled.button`
   font-size: 0.875rem;
   font-family: 'Pretendard', sans-serif;
   border: none;
+   cursor: pointer;
 `;
 
 export default function NewHouseStep1() {
   const router = useRouter();
+  const [selectedResidence, setSelectedResidence] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const handleNext = () => {
     router.push("/houses/new/step2");
@@ -152,9 +191,26 @@ export default function NewHouseStep1() {
 
         <Label>거주 형태<Required>*</Required></Label>
         <ResidenceTypeGroup>
-          <ResidenceType>자취방</ResidenceType>
-          <ResidenceType>하숙</ResidenceType>
-          <ResidenceType>기숙사</ResidenceType>
+          <ResidenceType
+            $isSelected={selectedResidence === "자취방"}
+            onClick={() => setSelectedResidence("자취방")}
+          >
+            자취방
+          </ResidenceType>
+
+          <ResidenceType
+            $isSelected={selectedResidence === "하숙"}
+            onClick={() => setSelectedResidence("하숙")}
+          >
+            하숙
+          </ResidenceType>
+
+          <ResidenceType
+            $isSelected={selectedResidence === "기숙사"}
+            onClick={() => setSelectedResidence("기숙사")}
+          >
+            기숙사
+          </ResidenceType>
         </ResidenceTypeGroup>
 
         <Label>건물 이름<Required>*</Required></Label>
@@ -165,7 +221,14 @@ export default function NewHouseStep1() {
 
         <Label>대표 이미지 설정<Required>*</Required></Label>
         <ImageUploadBox>
-          📷
+          {preview ? (
+        <PreviewImage src={preview} alt="preview" />
+      ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="23" height="21" viewBox="0 0 23 21" fill="none">
+            <path d="M11.1664 7.81641C9.35071 7.81641 7.81641 9.35071 7.81641 11.1664C7.81641 12.9821 9.35071 14.5164 11.1664 14.5164C12.9821 14.5164 14.5164 12.9821 14.5164 11.1664C14.5164 9.35071 12.9821 7.81641 11.1664 7.81641Z" fill="#7D7D7D"/>
+            <path d="M20.1 3.35H17.2123L14.1895 0.327183C13.9801 0.117753 13.6961 6.32451e-05 13.4 0H8.93333C8.6372 6.32451e-05 8.35322 0.117753 8.14385 0.327183L5.12103 3.35H2.23333C1.00165 3.35 0 4.35165 0 5.58333V17.8667C0 19.0984 1.00165 20.1 2.23333 20.1H20.1C21.3317 20.1 22.3333 19.0984 22.3333 17.8667V5.58333C22.3333 4.35165 21.3317 3.35 20.1 3.35ZM11.1667 16.75C8.1405 16.75 5.58333 14.1928 5.58333 11.1667C5.58333 8.1405 8.1405 5.58333 11.1667 5.58333C14.1928 5.58333 16.75 8.1405 16.75 11.1667C16.75 14.1928 14.1928 16.75 11.1667 16.75Z" fill="#7D7D7D"/>
+          </svg>)}
+          <HiddenInput type="file" accept="image/*" onChange={handleFileChange} />
         </ImageUploadBox>
       </ScrollArea>
 

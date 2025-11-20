@@ -1,7 +1,6 @@
 'use client';
 
 import styled from 'styled-components';
-import { useState } from 'react';
 import RoomCard from '../Home/Rooms/RoomCard';
 
 export default function PopularRooms() {

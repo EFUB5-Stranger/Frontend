@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import styled from 'styled-components';
+import { loginApi } from '@/apis/auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isError, setIsError] = useState(false);
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -16,17 +17,19 @@ export default function LoginPage() {
       return;
     }
 
-    // 임시 검증 로직
-    const correctEmail = 'livin@ewha.ac.kr';
-    const correctPassword = '1234abcd!';
+    try {
+      const res = await loginApi(email, password);
 
-    if (email !== correctEmail || password !== correctPassword) {
+      // JWT 토큰이 res.token 으로 오는 경우
+      if (res?.token) {
+        localStorage.setItem('token', res.token);
+      }
+
+      setIsError(false);
+      window.location.href = '/';
+    } catch (err) {
       setIsError(true);
-      return;
     }
-
-    setIsError(false);
-    alert('로그인 성공');
   };
 
   return (

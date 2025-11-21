@@ -24,13 +24,13 @@ export default function NavigationBar() {
           <span>홈</span>
         </NavItem>
 
-        <NavItem href='/rooms' $active={pathname === '/rooms'}>
+        <NavItem href='/houses' $active={pathname === '/houses'}>
           <StyledIcon
             src='/room.svg'
             alt='자취/하숙'
             width={26}
             height={26}
-            $active={pathname === '/rooms'}
+            $active={pathname === '/houses'}
           />
           <span>자취/하숙</span>
         </NavItem>

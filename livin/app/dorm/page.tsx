@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import styled from 'styled-components';
-import NavigationBar from '../app/components/NavigationBar/NavigationBar';
-import DormReviewCard from '../app/components/Dorm/DormReviewCard';
+import NavigationBar from '@/components/NavigationBar/NavigationBar';
+import DormReviewCard from '@/components/Dorm/DormReviewCard';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -80,19 +80,14 @@ export default function DormPage() {
 
         <SearchSection>
           <SearchInputWrapper>
-            <SearchIcon
-              src='/search.svg'
-              alt='검색'
-              width={20}
-              height={20}
-            />
+            <SearchIcon src='/search.svg' alt='검색' width={20} height={20} />
             <SearchInput placeholder='원하는 기숙사를 검색해주세요' />
           </SearchInputWrapper>
         </SearchSection>
 
         <FilterSection>
           <FilterButtonWrapper onClick={(e) => e.stopPropagation()}>
-            <FilterButton 
+            <FilterButton
               $active={activeFilter === '평점'}
               onClick={(e) => {
                 e.stopPropagation();
@@ -106,33 +101,41 @@ export default function DormPage() {
                 <PopupTitle>평점</PopupTitle>
                 <StarRating>
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star 
-                      key={star} 
+                    <Star
+                      key={star}
                       $selected={selectedRating >= star}
                       onClick={() => setSelectedRating(star)}
                     >
-                      <Image 
-                        src={selectedRating >= star ? '/star.svg' : '/star_unfilled.svg'} 
-                        alt='star' 
-                        width={28} 
-                        height={28} 
+                      <Image
+                        src={
+                          selectedRating >= star
+                            ? '/star.svg'
+                            : '/star_unfilled.svg'
+                        }
+                        alt='star'
+                        width={28}
+                        height={28}
                       />
                     </Star>
                   ))}
                 </StarRating>
                 <PopupDescription>
-                  {selectedRating > 0 ? `평점 ${selectedRating}점 이상의 리뷰만 조회합니다.` : '평점을 선택해주세요.'}
+                  {selectedRating > 0
+                    ? `평점 ${selectedRating}점 이상의 리뷰만 조회합니다.`
+                    : '평점을 선택해주세요.'}
                 </PopupDescription>
               </FilterPopupFloating>
             )}
           </FilterButtonWrapper>
 
           <FilterButtonWrapper onClick={(e) => e.stopPropagation()}>
-            <FilterButton 
+            <FilterButton
               $active={activeFilter === '기숙사 건물'}
               onClick={(e) => {
                 e.stopPropagation();
-                setActiveFilter(activeFilter === '기숙사 건물' ? null : '기숙사 건물');
+                setActiveFilter(
+                  activeFilter === '기숙사 건물' ? null : '기숙사 건물'
+                );
               }}
             >
               기숙사 건물
@@ -145,7 +148,11 @@ export default function DormPage() {
                     <OptionButton
                       key={building}
                       $selected={selectedBuilding === building}
-                      onClick={() => setSelectedBuilding(building === selectedBuilding ? '' : building)}
+                      onClick={() =>
+                        setSelectedBuilding(
+                          building === selectedBuilding ? '' : building
+                        )
+                      }
                     >
                       {building}
                     </OptionButton>
@@ -156,11 +163,13 @@ export default function DormPage() {
           </FilterButtonWrapper>
 
           <FilterButtonWrapper onClick={(e) => e.stopPropagation()}>
-            <FilterButton 
+            <FilterButton
               $active={activeFilter === '기숙사 동'}
               onClick={(e) => {
                 e.stopPropagation();
-                setActiveFilter(activeFilter === '기숙사 동' ? null : '기숙사 동');
+                setActiveFilter(
+                  activeFilter === '기숙사 동' ? null : '기숙사 동'
+                );
               }}
             >
               기숙사 동
@@ -169,15 +178,19 @@ export default function DormPage() {
               <FilterPopupFloating $alignRight>
                 <PopupTitle>기숙사 동</PopupTitle>
                 <OptionGrid>
-                  {['101동', '102동', '103동', '104동', 'A동', 'B동'].map((dong) => (
-                    <OptionButton
-                      key={dong}
-                      $selected={selectedDong === dong}
-                      onClick={() => setSelectedDong(dong === selectedDong ? '' : dong)}
-                    >
-                      {dong}
-                    </OptionButton>
-                  ))}
+                  {['101동', '102동', '103동', '104동', 'A동', 'B동'].map(
+                    (dong) => (
+                      <OptionButton
+                        key={dong}
+                        $selected={selectedDong === dong}
+                        onClick={() =>
+                          setSelectedDong(dong === selectedDong ? '' : dong)
+                        }
+                      >
+                        {dong}
+                      </OptionButton>
+                    )
+                  )}
                 </OptionGrid>
               </FilterPopupFloating>
             )}
@@ -296,18 +309,22 @@ const FilterButton = styled.button<{ $active?: boolean }>`
   justify-content: center;
   align-items: center;
   border-radius: 16px;
-  border: 1px solid ${({ $active, theme }) => $active ? theme.colors.primary : '#d0d0d0'};
-  background: ${({ $active, theme }) => $active ? theme.colors.primary : '#fff'};
-  color: ${({ $active }) => $active ? '#fff' : '#333'};
+  border: 1px solid
+    ${({ $active, theme }) => ($active ? theme.colors.primary : '#d0d0d0')};
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : '#fff'};
+  color: ${({ $active }) => ($active ? '#fff' : '#333')};
   font-size: 11px;
-  font-weight: ${({ $active }) => $active ? '500' : '400'};
+  font-weight: ${({ $active }) => ($active ? '500' : '400')};
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: ${({ $active, theme }) => $active ? theme.colors.primary : '#f8f8f8'};
-    border-color: ${({ $active, theme }) => $active ? theme.colors.primary : '#b0b0b0'};
+    background: ${({ $active, theme }) =>
+      $active ? theme.colors.primary : '#f8f8f8'};
+    border-color: ${({ $active, theme }) =>
+      $active ? theme.colors.primary : '#b0b0b0'};
   }
 `;
 
@@ -328,9 +345,10 @@ const PopupContent = styled.div`
 const FilterPopupFloating = styled.div<{ $alignRight?: boolean }>`
   position: absolute;
   top: calc(100% + 8px);
-  left: ${({ $alignRight }) => $alignRight ? '50%' : '0'};
+  left: ${({ $alignRight }) => ($alignRight ? '50%' : '0')};
   right: auto;
-  transform: ${({ $alignRight }) => $alignRight ? 'translateX(-50%)' : 'none'};
+  transform: ${({ $alignRight }) =>
+    $alignRight ? 'translateX(-50%)' : 'none'};
   min-width: 200px;
   padding: 16px;
   border-radius: 12px;
@@ -342,11 +360,13 @@ const FilterPopupFloating = styled.div<{ $alignRight?: boolean }>`
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: ${({ $alignRight }) => $alignRight ? 'translateX(-50%) translateY(-4px)' : 'translateY(-4px)'};
+      transform: ${({ $alignRight }) =>
+        $alignRight ? 'translateX(-50%) translateY(-4px)' : 'translateY(-4px)'};
     }
     to {
       opacity: 1;
-      transform: ${({ $alignRight }) => $alignRight ? 'translateX(-50%) translateY(0)' : 'translateY(0)'};
+      transform: ${({ $alignRight }) =>
+        $alignRight ? 'translateX(-50%) translateY(0)' : 'translateY(0)'};
     }
   }
 `;
@@ -368,7 +388,7 @@ const StarRating = styled.div`
 const Star = styled.div<{ $selected?: boolean }>`
   cursor: pointer;
   transition: transform 0.2s;
-  opacity: ${({ $selected }) => $selected ? 1 : 0.3};
+  opacity: ${({ $selected }) => ($selected ? 1 : 0.3)};
 
   &:hover {
     transform: scale(1.15);
@@ -398,17 +418,20 @@ const OptionGrid = styled.div`
 const OptionButton = styled.button<{ $selected?: boolean }>`
   padding: 10px 16px;
   border-radius: 10px;
-  border: 1px solid ${({ $selected, theme }) => $selected ? theme.colors.primary : '#e0e0e0'};
-  background: ${({ $selected, theme }) => $selected ? theme.colors.primary : '#fff'};
-  color: ${({ $selected }) => $selected ? '#fff' : '#333'};
+  border: 1px solid
+    ${({ $selected, theme }) => ($selected ? theme.colors.primary : '#e0e0e0')};
+  background: ${({ $selected, theme }) =>
+    $selected ? theme.colors.primary : '#fff'};
+  color: ${({ $selected }) => ($selected ? '#fff' : '#333')};
   font-size: 11px;
-  font-weight: ${({ $selected }) => $selected ? '500' : '400'};
+  font-weight: ${({ $selected }) => ($selected ? '500' : '400')};
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 
   &:hover {
-    background: ${({ $selected, theme }) => $selected ? theme.colors.primary : '#f8f8f8'};
+    background: ${({ $selected, theme }) =>
+      $selected ? theme.colors.primary : '#f8f8f8'};
     border-color: ${({ theme }) => theme.colors.primary};
   }
 `;

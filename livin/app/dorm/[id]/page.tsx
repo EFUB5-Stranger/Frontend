@@ -4,8 +4,8 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
-import StarDisplay from '@/app/components/Dorm/StarDisplay';
-import EvaluationList from '@/app/components/Dorm/EvaluationList';
+import StarDisplay from '@/components/Dorm/StarDisplay';
+import EvaluationList from '@/components/Dorm/EvaluationList';
 
 export default function DormDetailPage() {
   const router = useRouter();

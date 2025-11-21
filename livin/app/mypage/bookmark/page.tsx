@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 import Image from 'next/image';
-import RoomCard from '@/app/components/Home/Rooms/RoomCard';
+import RoomCard from '@/components/Home/Rooms/RoomCard';
 import { useBookmarkStore } from '../../stores/useBookmarkStore';
 
 export default function BookmarkPage() {

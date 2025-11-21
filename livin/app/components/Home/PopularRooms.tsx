@@ -1,7 +1,7 @@
 'use client';
 
 import styled from 'styled-components';
-import RoomCard from '../Home/Rooms/RoomCard';
+import RoomCard from './Rooms/RoomCard';
 
 export default function PopularRooms() {
   return (

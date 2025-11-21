@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 import Image from 'next/image';
-import DormReviewCard from '@/app/components/Dorm/DormReviewCard';
+import DormReviewCard from '@/components/Dorm/DormReviewCard';
 
 export default function MyPageReviews() {
   return (

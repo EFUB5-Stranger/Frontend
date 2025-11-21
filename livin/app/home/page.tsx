@@ -1,10 +1,10 @@
 'use client';
 
-import TopSection from '../components/Home/TopSection';
-import PopularRooms from '../components/Home/PopularRooms';
-import DormList from '../components/Home/DormList';
+import TopSection from '@/components/Home/TopSection';
+import PopularRooms from '@/components/Home/PopularRooms';
+import DormList from '@/components/Home/DormList';
 import styled from 'styled-components';
-import NavigationBar from '../components/NavigationBar/NavigationBar';
+import NavigationBar from '@/components/NavigationBar/NavigationBar';
 
 export default function HomePage() {
   return (

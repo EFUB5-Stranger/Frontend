@@ -4,8 +4,8 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
-import DormReviewCard from '@/app/components/Dorm/DormReviewCard';
-import FloatingWriteButton from '@/app/components/Common/FloatingWriteButton';
+import DormReviewCard from '@/components/Dorm/DormReviewCard';
+import FloatingWriteButton from '@/components/Common/FloatingWriteButton';
 
 export default function BuildingDetailPage() {
   const router = useRouter();

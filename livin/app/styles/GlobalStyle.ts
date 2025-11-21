@@ -4,13 +4,11 @@ import { createGlobalStyle } from 'styled-components';
 const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'Pretendard';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.3.8/Pretendard-Regular.woff2') format('woff2');
     font-weight: 400;
     font-display: swap;
   }
   @font-face {
     font-family: 'Pretendard';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.3.8/Pretendard-Bold.woff2') format('woff2');
     font-weight: 700;
     font-display: swap;
   }
@@ -27,7 +25,7 @@ const GlobalStyle = createGlobalStyle`
     color: ${({ theme }) => theme.colors.text};
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     min-height: 100vh;
   }
 

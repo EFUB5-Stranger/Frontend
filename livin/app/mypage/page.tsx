@@ -6,8 +6,8 @@ import DormReviewCard from '../components/Dorm/DormReviewCard';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { getUserProfileApi, updateUserProfileApi } from '@/apis/users';
-import { logoutApi } from '@/apis/auth';
+import { getUserProfileApi, updateUserProfileApi } from '@apis/users';
+import { logoutApi } from '@apis/auth';
 
 export default function MyPage() {
   const router = useRouter();

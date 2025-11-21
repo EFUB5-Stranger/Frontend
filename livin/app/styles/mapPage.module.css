@@ -1,0 +1,227 @@
+/* 전체 페이지 */
+.mapPage {
+  display: flex;              /* flex 컨테이너 */
+  flex-direction: column;     /* 위에서 아래로 배치 */
+  align-items: center;        /* 가로 중앙 정렬 */
+  justify-content: flex-start;/* 세로는 위에서 시작 */
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* TopBar */
+.topBar {
+  display: flex;
+  flex-direction: column;
+  width: 22.5rem;
+  padding-top: 1.75rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mapHeader {
+  position: relative; 
+  display: flex;
+  height: 48px;
+  width: 100%;
+}
+
+.mapTitle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.backBtn {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.backBtn svg {
+  width: 9px;
+  height: 15px;
+}
+
+/* 검색바 */
+.searchBar {
+  display: flex;
+  width: 20rem;
+  height: 1.75rem;
+  padding: 0.25rem 0.75rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.9375rem;
+  border: 1px solid #CBCBCB;
+  background: #FFF;
+  margin-bottom: 1rem; 
+}
+.searchBar input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 0.85rem;
+}
+
+/* 지도 영역 */
+.mapArea {
+  flex-grow: 1; 
+  width: 22.5rem;             /* 중앙 고정된 폭 */
+  height: 100%;
+  position: relative;
+  background-color: #333;
+}
+
+.mapContainer {
+  width: 100%;
+  height: 100%;
+}
+
+/* 지도 위 플로팅 버튼 */
+.floatingButtons {
+  position: absolute;
+  top: 20px;    
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 1000;   
+}
+
+.filterBtn {
+  width: 6.25rem;         /* 100px 정도 */
+  height: 2.0625rem;      /* 약 33px */
+  flex-shrink: 0;
+  border-radius: 0.9375rem;
+  border: 1px solid transparent;
+  background: #F9F7F7;    /* 기본 배경 */
+  cursor: pointer;
+}
+
+.filterBtn.active {
+  background: var(--main-pri, #112D4E);
+  color: #fff;
+}
+
+/* 현위치 버튼 */
+.locationBtn {
+  position: absolute;
+  right: 1rem;
+  bottom: 16px; /* popupHeight 있으면 동적으로 조정 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  z-index: 1000; /* 지도 위에 보이도록 */
+}
+.locationBtn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* 필터 팝업: 버튼 아래쪽에만 */
+.filterBtnWrapper {
+  position: relative; 
+}
+.filterPopup {
+  margin-top: 10px;
+  width: 18rem;       /* 325px */
+  height: 6.rem;        /* 106px */
+  border-radius: 0.9375rem;
+  border: 1px solid var(--main-pri, #112D4E);
+  background: #FFF;
+  display: flex;
+  flex-direction: column;  /* 세로 배치 */
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  position: absolute;
+  top: 100%;               /* 버튼 바로 아래 */
+  left: 0;
+  z-index: 2000;        /* 지도 위에 표시 */
+}
+.subFilterRow {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start; /* 왼쪽 정렬 */
+}
+
+.subFilter {
+  width: 4.0625rem;        /* 65px */
+  height: 2.0625rem;       /* 33px */
+  border-radius: 0.9375rem;
+  border: 1px solid transparent;
+  background: var(--main-sec, #DBE2EF);
+  cursor: pointer;
+}
+
+.subFilter.selected {
+  border: 1px solid var(--main-pri, #112D4E);
+}
+
+.applyRow {
+  display: flex;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+}
+
+.applyBtn {
+  width: 4.625rem;         /* 74px */
+  height: 2.0625rem;       /* 33px */
+  border-radius: 0.9375rem;
+  border: 1px solid transparent;
+  background: var(--main-pri, #112D4E);
+  color: #FFF;
+  cursor: pointer;
+}
+/* 하단 팝업 */
+.bottomPopup {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  transition: height 0.3s ease;
+  background: #fff;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.buildingImg {
+  width: 6.25rem;
+  height: 6.25rem;
+  border-radius: 0.9375rem;
+  background: #D9D9D9;
+}
+
+.buildingInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.buildingName {
+  font-size: 1.5rem;
+  color: #111;
+}
+
+.buildingAddress {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.reviewBtn {
+  width: 20.75rem;
+  height: 3.125rem;
+  border-radius: 0.9375rem;
+  background: #112D4E;
+  color: #FFF;
+  border: none;
+}

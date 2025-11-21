@@ -2,7 +2,6 @@
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
 
-// ✅ Wrapper, TopBar, BackIcon, Title, SubmitButton은 이전 페이지와 동일하게 유지
 const Wrapper = styled.div`
   max-width: 22.5rem;
   width: 100%;

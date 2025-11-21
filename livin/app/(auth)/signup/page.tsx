@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import Livin_logo from '../../../public/livin_logo.svg';
 import Image from 'next/image';
 import ShowMoreIcon from '../../../public/showmore.svg';
-import { signupRequestApi, verifyEmailApi, signupFinalApi } from '@/apis/auth';
+import { signupRequestApi, verifyEmailApi, signupFinalApi } from '@apis/auth';
 import axios, { AxiosError } from 'axios';
 
 export default function SignupPage() {

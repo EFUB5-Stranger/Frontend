@@ -1,11 +1,11 @@
 'use client';
 import { useRef, useEffect, useState } from 'react';
 import Script from 'next/script';
-import { useMapContext } from '@/hooks/MapContext';
+import { useMapContext } from '../../hooks/MapContext';
 import FilterFloating from './FilterFloating';
 import FilterPopup from './FilterPopup';
 import styles from '@/styles/mapPage.module.css';
-import { FilterProvider } from '@/hooks/FilterContext';
+import { FilterProvider } from '../../hooks/FilterContext';
 interface MapViewProps {
   popupHeight?: number;
 }

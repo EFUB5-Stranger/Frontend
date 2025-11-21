@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import styled from 'styled-components';
-import NavigationBar from '../components/NavigationBar/NavigationBar';
-import DormReviewCard from '../components/Dorm/DormReviewCard';
+import NavigationBar from '../app/components/NavigationBar/NavigationBar';
+import DormReviewCard from '../app/components/Dorm/DormReviewCard';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 

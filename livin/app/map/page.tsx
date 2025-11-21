@@ -3,8 +3,8 @@ import TopBar from '@/components/TopBar';
 import MapView from '@/components/MapView';
 import FilterPopup from '@/components/FilterPopup';
 import BottomPopup from '@/components/BottomPopup';
-import { FilterProvider } from '@/hooks/FilterContext';
-import { MapProvider } from '@/hooks/MapContext';
+import { FilterProvider } from '../../hooks/FilterContext';
+import { MapProvider } from '../../hooks/MapContext';
 import styles from '@/styles/mapPage.module.css';
 import { useState } from 'react';
 

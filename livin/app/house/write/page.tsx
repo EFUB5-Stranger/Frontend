@@ -4,9 +4,9 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import EvaluationItem from '@/app/components/Dorm/EvaluationItem';
-import StarRating from '@/app/components/Dorm/StarRating';
-import ImageUpload from '@/app/components/Common/ImageUpload';
+import EvaluationItem from '@/components/Dorm/EvaluationItem';
+import StarRating from '@/components/Dorm/StarRating';
+import ImageUpload from '@/components/Common/ImageUpload';
 
 export default function HouseWritePage() {
   const router = useRouter();

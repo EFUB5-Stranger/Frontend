@@ -9,7 +9,7 @@ export default function MyPageReviews() {
     <Wrapper>
       <Header>
         <BackBtn onClick={() => history.back()}>
-          <Image src='/back-arrow.svg' width={9} height={15} alt='back' />
+          <Image src='/arrow_back.svg' width={9} height={15} alt='back' />
         </BackBtn>
         <Title>내가 작성한 리뷰</Title>
       </Header>

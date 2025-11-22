@@ -1,12 +1,18 @@
+// app/(auth)/signup/page.tsx
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import Livin_logo from '../../../public/livin_logo.svg';
-import Image from 'next/image';
-import ShowMoreIcon from '../../../public/showmore.svg';
+import { useState, useEffect, useCallback } from 'react';
 import { signupRequestApi, verifyEmailApi, signupFinalApi } from '@apis/auth';
 import axios, { AxiosError } from 'axios';
+import { Wrapper, Card } from './Signup.styled';
+import { Step1 } from './components/Step1';
+import { Step2 } from './components/Step2';
+import { Step3 } from './components/Step3';
+import { Success } from './components/Success';
+
+// 상수 정의
+const INITIAL_TIMER = 59;
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
@@ -16,43 +22,52 @@ export default function SignupPage() {
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
-  const [timer, setTimer] = useState(59);
-  const [isError, setIsError] = useState(false); // 인증번호 불일치 여부
-  const [schoolOpen, setSchoolOpen] = useState(false);
-  const [isNameError, setIsNameError] = useState(false);
 
-  const checkNameDuplicate = async (
-    nickname: string,
-    school: string,
-    email: string
-  ): Promise<boolean> => {
+  // UI/에러 상태
+  const [timer, setTimer] = useState(INITIAL_TIMER);
+  const [isCodeError, setIsCodeError] = useState(false); // 인증번호 불일치 여부
+  const [schoolOpen, setSchoolOpen] = useState(false); // 학교 선택 드롭다운 상태
+  const [isNameError, setIsNameError] = useState(false); // 닉네임 중복 에러
+
+  // 닉네임 중복 체크 및 이메일 인증 요청 (Step 1 -> Step 2)
+  const sendVerificationEmail = useCallback(async () => {
+    if (!name || !school || !emailId) {
+      alert('모든 정보를 입력해주세요.');
+      return false;
+    }
+
     try {
-      await signupRequestApi(nickname, school, email);
-      return false; // 중복 아님
+      // 1) 닉네임 중복 체크 및 인증번호 발송 API 호출
+      await signupRequestApi(name, school, emailId);
+      setStep(2);
+      setTimer(INITIAL_TIMER); // 타이머 초기화 및 시작
+      return true;
     } catch (error) {
       const err = error as AxiosError<{ errorCode: string }>;
 
+      // 닉네임 중복 처리
       if (
         err.response?.status === 409 &&
         err.response?.data?.errorCode === 'NICKNAME_DUPLICATED'
       ) {
-        return true;
+        setIsNameError(true);
+        return false;
       }
 
-      throw err;
+      alert('이메일 전송 또는 요청 처리에 문제가 발생했습니다.');
+      console.error(err);
+      return false;
     }
+  }, [name, school, emailId]);
+
+  // 이메일 인증번호 재시도
+  const handleRetry = () => {
+    setCode('');
+    setIsCodeError(false);
+    sendVerificationEmail(); // 인증 이메일 재발송
   };
 
-  // 인증번호 예시 (백엔드에서 받은 값이라고 가정)
-  const correctCode = '1886';
-
-  // 비밀번호 유효성 검사 (영문, 숫자, 특수문자 포함 8자 이상)
-  const isValidPassword = (pw: string) => {
-    const regex =
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(pw);
-  };
-
+  // 타이머 useEffect (Step 2에서만 동작)
   useEffect(() => {
     if (step === 2 && timer > 0) {
       const countdown = setInterval(() => setTimer((t) => t - 1), 1000);
@@ -60,47 +75,28 @@ export default function SignupPage() {
     }
   }, [step, timer]);
 
+  // 다음 스텝으로 이동
   const handleNext = async () => {
-    // STEP 1: 닉네임 중복 체크
+    // STEP 1: 닉네임, 학교, 이메일 입력 및 인증 요청
     if (step === 1) {
-      if (!name || !school || !emailId) {
-        alert('모든 정보를 입력해주세요.');
-        return;
-      }
-
-      // 1) 닉네임 중복 체크
-      const isDuplicate = await checkNameDuplicate(name, school, emailId);
-      if (isDuplicate) {
-        setIsNameError(true);
-        return;
-      }
-      setIsNameError(false);
-
-      // 2) 실제 회원가입(이메일 인증번호 발송)
-      try {
-        await signupRequestApi(name, school, emailId);
-        setStep(2);
-        return;
-      } catch (err) {
-        alert('이메일 전송에 문제가 발생했습니다.');
-        return;
-      }
+      await sendVerificationEmail();
     }
 
-    // STEP 2
+    // STEP 2: 인증번호 입력 및 확인
     if (step === 2) {
       try {
         await verifyEmailApi(emailId, code);
-        setIsError(false);
+        setIsCodeError(false);
         setStep(3);
       } catch (err) {
-        setIsError(true);
+        setIsCodeError(true);
       }
-      return;
     }
 
-    // STEP 3
+    // STEP 3: 비밀번호 설정 및 최종 회원가입
     if (step === 3) {
+      // 비밀번호 유효성 검사는 Step3 컴포넌트 내 `isValidPassword`에서 처리됨.
+      // 여기서는 최종 불일치 여부만 체크.
       if (password !== confirmPw || !password) {
         alert('비밀번호를 다시 확인해주세요.');
         return;
@@ -109,484 +105,63 @@ export default function SignupPage() {
       try {
         await signupFinalApi(emailId, password);
         setStep(4);
-        return;
       } catch (err) {
         alert('회원가입 처리에 실패했습니다.');
-        return;
       }
     }
   };
 
-  const handleRetry = () => {
-    setCode('');
-    setIsError(false);
-    setTimer(59);
+  // 현재 스텝에 맞는 컴포넌트 렌더링
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <Step1
+            name={name}
+            setName={setName}
+            isNameError={isNameError}
+            setIsNameError={setIsNameError}
+            school={school}
+            setSchool={setSchool}
+            schoolOpen={schoolOpen}
+            setSchoolOpen={setSchoolOpen}
+            emailId={emailId}
+            setEmailId={setEmailId}
+            handleNext={handleNext}
+          />
+        );
+      case 2:
+        return (
+          <Step2
+            emailId={emailId}
+            code={code}
+            setCode={setCode}
+            isError={isCodeError}
+            timer={timer}
+            handleNext={handleNext}
+            handleRetry={handleRetry}
+          />
+        );
+      case 3:
+        return (
+          <Step3
+            password={password}
+            setPassword={setPassword}
+            confirmPw={confirmPw}
+            setConfirmPw={setConfirmPw}
+            handleNext={handleNext}
+          />
+        );
+      case 4:
+        return <Success />;
+      default:
+        return null;
+    }
   };
 
   return (
     <Wrapper>
-      <Card>
-        {/* STEP 1 */}
-        {step === 1 && (
-          <Step1Box>
-            <Title $step={step}>회원가입</Title>
-            <InputBox>
-              <Label>닉네임 입력</Label>
-              <Input
-                type='text'
-                placeholder='이름'
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setIsNameError(false);
-                }}
-                $isError={isNameError}
-              />
-              {isNameError && <ErrorText>중복되는 닉네임입니다.</ErrorText>}
-            </InputBox>
-            <InputBox>
-              <Label>학교 선택</Label>
-              <SelectWrapper>
-                <SelectButton onClick={() => setSchoolOpen(!schoolOpen)}>
-                  {school || '학교명'}
-                  <Arrow $open={schoolOpen}>
-                    <Image src={ShowMoreIcon} alt='arrow' priority />
-                  </Arrow>
-                </SelectButton>
-
-                {schoolOpen && (
-                  <SelectList>
-                    {['이화여자대학교'].map((uni) => (
-                      <ListItem
-                        key={uni}
-                        onClick={() => {
-                          setSchool(uni);
-                          setSchoolOpen(false);
-                        }}
-                      >
-                        {uni}
-                      </ListItem>
-                    ))}
-                  </SelectList>
-                )}
-              </SelectWrapper>
-            </InputBox>
-
-            <InputBox>
-              <Label>학교 메일 인증</Label>
-              <EmailBox>
-                <EmailInput
-                  type='text'
-                  placeholder='이메일 입력'
-                  value={emailId}
-                  onChange={(e) => setEmailId(e.target.value)}
-                />
-                <EmailDomain>@ewha.ac.kr</EmailDomain>
-              </EmailBox>
-            </InputBox>
-
-            <Button onClick={handleNext}>인증하기</Button>
-          </Step1Box>
-        )}
-
-        {/* STEP 2: 인증번호 입력 */}
-        {step === 2 && (
-          <Step2Box>
-            <Title $step={step}>인증번호 입력</Title>
-            <CodeInformText>
-              <strong>{emailId}@ewha.ac.kr</strong> 메일로 받은
-              <p>인증번호를 입력해주세요.</p>
-            </CodeInformText>
-            <CodeInput
-              type='text'
-              placeholder='인증번호 입력'
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              $isError={isError}
-            />
-            {isError && <ErrorText>인증번호가 일치하지 않습니다.</ErrorText>}
-            <TimerText>
-              We will resend the code in <span>{timer}s</span>
-            </TimerText>
-            <Button onClick={isError ? handleRetry : handleNext}>
-              {isError ? '인증 재시도' : '인증 완료'}
-            </Button>
-          </Step2Box>
-        )}
-
-        {/* STEP 3: 비밀번호 설정 */}
-        {step === 3 && (
-          <Step3Box>
-            <Title $step={step}>회원가입</Title>
-            <InputBox>
-              <Label>비밀번호 입력</Label>
-              <Input
-                type='password'
-                placeholder='비밀번호 입력'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                $isError={!!password && !isValidPassword(password)} // 조건 불만족 시 빨간 테두리
-              />
-              {!!password && !isValidPassword(password) && (
-                <ErrorText>
-                  영어, 숫자, 특수문자를 포함해 8자 이상으로 입력해주세요.
-                </ErrorText>
-              )}
-            </InputBox>
-            <InputBox>
-              <Label>비밀번호 재입력</Label>
-              <Input
-                type='password'
-                placeholder='비밀번호 재입력'
-                value={confirmPw}
-                onChange={(e) => setConfirmPw(e.target.value)}
-                $isError={!!confirmPw && password !== confirmPw} // 불일치 시 빨간 테두리
-              />
-              {!!confirmPw && password !== confirmPw && (
-                <ErrorText>비밀번호가 일치하지 않습니다.</ErrorText>
-              )}
-            </InputBox>
-
-            <Button onClick={handleNext}>회원가입 완료</Button>
-          </Step3Box>
-        )}
-
-        {/* STEP 4: 완료 */}
-        {step === 4 && (
-          <SuccessBox>
-            <Logo>
-              <Image
-                src={Livin_logo}
-                alt='Livin 로고'
-                width={120}
-                height={48}
-                priority
-              />
-            </Logo>
-            <p>회원가입이 완료되었습니다!</p>
-            <Button onClick={() => (window.location.href = '/login')}>
-              로그인
-            </Button>
-          </SuccessBox>
-        )}
-      </Card>
+      <Card>{renderStep()}</Card>
     </Wrapper>
   );
 }
-
-/* ---------------- styled-components ---------------- */
-
-const Wrapper = styled.div`
-  width: 100%;
-  min-height: ${({ theme }) => theme.layout.minHeight};
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  background-color: ${({ theme }) => theme.colors.background};
-  padding-top: 50px;
-`;
-
-const Card = styled.div`
-  width: ${({ theme }) => theme.layout.maxWidth};
-  min-height: ${({ theme }) => theme.layout.minHeight};
-  background-color: #fff;
-  box-shadow: ${({ theme }) => theme.style.shadowMd};
-  border-radius: ${({ theme }) => theme.style.radiusBase};
-  padding: 50px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-`;
-
-const StepBox = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Step1Box = styled(StepBox)`
-  gap: 16px;
-`;
-const Step2Box = styled(StepBox)``;
-const Step3Box = styled(StepBox)`
-  gap: 16px;
-`;
-
-const Title = styled.h2<{ $step: number }>`
-  font-size: 24px;
-  text-align: center;
-  font-weight: 700;
-  margin-top: 43px;
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: ${({ $step }) =>
-    $step === 1 ? '100px' : $step === 2 ? '16px' : '100px'};
-`;
-
-const InputBox = styled.div`
-  gap: 12px;
-`;
-
-const Label = styled.label`
-  color: var(--Black, #33384b);
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 160%;
-`;
-
-const Input = styled.input<{ $isError?: boolean }>`
-  height: 60px;
-  width: 327px;
-  border-radius: 16px;
-  border: 1px solid
-    ${({ $isError, theme }) =>
-      $isError ? theme.colors.error : 'var(--BG-BG-1, #f4f4f6)'};
-  background: var(--Gray-Gray-4, #fafafc);
-  padding: 17px 16px;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 160%;
-  color: #000000;
-  &::placeholder {
-    color: #b2bcc9;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #f4f4f6;
-  }
-`;
-
-const SelectWrapper = styled.div`
-  position: relative;
-  width: 327px;
-  font-weight: 400;
-  line-height: 160%;
-  background: var(--Gray-Gray-4, #fafafc);
-`;
-
-const SelectButton = styled.button<{ $open?: boolean }>`
-  width: 100%;
-  border: 1px solid var(--BG-BG-1, #f4f4f6);
-  border-radius: 16px;
-  padding: 16px;
-  font-size: 16px;
-  background: var(--Gray-Gray-4, #fafafc);
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.25s ease;
-
-  &:hover {
-    background: #fefaff;
-  }
-`;
-
-const Arrow = styled.span<{ $open?: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  font-size: 12px;
-  color: #b2bcc9;
-  transform: ${({ $open }) => ($open ? 'rotate(180deg)' : 'rotate(0deg)')};
-  transform-origin: center;
-`;
-
-const SelectList = styled.ul`
-  position: absolute;
-  top: 70px;
-  left: 0;
-  width: 100%;
-  list-style: none;
-  background: #ffffff;
-  border: 1px solid #c4c4c4;
-  border-radius: 16px;
-  margin: 6px 0 0 0;
-  padding: 6px 0;
-  box-shadow: 4px 4px 14px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-  animation: fadeIn 0.15s ease;
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-
-const ListItem = styled.li`
-  font-size: 15px;
-  padding: 10px 16px;
-  margin: 2px 6px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-  color: #333;
-
-  &:hover {
-    background: #eeeeee;
-  }
-`;
-
-const EmailBox = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 6px;
-`;
-
-const EmailInput = styled.input`
-  display: inline-flex;
-  width: 190px;
-  height: 60px;
-  padding: 17px 56px 17px 16px;
-  align-items: center;
-  flex-shrink: 0;
-  border-radius: 16px;
-  border: 1px solid var(--BG-BG-1, #f4f4f6);
-  background: #fff;
-  padding: 0 14px;
-  color: #000000;
-  &::placeholder {
-    color: #b2bcc9;
-  }
-  &:focus {
-    outline: none;
-    border-color: #f4f4f6;
-  }
-
-  /* Body/Regular */
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 160%;
-`;
-
-const EmailDomain = styled.div`
-  width: 124px;
-  display: inline-flex;
-  height: 60px;
-  padding: 17px 0 17px 16px;
-  align-items: center;
-  flex-shrink: 0;
-  border-radius: 16px;
-  border: 1px solid var(--BG-BG-1, #f4f4f6);
-  background: var(--Gray-Gray-4, #fafafc);
-  color: #7f7f7f;
-
-  /* Body/Regular */
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 160%; /* 25.6px */
-`;
-
-const CodeInformText = styled.p`
-  width: 100%;
-  color: var(--Black, #33384b);
-  text-align: center;
-
-  /* Body/Regular */
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 160%; /* 25.6px */
-`;
-
-const CodeInput = styled.input<{ $isError?: boolean }>`
-  width: 100%;
-  height: 60px;
-  display: flex;
-  background: var(--Gray-Gray-4, #fafafc);
-  padding: 17px 16px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  border: 1.5px solid
-    ${({ $isError, theme }) => ($isError ? theme.colors.error : '#2E6FF3')};
-  border-radius: 16px;
-  margin: 56px 0 6px 0;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 160%;
-  text-align: start;
-  outline: none;
-`;
-
-const ErrorText = styled.p`
-  color: ${({ theme }) => theme.colors.error};
-  font-size: 0.9rem;
-  margin-bottom: 8px;
-  text-align: left;
-`;
-
-const TimerText = styled.p`
-  color: var(--Gray-Gray-1, #7d8a95);
-  text-align: center;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 140%;
-  span {
-    color: #2e6ff3;
-    font-weight: 600;
-  }
-  margin: 32px 0;
-`;
-
-const Button = styled.button`
-  width: 327px;
-  height: 56px;
-  display: flex;
-  padding: 16px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: 15px;
-  text-align: center;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 150%; /* 24px */
-  cursor: pointer;
-`;
-
-const SuccessBox = styled.div`
-  display: inline-flex;
-  width: 100%;
-  height: 800px;
-  padding: 310px 0 381px 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 37px;
-
-  p {
-    color: #000;
-    font-size: 20px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: normal;
-  }
-`;
-
-const Logo = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 120px;
-  height: auto;
-`;

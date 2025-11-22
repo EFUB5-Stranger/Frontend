@@ -11,13 +11,21 @@ interface Props {
   title: string;
   address: string;
   rate: number;
+  onClick?: () => void;
 }
 
-export default function RoomCard({ id, type, title, address, rate }: Props) {
+export default function RoomCard({
+  id,
+  type,
+  title,
+  address,
+  rate,
+  onClick,
+}: Props) {
   const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
   const isBookmarked = useBookmarkStore((state) => state.isBookmarked(id));
   return (
-    <Wrapper>
+    <Wrapper onClick={onClick}>
       <Thumb>
         <TagWrapper>
           <RoomTag type={type} />
@@ -34,7 +42,10 @@ export default function RoomCard({ id, type, title, address, rate }: Props) {
             width={13}
             height={17}
             alt='bookmark'
-            onClick={() => toggleBookmark({ id, type, title, address, rate })}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleBookmark({ id, type, title, address, rate });
+            }}
           />
         </TitleBox>
 

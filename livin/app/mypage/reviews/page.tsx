@@ -130,7 +130,7 @@ const Wrapper = styled.div`
   width: 100%;
   height: 800px;
   background: ${({ theme }) => theme.colors.background};
-  padding: 50px 20px 0;
+  padding: 50px 10px 0;
   display: flex;
   flex-direction: column;
 `;
@@ -141,6 +141,7 @@ const Header = styled.div`
   align-items: center;
   margin-top: 16px;
   margin-bottom: 20px;
+  padding: 0 10px;
 `;
 
 const BackBtn = styled.button`

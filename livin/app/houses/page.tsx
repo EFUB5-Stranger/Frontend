@@ -190,19 +190,15 @@ export default function HousesPage() {
       <ScrollArea>
         <CardGrid>
           {filteredHouses.map((house) => (
-            <div
+            <RoomCard
               key={house.id}
+              id={String(house.id)}
+              type={house.type as '자취방' | '하숙집'}
+              title={house.name}
+              address={house.address}
+              rate={house.rating}
               onClick={() => router.push(`/houses/${house.id}`)}
-              style={{ cursor: 'pointer' }}
-            >
-              <RoomCard
-                id={String(house.id)}
-                type={house.type as '자취방' | '하숙집'}
-                title={house.name}
-                address={house.address}
-                rate={house.rating}
-              />
-            </div>
+            />
           ))}
         </CardGrid>
       </ScrollArea>

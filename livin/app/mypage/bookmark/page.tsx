@@ -29,7 +29,7 @@ export default function BookmarkPage() {
 }
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 360px;
   height: 800px;
   background: ${({ theme }) => theme.colors.background};
   padding: 50px 20px 0;

@@ -4,29 +4,31 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import Dropdown from '@/app/components/Dorm/Dropdown';
-import EvaluationItem from '@/app/components/Dorm/EvaluationItem';
-import StarRating from '@/app/components/Dorm/StarRating';
-import ImageUpload from '@/app/components/Common/ImageUpload';
+import Dropdown from '@/components/Dorm/Dropdown';
+import EvaluationItem from '@/components/Dorm/EvaluationItem';
+import StarRating from '@/components/Dorm/StarRating';
+import ImageUpload from '@/components/Common/ImageUpload';
 
 export default function DormWritePage() {
   const router = useRouter();
-  
+
   const [dormInfo, setDormInfo] = useState({
     building: '',
     dong: '',
     room: '',
   });
-  
-  const [openDropdown, setOpenDropdown] = useState<'building' | 'dong' | 'room' | null>(null);
-  
+
+  const [openDropdown, setOpenDropdown] = useState<
+    'building' | 'dong' | 'room' | null
+  >(null);
+
   const [ratings, setRatings] = useState({
     시설: '',
     청결: '',
     방음: '',
     벌레: '',
   });
-  
+
   const [overallRating, setOverallRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [images, setImages] = useState<string[]>([]);
@@ -59,7 +61,12 @@ export default function DormWritePage() {
       <Container>
         <Header>
           <BackButton onClick={() => router.back()}>
-            <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            <Image
+              src='/arrow_back.svg'
+              alt='뒤로가기'
+              width={15}
+              height={15}
+            />
           </BackButton>
           <Title>기숙사 리뷰 작성</Title>
           <Spacer />
@@ -77,10 +84,14 @@ export default function DormWritePage() {
             <FilterRow>
               <Dropdown
                 value={dormInfo.building}
-                placeholder="건물명"
+                placeholder='건물명'
                 options={buildingOptions}
                 isOpen={openDropdown === 'building'}
-                onToggle={() => setOpenDropdown(openDropdown === 'building' ? null : 'building')}
+                onToggle={() =>
+                  setOpenDropdown(
+                    openDropdown === 'building' ? null : 'building'
+                  )
+                }
                 onSelect={(option) => {
                   setDormInfo({ ...dormInfo, building: option });
                   setOpenDropdown(null);
@@ -88,10 +99,12 @@ export default function DormWritePage() {
               />
               <Dropdown
                 value={dormInfo.dong}
-                placeholder="동 선택"
+                placeholder='동 선택'
                 options={dongOptions}
                 isOpen={openDropdown === 'dong'}
-                onToggle={() => setOpenDropdown(openDropdown === 'dong' ? null : 'dong')}
+                onToggle={() =>
+                  setOpenDropdown(openDropdown === 'dong' ? null : 'dong')
+                }
                 onSelect={(option) => {
                   setDormInfo({ ...dormInfo, dong: option });
                   setOpenDropdown(null);
@@ -99,10 +112,12 @@ export default function DormWritePage() {
               />
               <Dropdown
                 value={dormInfo.room}
-                placeholder="인실"
+                placeholder='인실'
                 options={roomOptions}
                 isOpen={openDropdown === 'room'}
-                onToggle={() => setOpenDropdown(openDropdown === 'room' ? null : 'room')}
+                onToggle={() =>
+                  setOpenDropdown(openDropdown === 'room' ? null : 'room')
+                }
                 onSelect={(option) => {
                   setDormInfo({ ...dormInfo, room: option });
                   setOpenDropdown(null);
@@ -121,32 +136,32 @@ export default function DormWritePage() {
             </SectionHeader>
 
             <EvaluationItem
-              icon="🏠"
-              name="시설"
+              icon='🏠'
+              name='시설'
               options={['더러워요', '보통이에요', '깨끗해요']}
               selectedValue={ratings.시설}
               onSelect={(value) => setRatings({ ...ratings, 시설: value })}
             />
 
             <EvaluationItem
-              icon="🧹"
-              name="청결도"
+              icon='🧹'
+              name='청결도'
               options={['나빠요', '보통이에요', '좋아요']}
               selectedValue={ratings.청결}
               onSelect={(value) => setRatings({ ...ratings, 청결: value })}
             />
 
             <EvaluationItem
-              icon="🔇"
-              name="방음"
+              icon='🔇'
+              name='방음'
               options={['조용해요', '보통이에요', '시끄러워요']}
               selectedValue={ratings.방음}
               onSelect={(value) => setRatings({ ...ratings, 방음: value })}
             />
 
             <EvaluationItem
-              icon="🐛"
-              name="벌레"
+              icon='🐛'
+              name='벌레'
               options={['없어요', '가끔 나와요', '자주 나와요']}
               selectedValue={ratings.벌레}
               onSelect={(value) => setRatings({ ...ratings, 벌레: value })}
@@ -164,7 +179,7 @@ export default function DormWritePage() {
             <StarRating
               rating={overallRating}
               onRate={setOverallRating}
-              label="전반적인 만족도를 평가해주세요⭐"
+              label='전반적인 만족도를 평가해주세요⭐'
             />
           </Section>
 
@@ -179,8 +194,8 @@ export default function DormWritePage() {
             <ReviewTextArea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="✏️기숙사 생활 경험을 솔직하게 공유해주세요
-(최소 15자, 최대 200자)"
+              placeholder='✏️기숙사 생활 경험을 솔직하게 공유해주세요
+(최소 15자, 최대 200자)'
               maxLength={200}
             />
             <CharCount>{reviewText.length} / 200</CharCount>
@@ -202,9 +217,7 @@ export default function DormWritePage() {
           </Section>
         </Content>
 
-        <SubmitButton onClick={handleSubmit}>
-          리뷰 등록하기
-        </SubmitButton>
+        <SubmitButton onClick={handleSubmit}>리뷰 등록하기</SubmitButton>
       </Container>
     </Wrapper>
   );

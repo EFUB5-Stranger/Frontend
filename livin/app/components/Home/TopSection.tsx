@@ -2,14 +2,30 @@
 
 import styled from 'styled-components';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { getUserProfileApi } from '@apis/users';
 
 export default function TopSection() {
+  const [nickname, setNickname] = useState('');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getUserProfileApi();
+        setNickname(data.nickname);
+      } catch (e) {
+        setNickname('사용자');
+      }
+    };
+    fetchProfile();
+  }, []);
+
   return (
     <Wrapper>
       <Logo src='/livin_logo.svg' alt='Livin' width={77} height={50} />
 
       <Title>
-        <PrimaryBlue>퍼비</PrimaryBlue>
+        <PrimaryBlue>{nickname}</PrimaryBlue>
         <DarkBlue>
           님,
           <br />

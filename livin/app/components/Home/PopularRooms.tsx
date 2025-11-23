@@ -58,7 +58,7 @@ export default function PopularRooms() {
 
 const Wrapper = styled.div`
   width: 100%;
-  margin-top: 26px;
+  margin-top: 10px;
   padding: 0 20px;
   margin-bottom: 44px;
 `;
@@ -68,7 +68,7 @@ const Title = styled.div`
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 15px;
-  margin-top: 32px;
+  margin-top: 20px;
 `;
 
 const ScrollArea = styled.div`

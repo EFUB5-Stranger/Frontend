@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import NavigationBar from '@/components/NavigationBar/NavigationBar';
 import DormReviewCard from '@/components/Dorm/DormReviewCard';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { getDormReviewsApi } from '@/apis/dorm';
 
 type FilterType = '평점' | '기숙사 건물' | '기숙사 동' | null;
 
@@ -15,61 +16,42 @@ export default function DormPage() {
   const [selectedRating, setSelectedRating] = useState<number>(0);
   const [selectedBuilding, setSelectedBuilding] = useState<string>('');
   const [selectedDong, setSelectedDong] = useState<string>('');
-  // 임시 데이터
-  const reviews = [
-    {
-      date: '2025.09.27',
-      name: '두둥',
-      score: 4.0,
-      stars: 4,
-      tags: ['한우리집', '101동', '2인실'],
-      evaluations: {
-        방음: '보통',
-        시설: '보통',
-        접근성: '좋음',
-        벌레: '많음',
-      },
-    },
-    {
-      date: '2025.09.27',
-      name: '두둥',
-      score: 4.0,
-      stars: 4,
-      tags: ['한우리집', '101동', '1인실'],
-      evaluations: {
-        방음: '보통',
-        시설: '보통',
-        접근성: '좋음',
-        벌레: '많음',
-      },
-    },
-    {
-      date: '2025.09.27',
-      name: '두둥',
-      score: 4.0,
-      stars: 4,
-      tags: ['한우리집', '101동', '4인실'],
-      evaluations: {
-        방음: '보통',
-        시설: '보통',
-        접근성: '좋음',
-        벌레: '많음',
-      },
-    },
-    {
-      date: '2025.09.27',
-      name: '두둥',
-      score: 4.0,
-      stars: 4,
-      tags: ['한우리집', '101동', '2인실'],
-      evaluations: {
-        방음: '보통',
-        시설: '보통',
-        접근성: '좋음',
-        벌레: '많음',
-      },
-    },
-  ];
+  const [searchText, setSearchText] = useState<string>('');
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 리뷰 목록 조회
+  const fetchReviews = async () => {
+    try {
+      setIsLoading(true);
+      const params: any = {};
+      
+      if (searchText) params.buildName = searchText;
+      if (selectedRating > 0) params.minFinalRate = selectedRating;
+      if (selectedBuilding) params.buildName = selectedBuilding;
+      if (selectedDong) params.buildNum = selectedDong;
+
+      const data = await getDormReviewsApi(params);
+      setReviews(data);
+    } catch (error) {
+      console.error('리뷰 조회 실패:', error);
+      alert('리뷰를 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 초기 로딩 및 필터 변경 시 재조회
+  useEffect(() => {
+    fetchReviews();
+  }, [selectedRating, selectedBuilding, selectedDong]);
+
+  // 검색어 입력 후 엔터키 처리
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      fetchReviews();
+    }
+  };
 
   return (
     <Wrapper onClick={() => setActiveFilter(null)}>
@@ -80,8 +62,18 @@ export default function DormPage() {
 
         <SearchSection>
           <SearchInputWrapper>
-            <SearchIcon src='/search.svg' alt='검색' width={20} height={20} />
-            <SearchInput placeholder='원하는 기숙사를 검색해주세요' />
+            <SearchIcon
+              src='/search.svg'
+              alt='검색'
+              width={20}
+              height={20}
+            />
+            <SearchInput 
+              placeholder='원하는 기숙사를 검색해주세요'
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onKeyPress={handleSearch}
+            />
           </SearchInputWrapper>
         </SearchSection>
 
@@ -198,13 +190,29 @@ export default function DormPage() {
         </FilterSection>
 
         <ReviewList>
-          {reviews.map((review, index) => (
-            <DormReviewCard
-              key={index}
-              {...review}
-              onClick={() => router.push(`/dorm/${index}`)}
-            />
-          ))}
+          {isLoading ? (
+            <LoadingText>로딩 중...</LoadingText>
+          ) : reviews.length > 0 ? (
+            reviews.map((review) => (
+              <DormReviewCard
+                key={review.id}
+                date={new Date(review.createdAt || Date.now()).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').slice(0, -1)}
+                name={review.nickname || '익명'}
+                score={review.finalrate || 0}
+                stars={review.finalrate || 0}
+                tags={[review.buildName, review.buildNum, `${review.roomPeople}인실`]}
+                evaluations={{
+                  방음: review.soundRate || '-',
+                  시설: review.facilityRate || '-',
+                  접근성: review.accessRate || '-',
+                  벌레: review.bugRate || '-',
+                }}
+                onClick={() => router.push(`/dorm/${review.id}`)}
+              />
+            ))
+          ) : (
+            <EmptyText>등록된 리뷰가 없습니다.</EmptyText>
+          )}
         </ReviewList>
       </Container>
 
@@ -440,6 +448,20 @@ const ReviewList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+`;
+
+const LoadingText = styled.div`
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+  font-size: 14px;
+`;
+
+const EmptyText = styled.div`
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+  font-size: 14px;
 `;
 
 const FloatingButton = styled.button`

@@ -6,7 +6,7 @@ import NavigationBar from '@/components/NavigationBar/NavigationBar';
 import DormReviewCard from '@/components/Dorm/DormReviewCard';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { getDormReviewsApi } from '@/apis/dorm';
+import { getDormReviewsApi } from '@apis/dorm';
 
 type FilterType = '평점' | '기숙사 건물' | '기숙사 동' | null;
 

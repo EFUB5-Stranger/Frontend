@@ -4,11 +4,11 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import Dropdown from '@/app/components/Dorm/Dropdown';
-import EvaluationItem from '@/app/components/Dorm/EvaluationItem';
-import StarRating from '@/app/components/Dorm/StarRating';
-import ImageUpload from '@/app/components/Common/ImageUpload';
-import { createDormReviewApi } from '@/apis/dorm';
+import Dropdown from '@components/Dorm/Dropdown';
+import EvaluationItem from '@components/Dorm/EvaluationItem';
+import StarRating from '@components/Dorm/StarRating';
+import ImageUpload from '@components/Common/ImageUpload';
+import { createDormReviewApi } from '@apis/dorm';
 
 export default function DormWritePage() {
   const router = useRouter();

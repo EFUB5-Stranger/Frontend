@@ -116,29 +116,32 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
       <div className={styles.mapArea}>
         {/* 카카오 지도 SDK 스크립트  */}
         <Script
-          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false`}
+           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false`}
           strategy='afterInteractive'
           onLoad={() => {
               console.log('카카오 SDK 로드 완료');
               window.kakao.maps.load(() => {
                 // 지도 초기화 코드
-                const container = document.getElementById('map');
+                if (mapRef.current) {
                 const options = {
-                  center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청 좌표 예시
-                  level: 3, // 확대 레벨 (1: 가장 확대, 숫자가 커질수록 축소)
+                  center: new window.kakao.maps.LatLng(37.5665, 126.9780),
+                  level: 3,
                 };
-                const map = new window.kakao.maps.Map(container, options);
-                const markerPosition = new window.kakao.maps.LatLng(37.5665, 126.9780);
-                const marker = new window.kakao.maps.Marker({
-                  position: markerPosition,
+                const map = new window.kakao.maps.Map(mapRef.current, options);
+                mapInstance.current = map;
+
+                // 테스트용 마커
+                new window.kakao.maps.Marker({
+                  position: new window.kakao.maps.LatLng(37.5665, 126.9780),
+                  map,
                 });
-                marker.setMap(map);
-              });
+              }});
             }}
           onError={(e) => console.error('카카오 SDK 로드 실패:', e)}
         />
 
-        <div ref={mapRef} className={styles.mapContainer} />
+        <div id="map" ref={mapRef} className={styles.mapContainer} />
+
 
         <FilterFloating />
         <FilterPopup />

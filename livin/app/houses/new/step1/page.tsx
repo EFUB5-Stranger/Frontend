@@ -7,17 +7,12 @@ interface ResidenceTypeProps {
 }
 
 const Wrapper = styled.div`
-  max-width: 22.5rem;
-  width: 100%;
-  height: 100vh;
-  margin: 0 auto;
-  background: #fff;
-  overflow: hidden;
+  width: 360px;
+  height: 800px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 50px 20px 0;
   display: flex;
   flex-direction: column;
-  position: relative;
-  padding: 0 1rem; // 좌우 여백 추가
-  box-sizing: border-box;
 `;
 
 const ScrollArea = styled.div`
@@ -62,7 +57,7 @@ const Title = styled.h1`
 const Label = styled.label`
   font-size: 0.875rem;
   font-family: 'Pretendard', sans-serif;
-  font-weight: 500;
+  font-weight: 700;
   color: #000;
   line-height: 1.4rem;
   margin-bottom: 0.25rem;
@@ -155,11 +150,41 @@ const NextButton = styled.button`
   border: none;
    cursor: pointer;
 `;
+const InfoWrapper = styled.div`
+  text-align: center;
+  margin-bottom: 1rem;
+`;
+
+const InfoTitle = styled.p`
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;      
+  font-size: 0.9rem;
+  line-height: 22px;
+  letter-spacing: 0;
+  color: #000;
+`;
+
+const InfoDescription = styled.p`
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 400;       
+  font-size: 0.65rem;
+  line-height: 22px;
+  letter-spacing: 0;
+  color: #555;           
+`;
 
 export default function NewHouseStep1() {
   const router = useRouter();
-  const [selectedResidence, setSelectedResidence] = useState<string | null>(null);
+  const [selectedResidence, setSelectedResidence] = useState<"PRIVATE" | "BOARDING" | "DORM" | null>(null);
+  const [buildingName, setBuildingName] = useState("");
+  const [address, setAddress] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+
+  const handleResidenceSelect = (type: string) => {
+    if (type === "자취방") setSelectedResidence("PRIVATE");
+    else if (type === "하숙") setSelectedResidence("BOARDING");
+    else if (type === "기숙사") setSelectedResidence("DORM");
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -188,37 +213,47 @@ export default function NewHouseStep1() {
           </BackIcon>
           <Title>건물 등록하기</Title>
         </TopBar>
-
+        <InfoWrapper>
+          <InfoTitle>정보를 직접 등록해보세요.</InfoTitle>
+          <InfoDescription>
+            후기를 남길 건물이 없다면, 새로운 건물을 추가할 수 있어요.
+          </InfoDescription>
+        </InfoWrapper>
         <Label>거주 형태<Required>*</Required></Label>
         <ResidenceTypeGroup>
-          <ResidenceType
-            $isSelected={selectedResidence === "자취방"}
-            onClick={() => setSelectedResidence("자취방")}
-          >
-            자취방
-          </ResidenceType>
+        <ResidenceType
+          $isSelected={selectedResidence === "PRIVATE"}
+          onClick={() => handleResidenceSelect("자취방")}
+        >
+          자취방
+        </ResidenceType>
 
-          <ResidenceType
-            $isSelected={selectedResidence === "하숙"}
-            onClick={() => setSelectedResidence("하숙")}
-          >
-            하숙
-          </ResidenceType>
+        <ResidenceType
+          $isSelected={selectedResidence === "BOARDING"}
+          onClick={() => handleResidenceSelect("하숙")}
+        >
+          하숙
+        </ResidenceType>
 
-          <ResidenceType
-            $isSelected={selectedResidence === "기숙사"}
-            onClick={() => setSelectedResidence("기숙사")}
-          >
-            기숙사
-          </ResidenceType>
+        <ResidenceType
+          $isSelected={selectedResidence === "DORM"}
+          onClick={() => handleResidenceSelect("기숙사")}
+        >
+          기숙사          </ResidenceType>
         </ResidenceTypeGroup>
 
         <Label>건물 이름<Required>*</Required></Label>
-        <InputBox placeholder="건물 이름을 입력해주세요. (ex. 이화빌라)" />
-
+        <InputBox
+          placeholder="건물 이름을 입력해주세요. (ex. 이화빌라)"
+          value={buildingName}
+          onChange={(e) => setBuildingName(e.target.value)}
+        />
         <Label>주소<Required>*</Required></Label>
-        <InputBox placeholder="주소를 검색해주세요." />
-
+        <InputBox
+          placeholder="주소를 검색해주세요."
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
         <Label>대표 이미지 설정<Required>*</Required></Label>
         <ImageUploadBox>
           {preview ? (
@@ -232,7 +267,13 @@ export default function NewHouseStep1() {
         </ImageUploadBox>
       </ScrollArea>
 
-      <NextButton onClick={handleNext}>다음</NextButton>
+      <NextButton
+        onClick={() =>
+          router.push(`/houses/new/step2?type=${selectedResidence}&buildingName=${buildingName}&address=${address}`)
+        }
+      >
+        다음
+      </NextButton>
     </Wrapper>
   );
 }

@@ -1,18 +1,16 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter ,useSearchParams} from "next/navigation";
 import styled from "styled-components";
+import { useState } from "react";
+import axiosInstance from "@apis/axiosInstance";
 
 const Wrapper = styled.div`
-  max-width: 22.5rem;
-  width: 100%;
-  height: 100vh;
-  margin: 0 auto;
-  background: #fff;
-  overflow: hidden;
+  width: 360px;
+  height: 800px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 50px 20px 0;
   display: flex;
   flex-direction: column;
-  padding: 0 1rem;
-  box-sizing: border-box;
 `;
 
 const ScrollArea = styled.div`
@@ -57,12 +55,11 @@ const Title = styled.h1`
 const Label = styled.label`
   font-size: 0.875rem;
   font-family: 'Pretendard', sans-serif;
-  font-weight: 500;
+  font-weight: 700;
   color: #000;
   line-height: 1.4rem;
   margin-bottom: 0.25rem;
   display: block;
-  
 `;
 
 const InputBox = styled.input`
@@ -126,6 +123,45 @@ const SubmitButton = styled.button`
 
 export default function NewHouseStep2() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const type = searchParams.get("type");
+    const buildingName = searchParams.get("buildingName");
+    const address = searchParams.get("address");
+    const imageUrl = searchParams.get("image");
+    const [floor, setFloor] = useState<number | null>(null);
+    const [parking, setParking] = useState<boolean | null>(null);
+    const [elevator, setElevator] = useState(false);
+    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+    const [customOption, setCustomOption] = useState("");
+    const toggleOption = (opt: string) => {
+      if (selectedOptions.includes(opt)) {
+        setSelectedOptions(selectedOptions.filter((o) => o !== opt));
+      } else {
+        setSelectedOptions([...selectedOptions, opt]);
+      }
+    };
+    const handleSubmit = async () => {
+      try {
+        const body = {
+          type,
+          buildingName,
+          address,
+          floor,
+          parking,
+          elevator,
+          options: selectedOptions.includes("직접입력")
+            ? [...selectedOptions.filter((o) => o !== "직접입력"), customOption]
+            : selectedOptions,
+          imageUrl,
+        };
+         await axiosInstance.post("/houses/new", body);
+        alert("새로운 건물 정보 등록에 성공했습니다!");
+        router.push("/houses"); 
+      }catch (error) {
+      console.error("등록 실패:", error);
+      alert("등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
+      };
   return (
     <Wrapper>
       <TopBar>
@@ -139,28 +175,79 @@ export default function NewHouseStep2() {
 
       <ScrollArea>
         <Label>층수</Label>
-        <InputBox placeholder="건물 층 수를 입력해주세요." />
+        <InputBox
+          type="number"
+          placeholder="건물 층 수를 입력해주세요."
+          value={floor ?? ""}
+          onChange={(e) => setFloor(Number(e.target.value))}
+        />
 
         <Label>제공 옵션</Label>
         <RadioGroup>
-          <RadioOption>
-            <input type="radio" name="option" value="wifi" />
-            와이파이
+        {["냉장고", "에어컨", "세탁기", "직접입력"].map((opt) => (
+          <RadioOption key={opt}>
+            <input
+              type="checkbox"
+              name="options"
+              value={opt}
+              checked={selectedOptions.includes(opt)}
+              onChange={() => toggleOption(opt)}
+            />
+            {opt}
           </RadioOption>
-          <RadioOption>
-            <input type="radio" name="option" value="meal" />
-            식사 제공
-          </RadioOption>
-        </RadioGroup>
+        ))}
+      </RadioGroup>
+
+      {selectedOptions.includes("직접입력") && (
+        <InputBox
+          placeholder="옵션을 직접 입력해주세요."
+          value={customOption}
+          onChange={(e) => setCustomOption(e.target.value)}
+        />
+      )}
 
         <Label>주차 가능 여부</Label>
         <CheckboxGroup>
-          <input type="checkbox" />
-          주차 가능
+          <button
+            style={{
+              padding: "0.5rem 1rem",
+              borderRadius: "0.5rem",
+              border: parking === true ? "2px solid #112d4e" : "1px solid #ccc",
+              background: parking === true ? "#112d4e" : "transparent",
+              color: parking === true ? "#fff" : "#000",
+              cursor: "pointer",
+            }}
+            onClick={() => setParking(true)}
+          >
+            가능
+          </button>
+
+          <button
+            style={{
+              padding: "0.5rem 1rem",
+              borderRadius: "0.5rem",
+              border: parking === false ? "2px solid #112d4e" : "1px solid #ccc",
+              background: parking === false ? "#112d4e" : "transparent",
+              color: parking === false ? "#fff" : "#000",
+              cursor: "pointer",
+            }}
+            onClick={() => setParking(false)}
+          >
+            불가능
+          </button>
         </CheckboxGroup>
+        <CheckboxGroup>
+          <input
+            type="checkbox"
+            checked={elevator}
+            onChange={(e) => setElevator(e.target.checked)}
+          />
+          엘리베이터 있음
+        </CheckboxGroup>
+        
       </ScrollArea>
 
-      <SubmitButton>등록하기</SubmitButton>
+      <SubmitButton onClick={handleSubmit}>등록하기</SubmitButton>
     </Wrapper>
   );
 }

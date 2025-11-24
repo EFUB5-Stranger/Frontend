@@ -1,5 +1,5 @@
 'use client';
-import { useFilter } from '../hooks/FilterContext';
+import { useFilter } from 'hooks/FilterContext';
 import styles from '@/styles/mapPage.module.css';
 import FilterPopup from './FilterPopup';
 

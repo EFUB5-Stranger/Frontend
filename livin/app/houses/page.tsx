@@ -1,59 +1,51 @@
 'use client';
-import { useState } from 'react';
+import { useState ,useEffect} from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import RoomCard from '@/components/Home/Rooms/RoomCard';
 import Image from 'next/image';
 import NavigationBar from '@/components/NavigationBar/NavigationBar';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@apis/axiosInstance';
 
 export default function HousesPage() {
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [bookmarks, setBookmarks] = useState<{ [key: number]: number }>({});
+  const [houses, setHouses] = useState<any[]>([]);
 
   type FilterType = '정렬' | '타입' | '주소' | null;
-
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
-
   const [sortOption, setSortOption] = useState<'rating' | 'bookmark'>('rating');
-
-  // 타입/주소 필터
   const [typeFilter, setTypeFilter] = useState('전체');
   const [districtFilter, setDistrictFilter] = useState('전체 주소');
 
-  const houses = [
-    {
-      id: 1,
-      name: '강동 하숙집',
-      address: '서울 강동구',
-      type: '하숙집',
-      rating: 4.5,
-      createdAt: '2025-11-01',
-    },
-    {
-      id: 2,
-      name: '서대문 자취방',
-      address: '서울 서대문구',
-      type: '자취방',
-      rating: 4.2,
-      createdAt: '2025-10-15',
-    },
-    {
-      id: 3,
-      name: '강남 원룸',
-      address: '서울 강남구',
-      type: '자취방',
-      rating: 4.8,
-      createdAt: '2025-11-10',
-    },
-  ];
+  const syncData = async () => {
+    try {
+      await axiosInstance.post('/kakao/sync');
+      console.log('데이터 동기화 성공');
+    } catch (error) {
+      console.error('데이터 동기화 실패:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchHouses = async () => {
+      try {
+        const res = await axiosInstance.get('/houses');
+        setHouses(res.data); 
+      } catch (error) {
+        console.error('건물 목록 불러오기 실패:', error);
+      }
+    };
+    fetchHouses();
+  }, []);
 
   const filteredHouses = houses
     .filter(
       (house) =>
-        house.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        house.buildingName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         house.address.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((house) =>
@@ -68,7 +60,6 @@ export default function HousesPage() {
       if (sortOption === 'rating') {
         return b.rating - a.rating;
       } else {
-        // 북마크 많은 순
         const aBookmarks = bookmarks[a.id] || 0;
         const bBookmarks = bookmarks[b.id] || 0;
         return bBookmarks - aBookmarks;
@@ -84,6 +75,7 @@ export default function HousesPage() {
         <Title>자취방/하숙 목록</Title>
       </Header>
 
+      {/* 검색 */}
       <SearchSection>
         <SearchInputWrapper>
           <SearchIcon src='/search.svg' alt='검색' width={20} height={20} />
@@ -194,7 +186,7 @@ export default function HousesPage() {
               key={house.id}
               id={String(house.id)}
               type={house.type as '자취방' | '하숙집'}
-              title={house.name}
+              title={house.buildingName}
               address={house.address}
               rate={house.rating}
               onClick={() => router.push(`/houses/${house.id}`)}

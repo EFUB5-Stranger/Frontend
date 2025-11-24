@@ -22,9 +22,17 @@ export default function MyPage() {
 
   const [profileImage, setProfileImage] = useState('');
 
-  const getRandomProfileImage = () => {
-    const images = ['/profile_white.svg', '/profile_gray.svg'];
-    return images[Math.floor(Math.random() * images.length)];
+  // 이메일을 기준으로 이미지를 결정하는 함수
+  const getProfileImageByEmail = (emailStr: string) => {
+    if (!emailStr) return '/profile_white.svg'; // 이메일 없을 때 기본값
+
+    let sum = 0;
+    for (let i = 0; i < emailStr.length; i++) {
+      sum += emailStr.charCodeAt(i); // 각 글자의 아스키코드 값을 더함
+    }
+
+    // 합계가 짝수면 White, 홀수면 Gray
+    return sum % 2 === 0 ? '/profile_white.svg' : '/profile_gray.svg';
   };
 
   const handleLogout = async () => {
@@ -52,6 +60,9 @@ export default function MyPage() {
         setNewNickname(data.nickname);
         setEmail(data.email);
         setSchool(data.school);
+
+        const deterministicImg = getProfileImageByEmail(data.email);
+        setProfileImage(deterministicImg);
       } catch (error) {
         console.error('프로필 조회 실패:', error);
       }
@@ -60,21 +71,12 @@ export default function MyPage() {
     fetchProfile();
   }, []);
 
-  useEffect(() => {
-    const initProfileImage = () => {
-      const randomImg = getRandomProfileImage();
-      setProfileImage(randomImg);
-    };
-
-    initProfileImage();
-  }, []);
-
   return (
     <>
       <Wrapper>
         <ProfileCard>
           <ProfileImage
-            src={profileImage}
+            src={profileImage || '/profile_white.svg'}
             alt='프로필 이미지'
             width={70}
             height={70}

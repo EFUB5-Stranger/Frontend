@@ -42,9 +42,10 @@ export default function MyPage() {
 
       // 로컬 토큰 삭제
       localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
 
       // 로그인 페이지로 이동
-      router.push('/login');
+      router.push('/');
     } catch (error) {
       console.error('로그아웃 실패:', error);
       alert('로그아웃 중 문제가 발생했습니다.');

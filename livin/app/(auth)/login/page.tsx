@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { loginApi } from '../../../apis/auth';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isError, setIsError] = useState(false);
@@ -26,7 +29,7 @@ export default function LoginPage() {
       }
 
       setIsError(false);
-      window.location.href = '/';
+      router.push('/home');
     } catch (err) {
       setIsError(true);
     }

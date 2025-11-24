@@ -16,9 +16,13 @@ const INITIAL_TIMER = 59;
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
+
+  // 입력 상태
   const [name, setName] = useState('');
   const [school, setSchool] = useState('');
   const [emailId, setEmailId] = useState('');
+  const [emailDomain, setEmailDomain] = useState('');
+
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
@@ -29,23 +33,26 @@ export default function SignupPage() {
   const [schoolOpen, setSchoolOpen] = useState(false); // 학교 선택 드롭다운 상태
   const [isNameError, setIsNameError] = useState(false); // 닉네임 중복 에러
 
+  // 전체 이메일 주소 생성
+  const fullEmail = `${emailId}@${emailDomain}`;
+
   // 닉네임 중복 체크 및 이메일 인증 요청 (Step 1 -> Step 2)
   const sendVerificationEmail = useCallback(async () => {
-    if (!name || !school || !emailId) {
+    // 도메인 선택 여부
+    if (!name || !school || !emailId || !emailDomain) {
       alert('모든 정보를 입력해주세요.');
       return false;
     }
 
     try {
-      // 1) 닉네임 중복 체크 및 인증번호 발송 API 호출
-      await signupRequestApi(name, school, `${emailId}@ewha.ac.kr`);
+      // 선택된 도메인으로 API 호출
+      await signupRequestApi(name, school, fullEmail);
       setStep(2);
-      setTimer(INITIAL_TIMER); // 타이머 초기화 및 시작
+      setTimer(INITIAL_TIMER);
       return true;
     } catch (error) {
       const err = error as AxiosError<{ errorCode: string }>;
 
-      // 닉네임 중복 처리
       if (
         err.response?.status === 409 &&
         err.response?.data?.errorCode === 'NICKNAME_DUPLICATED'
@@ -58,16 +65,16 @@ export default function SignupPage() {
       console.error(err);
       return false;
     }
-  }, [name, school, emailId]);
+  }, [name, school, emailId, emailDomain, fullEmail]);
 
   // 이메일 인증번호 재시도
   const handleRetry = () => {
     setCode('');
     setIsCodeError(false);
-    sendVerificationEmail(); // 인증 이메일 재발송
+    sendVerificationEmail();
   };
 
-  // 타이머 useEffect (Step 2에서만 동작)
+  // 타이머 useEffect
   useEffect(() => {
     if (step === 2 && timer > 0) {
       const countdown = setInterval(() => setTimer((t) => t - 1), 1000);
@@ -85,7 +92,7 @@ export default function SignupPage() {
     // STEP 2: 인증번호 입력 및 확인
     if (step === 2) {
       try {
-        await verifyEmailApi(`${emailId}@ewha.ac.kr`, code);
+        await verifyEmailApi(fullEmail, code);
         setIsCodeError(false);
         setStep(3);
       } catch (err) {
@@ -95,15 +102,13 @@ export default function SignupPage() {
 
     // STEP 3: 비밀번호 설정 및 최종 회원가입
     if (step === 3) {
-      // 비밀번호 유효성 검사는 Step3 컴포넌트 내 `isValidPassword`에서 처리됨.
-      // 여기서는 최종 불일치 여부만 체크.
       if (password !== confirmPw || !password) {
         alert('비밀번호를 다시 확인해주세요.');
         return;
       }
 
       try {
-        await signupFinalApi(`${emailId}@ewha.ac.kr`, password);
+        await signupFinalApi(fullEmail, password);
         setStep(4);
       } catch (err) {
         alert('회원가입 처리에 실패했습니다.');
@@ -127,6 +132,8 @@ export default function SignupPage() {
             setSchoolOpen={setSchoolOpen}
             emailId={emailId}
             setEmailId={setEmailId}
+            emailDomain={emailDomain}
+            setEmailDomain={setEmailDomain}
             handleNext={handleNext}
           />
         );

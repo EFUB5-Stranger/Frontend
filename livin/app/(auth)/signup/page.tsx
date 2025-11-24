@@ -38,7 +38,7 @@ export default function SignupPage() {
 
     try {
       // 1) 닉네임 중복 체크 및 인증번호 발송 API 호출
-      await signupRequestApi(name, school, emailId);
+      await signupRequestApi(name, school, `${emailId}@ewha.ac.kr`);
       setStep(2);
       setTimer(INITIAL_TIMER); // 타이머 초기화 및 시작
       return true;
@@ -85,7 +85,7 @@ export default function SignupPage() {
     // STEP 2: 인증번호 입력 및 확인
     if (step === 2) {
       try {
-        await verifyEmailApi(emailId, code);
+        await verifyEmailApi(`${emailId}@ewha.ac.kr`, code);
         setIsCodeError(false);
         setStep(3);
       } catch (err) {
@@ -103,7 +103,7 @@ export default function SignupPage() {
       }
 
       try {
-        await signupFinalApi(emailId, password);
+        await signupFinalApi(`${emailId}@ewha.ac.kr`, password);
         setStep(4);
       } catch (err) {
         alert('회원가입 처리에 실패했습니다.');

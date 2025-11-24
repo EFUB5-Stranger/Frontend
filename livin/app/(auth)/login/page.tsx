@@ -23,9 +23,12 @@ export default function LoginPage() {
     try {
       const res = await loginApi(email, password);
 
-      // JWT 토큰이 res.token 으로 오는 경우
-      if (res?.token) {
-        localStorage.setItem('token', res.token);
+      if (res?.accessToken) {
+        // 1. axiosInstance가 'token' 키를 찾으므로 accessToken을 'token'으로 저장
+        localStorage.setItem('token', res.accessToken);
+
+        // 2. 토큰 갱신 로직(interceptors)을 위해 refreshToken도 저장 필수
+        localStorage.setItem('refreshToken', res.refreshToken);
       }
 
       setIsError(false);

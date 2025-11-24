@@ -231,7 +231,7 @@ export const EmailDomain = styled.div`
   line-height: 160%; /* 25.6px */
 `;
 
-export const CodeInformText = styled.p`
+export const CodeInformText = styled.div`
   width: 100%;
   color: var(--Black, #33384b);
   text-align: center;

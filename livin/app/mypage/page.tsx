@@ -5,12 +5,8 @@ import NavigationBar from '../components/NavigationBar/NavigationBar';
 import DormReviewCard from '../components/Dorm/DormReviewCard';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
-import {
-  getUserProfileApi,
-  updateUserProfileApi,
-  updateUserProfileImageApi,
-} from '@apis/users';
+import { useState, useEffect } from 'react';
+import { getUserProfileApi, updateUserProfileApi } from '@apis/users';
 import { logoutApi } from '@apis/auth';
 
 export default function MyPage() {
@@ -25,12 +21,6 @@ export default function MyPage() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [profileImage, setProfileImage] = useState('');
-
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const getRandomProfileImage = () => {
     const images = ['/profile_white.svg', '/profile_gray.svg'];
@@ -53,16 +43,6 @@ export default function MyPage() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-
-    const file = e.target.files[0];
-    setSelectedImage(file);
-    if (file) {
-      setPreviewImage(URL.createObjectURL(file));
-    }
-  };
-
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -72,20 +52,21 @@ export default function MyPage() {
         setNewNickname(data.nickname);
         setEmail(data.email);
         setSchool(data.school);
-
-        // 프로필 이미지 설정
-        if (data.profileImage) {
-          setProfileImage(data.profileImage);
-        } else {
-          const randomImg = getRandomProfileImage();
-          setProfileImage(randomImg);
-        }
       } catch (error) {
         console.error('프로필 조회 실패:', error);
       }
     };
 
     fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const initProfileImage = () => {
+      const randomImg = getRandomProfileImage();
+      setProfileImage(randomImg);
+    };
+
+    initProfileImage();
   }, []);
 
   return (
@@ -97,7 +78,6 @@ export default function MyPage() {
             alt='프로필 이미지'
             width={70}
             height={70}
-            onClick={() => setShowUploadModal(true)}
           />
           <ProfileText>
             <NameRow>
@@ -158,6 +138,7 @@ export default function MyPage() {
           </MenuItem>
         </MenuSection>
 
+        {/* 닉네임 수정 모달 */}
         {showEditModal && (
           <ModalBackground onClick={() => setShowEditModal(false)}>
             <ModalBox onClick={(e) => e.stopPropagation()}>
@@ -192,6 +173,7 @@ export default function MyPage() {
           </ModalBackground>
         )}
 
+        {/* 로그아웃 모달 */}
         {showLogoutModal && (
           <ModalBackground onClick={() => setShowLogoutModal(false)}>
             <ModalBox onClick={(e) => e.stopPropagation()}>
@@ -203,64 +185,6 @@ export default function MyPage() {
                 </CancelBtn>
                 <ConfirmBtn onClick={handleLogout}>확인</ConfirmBtn>
               </ModalButtons>
-            </ModalBox>
-          </ModalBackground>
-        )}
-
-        {showUploadModal && (
-          <ModalBackground onClick={() => setShowUploadModal(false)}>
-            <ModalBox onClick={(e) => e.stopPropagation()}>
-              <ModalText>프로필 이미지 업로드</ModalText>
-
-              {/* 이미지 미리보기 */}
-              <PreviewWrapper>
-                <PreviewImage
-                  src={previewImage || profileImage}
-                  alt='preview'
-                  width={100}
-                  height={100}
-                />
-              </PreviewWrapper>
-
-              {/* 숨겨진 파일 선택 input */}
-              <input
-                type='file'
-                accept='image/*'
-                style={{ display: 'none' }}
-                ref={fileInputRef}
-                onChange={handleFileChange}
-              />
-
-              {/* 버튼들 */}
-              <UploadButtons>
-                <SelectBtn onClick={() => fileInputRef.current?.click()}>
-                  이미지 선택
-                </SelectBtn>
-
-                <UploadBtn
-                  disabled={!selectedImage}
-                  onClick={async () => {
-                    if (!selectedImage) return;
-
-                    const formData = new FormData();
-                    formData.append('profileImage', selectedImage);
-
-                    try {
-                      const updated = await updateUserProfileImageApi(formData);
-
-                      // 서버에서 이미지 URL 내려준다고 가정
-                      setProfileImage(updated.profileImage);
-                      setSelectedImage(null);
-                      setPreviewImage(null);
-                      setShowUploadModal(false);
-                    } catch (err) {
-                      console.error('업로드 실패:', err);
-                    }
-                  }}
-                >
-                  저장
-                </UploadBtn>
-              </UploadButtons>
             </ModalBox>
           </ModalBackground>
         )}
@@ -301,7 +225,6 @@ const ProfileImage = styled(Image)`
   height: 70px;
   border-radius: 50%;
   object-fit: cover;
-  cursor: pointer;
 `;
 
 const ProfileText = styled.div`
@@ -415,7 +338,7 @@ const MenuItem = styled.div`
   cursor: pointer;
 `;
 
-/* ---------------- Logout Modal ---------------- */
+/* ---------------- Modal Common Styles ---------------- */
 
 const ModalBackground = styled.div`
   position: fixed;
@@ -485,43 +408,4 @@ const EditInput = styled.input`
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
   }
-`;
-
-const PreviewWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-`;
-
-const PreviewImage = styled(Image)`
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 50%;
-`;
-
-const UploadButtons = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-`;
-
-const SelectBtn = styled.button`
-  padding: 8px 14px;
-  background: #e0e0e0;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-family: ${({ theme }) => theme.fonts.main};
-`;
-
-const UploadBtn = styled.button`
-  padding: 8px 14px;
-  background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-family: ${({ theme }) => theme.fonts.main};
-  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
 `;

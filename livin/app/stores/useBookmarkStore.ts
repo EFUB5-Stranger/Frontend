@@ -3,7 +3,7 @@ import { TagType } from '../components/Home/Rooms/TagComponents';
 import axiosInstance from '@apis/axiosInstance';
 
 interface Room {
-  id: string;
+  id: number;
   type: TagType;
   title: string;
   address: string;
@@ -13,7 +13,7 @@ interface Room {
 interface BookmarkStore {
   bookmarks: Room[];
   toggleBookmark: (room: Room) => Promise<void>;
-  isBookmarked: (id: string) => boolean;
+  isBookmarked: (id: number) => boolean;
 }
 
 export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
@@ -23,14 +23,13 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   toggleBookmark: async (room: Room) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-    console.error('북마크 실패: 로그인 토큰 없음');
-    // TODO: 토스트 노출 등
-    return;
-  }
-      const res = await axiosInstance.post(`/bookmark/${room.id}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axiosInstance.post(
+        `/bookmark/${room.id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       const { bookmarked } = res.data;
       const { bookmarks } = get();
@@ -52,7 +51,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
     }
   },
 
-  isBookmarked: (id: string) => {
+  isBookmarked: (id: number) => {
     return get().bookmarks.some((b) => b.id === id);
   },
 }));

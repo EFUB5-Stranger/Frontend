@@ -6,7 +6,7 @@ import RoomTag, { TagType } from './TagComponents';
 import { useBookmarkStore } from '../../../stores/useBookmarkStore';
 
 interface Props {
-  id: string;
+  id: number;
   type: TagType;
   title: string;
   address: string;

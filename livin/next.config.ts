@@ -3,7 +3,7 @@ import type { NextConfig } from 'next';
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
-    value: "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://dapi.kakao.com;"
+    value: "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://dapi.kakao.com https://t1.daumcdn.net http://t1.daumcdn.net;"
   }
 ];
 

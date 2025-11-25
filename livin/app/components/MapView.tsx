@@ -6,6 +6,8 @@ import FilterFloating from './FilterFloating';
 import FilterPopup from './FilterPopup';
 import styles from '@/styles/mapPage.module.css';
 import { FilterProvider } from 'hooks/FilterContext';
+import NavigationBar from './NavigationBar/NavigationBar';
+
 declare global {
   interface Window {
     kakao: any;
@@ -21,9 +23,50 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
   const { setSelectedBuilding } = useMapContext();
+  // ✅ 마커 생성 함수 (카테고리별 아이콘 적용)
+  const createMarker = (x: number, y: number, category: string, data: any) => {
+    let imageSrc = '';
+    switch (category) {
+      case 'house':
+        imageSrc = '/icons/house.png';
+        break;
+      case 'cafe':
+        imageSrc = '/icons/cafe.png';
+        break;
+      case 'food':
+        imageSrc = '/icons/food.png';
+        break;
+      case 'store':
+        imageSrc = '/icons/store.png';
+        break;
+      case 'transport':
+        imageSrc = '/icons/transport.png';
+        break;
+      default:
+        imageSrc = '/icons/default.png';
+    }
+    const imageSize = new window.kakao.maps.Size(32, 32);
+    const imageOption = { offset: new window.kakao.maps.Point(16, 32) };
+    const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+
+    const marker = new window.kakao.maps.Marker({
+      position: new window.kakao.maps.LatLng(y, x),
+      image: markerImage,
+      map: mapInstance.current,
+    });
+    // 클릭 이벤트 → 하단 팝업 띄우기
+    window.kakao.maps.event.addListener(marker, 'click', () => {
+      setSelectedBuilding(data);
+      mapInstance.current.setCenter(new window.kakao.maps.LatLng(y, x));
+    });
+
+    return marker;
+  };
+
   useEffect(() => {
     console.log("카카오 JS 키:", process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
   }, []);
+  
 
   // 지도 초기화
   useEffect(() => {
@@ -41,53 +84,30 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
   useEffect(() => {
     if (!mapInstance.current || !mapData || !window.kakao) return;
 
-    // 기존 마커 제거
-    mapInstance.current && mapInstance.current.clearOverlay?.();
-
     // 🏠 자취/하숙
-    (mapData.houses || []).forEach((house: any) => {
-      const markerPosition = new window.kakao.maps.LatLng(house.y, house.x);
-      const marker = new window.kakao.maps.Marker({
-        position: markerPosition,
-        map: mapInstance.current,
-      });
-      window.kakao.maps.event.addListener(marker, 'click', () => {
-        setSelectedBuilding(house);
-        mapInstance.current.setCenter(markerPosition);
-      });
-    });
+    (mapData.houses || []).forEach((house: any) =>
+      createMarker(parseFloat(house.x), parseFloat(house.y), 'house', house)
+    );
 
     // ☕ 카페
-    (mapData.cafes || []).forEach((cafe: any) => {
-      new window.kakao.maps.Marker({
-        position: new window.kakao.maps.LatLng(cafe.y, cafe.x),
-        map: mapInstance.current,
-      });
-    });
+    (mapData.cafes || []).forEach((cafe: any) =>
+      createMarker(cafe.x, cafe.y, 'cafe', cafe)
+    );
 
     // 🍴 음식점
-    (mapData.restaurants || []).forEach((food: any) => {
-      new window.kakao.maps.Marker({
-        position: new window.kakao.maps.LatLng(food.y, food.x),
-        map: mapInstance.current,
-      });
-    });
+    (mapData.restaurants || []).forEach((food: any) =>
+      createMarker(food.x, food.y, 'food', food)
+    );
 
     // 🛒 마트
-    (mapData.stores || []).forEach((store: any) => {
-      new window.kakao.maps.Marker({
-        position: new window.kakao.maps.LatLng(store.y, store.x),
-        map: mapInstance.current,
-      });
-    });
+    (mapData.stores || []).forEach((store: any) =>
+      createMarker(store.x, store.y, 'store', store)
+    );
 
     // 🚇 교통
-    (mapData.transports || []).forEach((transport: any) => {
-      new window.kakao.maps.Marker({
-        position: new window.kakao.maps.LatLng(transport.y, transport.x),
-        map: mapInstance.current,
-      });
-    });
+    (mapData.transports || []).forEach((transport: any) =>
+      createMarker(transport.x, transport.y, 'transport', transport)
+    );
   }, [mapData]);
 
 // 현위치 버튼
@@ -117,33 +137,34 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
   return (
     <FilterProvider>
       <div className={styles.mapArea}>
-        {/* 카카오 지도 SDK 스크립트  */}
-        <Script
-           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false&libraries=services`}
-          strategy='afterInteractive'
-          onLoad={() => {
+          <Script
+            src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false&libraries=services`}
+            strategy="afterInteractive"
+            onLoad={() => {
               console.log('카카오 SDK 로드 완료');
-              window.kakao.maps.load(() => {
-                // 지도 초기화 코드
-                if (mapRef.current) {
-                const options = {
-                  center: new window.kakao.maps.LatLng(37.5665, 126.9780),
-                  level: 3,
-                };
-                const map = new window.kakao.maps.Map(mapRef.current, options);
-                mapInstance.current = map;
+              if (window.kakao && window.kakao.maps && mapRef.current) {
+                window.kakao.maps.load(() => {
+                  const options = {
+                    center: new window.kakao.maps.LatLng(37.5665, 126.9780),
+                    level: 3,
+                  };
+                  const map = new window.kakao.maps.Map(mapRef.current, options);
+                  mapInstance.current = map;
 
-                // 테스트용 마커
-                new window.kakao.maps.Marker({
-                  position: new window.kakao.maps.LatLng(37.5665, 126.9780),
-                  map,
+                  new window.kakao.maps.Marker({
+                    position: new window.kakao.maps.LatLng(37.5665, 126.9780),
+                    map,
+                  });
                 });
-              }});
+              }
             }}
-          onError={(e) => console.error('카카오 SDK 로드 실패:', e)}
-        />
-
-        <div id="map" ref={mapRef} className={styles.mapContainer} />
+            onError={(e) => {
+              console.error('카카오 SDK 로드 실패:', e);
+              alert('카카오 지도 SDK 로드 실패');
+            }}
+          />
+          <div ref={mapRef} className={styles.mapContainer} />
+    
 
 
         <FilterFloating />
@@ -152,7 +173,7 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
         <button
           className={styles.locationBtn}
           onClick={handleCurrentLocation}
-          style={{ bottom: `${popupHeight + 16}px` }} // popup 높이에 따라 위치 조정
+          style={{ bottom: `${popupHeight + 80}px` }} // popup 높이에 따라 위치 조정
         >
           <svg
             xmlns='http://www.w3.org/2000/svg'
@@ -177,7 +198,10 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
             />
           </svg>
         </button>
+              <NavigationBar />
       </div>
+      
     </FilterProvider>
+    
   );
 }

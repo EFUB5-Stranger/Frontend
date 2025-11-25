@@ -2,10 +2,13 @@
 import { createContext, useContext, useState } from 'react';
 
 interface Building {
-  id: string;
-  name: string;
+  houseId: number;                 // 기존 id → houseId
+  buildingName: string;            // 기존 name → buildingName
+  type: 'PRIVATE' | 'BOARDING';    // 기존 '자취방' | '하숙집' → 서버 응답 값
   address: string;
   thumbnailUrl?: string;
+  reviewScore?: number;            // 기존 rating → reviewScore
+  bookmarked?: boolean;
 }
 
 interface MapContextType {

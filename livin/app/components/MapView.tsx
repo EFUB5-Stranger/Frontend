@@ -21,6 +21,9 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
   const { setSelectedBuilding } = useMapContext();
+  useEffect(() => {
+    console.log("카카오 JS 키:", process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
+  }, []);
 
   // 지도 초기화
   useEffect(() => {
@@ -116,7 +119,7 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
       <div className={styles.mapArea}>
         {/* 카카오 지도 SDK 스크립트  */}
         <Script
-           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false`}
+           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false&libraries=services`}
           strategy='afterInteractive'
           onLoad={() => {
               console.log('카카오 SDK 로드 완료');

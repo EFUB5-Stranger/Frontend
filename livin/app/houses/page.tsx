@@ -21,24 +21,48 @@ export default function HousesPage() {
   const [typeFilter, setTypeFilter] = useState('전체');
   const [districtFilter, setDistrictFilter] = useState('전체 주소');
 
-  const syncData = async () => {
-    try {
-      await axiosInstance.post('/kakao/sync');
-      console.log('데이터 동기화 성공');
-    } catch (error) {
-      console.error('데이터 동기화 실패:', error);
-    }
-  };
+const toggleBookmark = async (houseId: number, bookmarked: boolean) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axiosInstance.post(`/bookmark/${houseId}`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
+    const { bookmarked: newStatus } = res.data;
+
+    setHouses((prev) =>
+      prev.map((h) =>
+        h.houseId === houseId ? { ...h, bookmarked: newStatus } : h
+      )
+    );
+  } catch (error) {
+    console.error("북마크 처리 실패:", error);
+  }
+};
   useEffect(() => {
     const fetchHouses = async () => {
       try {
-        const res = await axiosInstance.get('/houses');
-        setHouses(res.data); 
+        const token = localStorage.getItem("token");
+        console.log("토큰:", token);
+
+        // 검색/필터링 API 호출
+        const res = await axiosInstance.get("/house/search", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            keyword: "",       // 검색어 없으면 빈 문자열
+            sort: "review",    // 리뷰별점순 or bookmark
+            type: "all",       // all / private / boarding
+            address: "all",    // all / 서대문구 / 마포구
+            page: 0,           // 첫 페이지
+          },
+        });
+
+        setHouses(res.data.houses);
       } catch (error) {
-        console.error('건물 목록 불러오기 실패:', error);
+        console.error("건물 목록 불러오기 실패:", error);
       }
     };
+
     fetchHouses();
   }, []);
 
@@ -49,8 +73,12 @@ export default function HousesPage() {
         house.address.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((house) =>
-      typeFilter === '전체' ? true : house.type === typeFilter
-    )
+        typeFilter === '전체'
+          ? true
+          : (typeFilter === '자취방' && house.type === 'PRIVATE') ||
+            (typeFilter === '하숙집' && house.type === 'BOARDING')
+      )
+
     .filter((house) =>
       districtFilter === '전체 주소'
         ? true
@@ -182,17 +210,21 @@ export default function HousesPage() {
       <ScrollArea>
         <CardGrid>
           {filteredHouses.map((house) => (
-            <RoomCard
-              key={house.id}
-              id={String(house.id)}
-              type={house.type as '자취방' | '하숙집'}
-              title={house.buildingName}
-              address={house.address}
-              rate={house.rating}
-              onClick={() => router.push(`/houses/${house.id}`)}
-            />
+            <div key={house.houseId} style={{ position: "relative" }}>
+              <RoomCard
+                key={house.houseId}
+                id={String(house.houseId)}
+                type={house.type === 'PRIVATE' ? '자취방' : '하숙집'}
+                title={house.buildingName}
+                address={house.address}
+                rate={house.reviewScore ?? 0}
+                onClick={() => router.push(`/houses/${house.houseId}`)}
+              />
+
+            </div>
           ))}
         </CardGrid>
+
       </ScrollArea>
 
       <FloatingButton onClick={() => router.push('/houses/new/step1')}>

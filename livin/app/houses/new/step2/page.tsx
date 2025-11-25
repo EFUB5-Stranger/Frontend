@@ -141,27 +141,29 @@ export default function NewHouseStep2() {
       }
     };
     const handleSubmit = async () => {
-      try {
-        const body = {
-          type,
-          buildingName,
-          address,
-          floor,
-          parking,
-          elevator,
-          options: selectedOptions.includes("직접입력")
-            ? [...selectedOptions.filter((o) => o !== "직접입력"), customOption]
-            : selectedOptions,
-          imageUrl,
-        };
-         await axiosInstance.post("/houses/new", body);
-        alert("새로운 건물 정보 등록에 성공했습니다!");
-        router.push("/houses"); 
-      }catch (error) {
-      console.error("등록 실패:", error);
-      alert("등록 중 오류가 발생했습니다. 다시 시도해주세요.");
-    }
-      };
+  try {
+    const body = {
+      type,
+      buildingName,
+      address,
+      floor,
+      parking,
+      elevator,
+      options: selectedOptions.includes("직접입력")
+        ? [...selectedOptions.filter((o) => o !== "직접입력"), customOption]
+        : selectedOptions,
+      imageUrl,
+    };
+    await axiosInstance.post("/house/new", body);
+
+    alert("새로운 건물 정보 등록에 성공했습니다!");
+    router.push("/houses");
+  } catch (error) {
+    console.error("등록 실패:", error);
+    alert("등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+  }
+};
+
   return (
     <Wrapper>
       <TopBar>

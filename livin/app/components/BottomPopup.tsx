@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useEffect } from 'react';
-import { useMapContext } from '../hooks/MapContext';
+import { useMapContext } from 'hooks/MapContext';
 import styles from '@/styles/mapPage.module.css';
 interface BottomPopupProps {
   onHeightChange?: (height: number) => void;

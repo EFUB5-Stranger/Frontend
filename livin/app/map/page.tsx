@@ -3,29 +3,65 @@ import TopBar from '@/components/TopBar';
 import MapView from '@/components/MapView';
 import FilterPopup from '@/components/FilterPopup';
 import BottomPopup from '@/components/BottomPopup';
-import { FilterProvider } from '../hooks/FilterContext';
-import { MapProvider } from '../hooks/MapContext';
+import { FilterProvider } from 'hooks/FilterContext';
+import { MapProvider } from 'hooks/MapContext';
 import styles from '@/styles/mapPage.module.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axiosInstance from '@apis/axiosInstance';
 
 export default function MapPage() {
-  // BottomPopup 높이를 관리해서 버튼 위치 조정
+  // BottomPopup 높이를 관리해서 지도 높이를 동적으로 조정
   const [popupHeight, setPopupHeight] = useState(0);
+  const [mapData, setMapData] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // 지도 데이터 불러오기
+  useEffect(() => {
+    const fetchMapData = async () => {
+      setLoading(true);
+      try {
+        const res = await axiosInstance.get('/house/map', {
+          params: {
+            minLat: 37.5567,
+            maxLat: 37.5600,
+            minLon: 126.9470,
+            maxLon: 126.9520,
+            centerLat: 37.561176,
+            centerLon: 126.94638,
+            radius: 500,
+            showCafe: true,
+            showFood: true,
+            showStore: true,
+            showTransport: true,
+          },
+        });
+        setMapData(res.data);
+      } catch (error) {
+        console.error('지도 데이터 불러오기 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMapData();
+  }, []);
 
   return (
     <FilterProvider>
       <MapProvider>
         <div className={styles.mapPage}>
           <TopBar
-            title='지도'
+            title="지도"
             showSearch={true}
-            searchPlaceholder='건물명, 주소, 키워드 검색'
+            searchPlaceholder="건물명, 주소, 키워드 검색"
           />
 
-          <MapView popupHeight={popupHeight} />
+          {/* 지도 컴포넌트: 데이터/팝업 높이 전달 */}
+          <MapView popupHeight={popupHeight} mapData={mapData} loading={loading} />
 
           <FilterPopup />
 
+          {/* BottomPopup이 높이를 계산해 부모 상태로 콜백 전달 */}
           <BottomPopup onHeightChange={setPopupHeight} />
         </div>
       </MapProvider>

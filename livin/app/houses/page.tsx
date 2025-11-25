@@ -1,64 +1,84 @@
 'use client';
-import { useState } from 'react';
+import { useState ,useEffect} from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import RoomCard from '@/components/Home/Rooms/RoomCard';
 import Image from 'next/image';
 import NavigationBar from '@/components/NavigationBar/NavigationBar';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@apis/axiosInstance';
 
 export default function HousesPage() {
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [bookmarks, setBookmarks] = useState<{ [key: number]: number }>({});
+  const [houses, setHouses] = useState<any[]>([]);
 
   type FilterType = '정렬' | '타입' | '주소' | null;
-
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
-
   const [sortOption, setSortOption] = useState<'rating' | 'bookmark'>('rating');
-
-  // 타입/주소 필터
   const [typeFilter, setTypeFilter] = useState('전체');
   const [districtFilter, setDistrictFilter] = useState('전체 주소');
 
-  const houses = [
-    {
-      id: 1,
-      name: '강동 하숙집',
-      address: '서울 강동구',
-      type: '하숙집',
-      rating: 4.5,
-      createdAt: '2025-11-01',
-    },
-    {
-      id: 2,
-      name: '서대문 자취방',
-      address: '서울 서대문구',
-      type: '자취방',
-      rating: 4.2,
-      createdAt: '2025-10-15',
-    },
-    {
-      id: 3,
-      name: '강남 원룸',
-      address: '서울 강남구',
-      type: '자취방',
-      rating: 4.8,
-      createdAt: '2025-11-10',
-    },
-  ];
+const toggleBookmark = async (houseId: number, bookmarked: boolean) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axiosInstance.post(`/bookmark/${houseId}`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const { bookmarked: newStatus } = res.data;
+
+    setHouses((prev) =>
+      prev.map((h) =>
+        h.houseId === houseId ? { ...h, bookmarked: newStatus } : h
+      )
+    );
+  } catch (error) {
+    console.error("북마크 처리 실패:", error);
+  }
+};
+  useEffect(() => {
+    const fetchHouses = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        console.log("토큰:", token);
+
+        // 검색/필터링 API 호출
+        const res = await axiosInstance.get("/house/search", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            keyword: "",       // 검색어 없으면 빈 문자열
+            sort: "review",    // 리뷰별점순 or bookmark
+            type: "all",       // all / private / boarding
+            address: "all",    // all / 서대문구 / 마포구
+            page: 0,           // 첫 페이지
+          },
+        });
+
+        setHouses(res.data.houses);
+      } catch (error) {
+        console.error("건물 목록 불러오기 실패:", error);
+      }
+    };
+
+    fetchHouses();
+  }, []);
 
   const filteredHouses = houses
     .filter(
       (house) =>
-        house.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        house.buildingName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         house.address.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((house) =>
-      typeFilter === '전체' ? true : house.type === typeFilter
-    )
+        typeFilter === '전체'
+          ? true
+          : (typeFilter === '자취방' && house.type === 'PRIVATE') ||
+            (typeFilter === '하숙집' && house.type === 'BOARDING')
+      )
+
     .filter((house) =>
       districtFilter === '전체 주소'
         ? true
@@ -68,7 +88,6 @@ export default function HousesPage() {
       if (sortOption === 'rating') {
         return b.rating - a.rating;
       } else {
-        // 북마크 많은 순
         const aBookmarks = bookmarks[a.id] || 0;
         const bBookmarks = bookmarks[b.id] || 0;
         return bBookmarks - aBookmarks;
@@ -84,6 +103,7 @@ export default function HousesPage() {
         <Title>자취방/하숙 목록</Title>
       </Header>
 
+      {/* 검색 */}
       <SearchSection>
         <SearchInputWrapper>
           <SearchIcon src='/search.svg' alt='검색' width={20} height={20} />
@@ -190,17 +210,21 @@ export default function HousesPage() {
       <ScrollArea>
         <CardGrid>
           {filteredHouses.map((house) => (
-            <RoomCard
-              key={house.id}
-              id={String(house.id)}
-              type={house.type as '자취방' | '하숙집'}
-              title={house.name}
-              address={house.address}
-              rate={house.rating}
-              onClick={() => router.push(`/houses/${house.id}`)}
-            />
+            <div key={house.houseId} style={{ position: "relative" }}>
+              <RoomCard
+                key={house.houseId}
+                id={String(house.houseId)}
+                type={house.type === 'PRIVATE' ? '자취방' : '하숙집'}
+                title={house.buildingName}
+                address={house.address}
+                rate={house.reviewScore ?? 0}
+                onClick={() => router.push(`/houses/${house.houseId}`)}
+              />
+
+            </div>
           ))}
         </CardGrid>
+
       </ScrollArea>
 
       <FloatingButton onClick={() => router.push('/houses/new/step1')}>

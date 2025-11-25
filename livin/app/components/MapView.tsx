@@ -1,18 +1,29 @@
 'use client';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect} from 'react';
 import Script from 'next/script';
-import { useMapContext } from '../hooks/MapContext';
+import { useMapContext} from'hooks/MapContext';
 import FilterFloating from './FilterFloating';
 import FilterPopup from './FilterPopup';
 import styles from '@/styles/mapPage.module.css';
-import { FilterProvider } from '../hooks/FilterContext';
+import { FilterProvider } from 'hooks/FilterContext';
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
+
 interface MapViewProps {
   popupHeight?: number;
+  mapData?: any;
+  loading?: boolean;
 }
-export default function MapView({ popupHeight = 0 }: MapViewProps) {
+export default function MapView({ popupHeight = 0, mapData, loading }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
   const { setSelectedBuilding } = useMapContext();
+  useEffect(() => {
+    console.log("카카오 JS 키:", process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
+  }, []);
 
   // 지도 초기화
   useEffect(() => {
@@ -24,29 +35,62 @@ export default function MapView({ popupHeight = 0 }: MapViewProps) {
           level: 4,
         });
         mapInstance.current = map;
-
-        // API 호출로 마커 추가
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/buildings`)
-          .then((res) => res.json())
-          .then((data) => {
-            data.forEach((b: any) => {
-              const markerPosition = new window.kakao.maps.LatLng(b.lat, b.lng);
-              const marker = new window.kakao.maps.Marker({
-                position: markerPosition,
-                map,
-              });
-              window.kakao.maps.event.addListener(marker, 'click', () => {
-                setSelectedBuilding(b);
-                map.setCenter(markerPosition);
-              });
-            });
-          })
-          .catch((err) => console.error('API 호출 실패:', err));
       });
     }
-  }, [setSelectedBuilding]);
+  }, []);
+  useEffect(() => {
+    if (!mapInstance.current || !mapData || !window.kakao) return;
 
-  // 현위치 버튼 클릭 핸들러
+    // 기존 마커 제거
+    mapInstance.current && mapInstance.current.clearOverlay?.();
+
+    // 🏠 자취/하숙
+    (mapData.houses || []).forEach((house: any) => {
+      const markerPosition = new window.kakao.maps.LatLng(house.y, house.x);
+      const marker = new window.kakao.maps.Marker({
+        position: markerPosition,
+        map: mapInstance.current,
+      });
+      window.kakao.maps.event.addListener(marker, 'click', () => {
+        setSelectedBuilding(house);
+        mapInstance.current.setCenter(markerPosition);
+      });
+    });
+
+    // ☕ 카페
+    (mapData.cafes || []).forEach((cafe: any) => {
+      new window.kakao.maps.Marker({
+        position: new window.kakao.maps.LatLng(cafe.y, cafe.x),
+        map: mapInstance.current,
+      });
+    });
+
+    // 🍴 음식점
+    (mapData.restaurants || []).forEach((food: any) => {
+      new window.kakao.maps.Marker({
+        position: new window.kakao.maps.LatLng(food.y, food.x),
+        map: mapInstance.current,
+      });
+    });
+
+    // 🛒 마트
+    (mapData.stores || []).forEach((store: any) => {
+      new window.kakao.maps.Marker({
+        position: new window.kakao.maps.LatLng(store.y, store.x),
+        map: mapInstance.current,
+      });
+    });
+
+    // 🚇 교통
+    (mapData.transports || []).forEach((transport: any) => {
+      new window.kakao.maps.Marker({
+        position: new window.kakao.maps.LatLng(transport.y, transport.x),
+        map: mapInstance.current,
+      });
+    });
+  }, [mapData]);
+
+// 현위치 버튼
   const handleCurrentLocation = () => {
     if (!mapInstance.current) return;
     if (navigator.geolocation) {
@@ -57,7 +101,6 @@ export default function MapView({ popupHeight = 0 }: MapViewProps) {
           const locPosition = new window.kakao.maps.LatLng(lat, lng);
           mapInstance.current.setCenter(locPosition);
 
-          // 현위치 마커 표시
           new window.kakao.maps.Marker({
             position: locPosition,
             map: mapInstance.current,
@@ -71,19 +114,37 @@ export default function MapView({ popupHeight = 0 }: MapViewProps) {
       alert('이 브라우저에서는 위치 정보를 지원하지 않습니다.');
     }
   };
-
   return (
     <FilterProvider>
       <div className={styles.mapArea}>
         {/* 카카오 지도 SDK 스크립트  */}
         <Script
-          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}`}
+           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false&libraries=services`}
           strategy='afterInteractive'
-          onLoad={() => console.log('카카오 SDK 로드 완료')}
+          onLoad={() => {
+              console.log('카카오 SDK 로드 완료');
+              window.kakao.maps.load(() => {
+                // 지도 초기화 코드
+                if (mapRef.current) {
+                const options = {
+                  center: new window.kakao.maps.LatLng(37.5665, 126.9780),
+                  level: 3,
+                };
+                const map = new window.kakao.maps.Map(mapRef.current, options);
+                mapInstance.current = map;
+
+                // 테스트용 마커
+                new window.kakao.maps.Marker({
+                  position: new window.kakao.maps.LatLng(37.5665, 126.9780),
+                  map,
+                });
+              }});
+            }}
           onError={(e) => console.error('카카오 SDK 로드 실패:', e)}
         />
 
-        <div ref={mapRef} className={styles.mapContainer} />
+        <div id="map" ref={mapRef} className={styles.mapContainer} />
+
 
         <FilterFloating />
         <FilterPopup />

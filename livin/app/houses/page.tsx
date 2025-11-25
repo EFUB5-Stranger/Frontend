@@ -218,7 +218,7 @@ export default function HousesPage() {
               <div key={house.houseId} style={{ position: 'relative' }}>
                 <RoomCard
                   key={house.houseId}
-                  id={String(house.houseId)}
+                  id={Number(house.houseId)}
                   type={house.type === 'PRIVATE' ? '자취방' : '하숙집'}
                   title={house.buildingName}
                   address={house.address}

@@ -21,6 +21,11 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
 
   // 북마크 토글 시 서버 API 호출
   toggleBookmark: async (room: Room) => {
+    if (!room.id || Number.isNaN(room.id)) {
+  console.error('Invalid room.id:', room.id);
+  return;
+}
+
     try {
       const token = localStorage.getItem('token');
       const res = await axiosInstance.post(

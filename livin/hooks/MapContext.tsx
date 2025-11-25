@@ -1,13 +1,15 @@
 'use client';
 import { createContext, useContext, useState } from 'react';
+import { TagType} from '@/types/building';
 
+// ✅ UI에서 사용할 Building 타입
 interface Building {
-  houseId: number;                 // 기존 id → houseId
-  buildingName: string;            // 기존 name → buildingName
-  type: 'PRIVATE' | 'BOARDING';    // 기존 '자취방' | '하숙집' → 서버 응답 값
+  id: number;
+  title: string;
+  type: TagType; // UI 타입으로 정의
   address: string;
   thumbnailUrl?: string;
-  reviewScore?: number;            // 기존 rating → reviewScore
+  rate?: number;
   bookmarked?: boolean;
 }
 
@@ -32,4 +34,4 @@ export const useMapContext = () => {
   const ctx = useContext(MapContext);
   if (!ctx) throw new Error('useMapContext must be used within MapProvider');
   return ctx;
-};
+}

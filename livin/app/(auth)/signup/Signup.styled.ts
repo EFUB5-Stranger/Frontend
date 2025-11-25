@@ -180,14 +180,16 @@ export const ListItem = styled.li`
 
 export const EmailBox = styled.div`
   display: flex;
+  width: 328px;
   align-items: center;
   margin-bottom: 24px;
+  padding-right: 0;
   gap: 6px;
 `;
 
 export const EmailInput = styled.input`
   display: inline-flex;
-  width: 190px;
+  width: 180px;
   height: 60px;
   padding: 17px 56px 17px 16px;
   align-items: center;
@@ -213,7 +215,7 @@ export const EmailInput = styled.input`
 `;
 
 export const EmailDomain = styled.div`
-  width: 124px;
+  width: 141px;
   display: inline-flex;
   height: 60px;
   padding: 17px 0 17px 16px;
@@ -229,9 +231,13 @@ export const EmailDomain = styled.div`
   font-style: normal;
   font-weight: 400;
   line-height: 160%; /* 25.6px */
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
-export const CodeInformText = styled.p`
+export const CodeInformText = styled.div`
   width: 100%;
   color: var(--Black, #33384b);
   text-align: center;

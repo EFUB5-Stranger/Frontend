@@ -1,6 +1,6 @@
 // app/(auth)/signup/components/Step1.tsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import ShowMoreIcon from '../../../../public/showmore.svg';
 import {
@@ -32,10 +32,17 @@ interface Step1Props {
   setSchoolOpen: (open: boolean) => void;
   emailId: string;
   setEmailId: (emailId: string) => void;
+  emailDomain: string;
+  setEmailDomain: (domain: string) => void;
   handleNext: () => Promise<void>;
 }
 
-const schoolList = ['이화여자대학교']; // 실제로는 API 또는 별도 파일에서 관리
+const schoolList = ['이화여자대학교', '연세대학교'];
+
+const SCHOOL_DOMAINS: Record<string, string[]> = {
+  이화여자대학교: ['ewha.ac.kr', 'ewhain.net'],
+  연세대학교: ['yonsei.ac.kr'],
+};
 
 export const Step1 = ({
   name,
@@ -48,8 +55,21 @@ export const Step1 = ({
   setSchoolOpen,
   emailId,
   setEmailId,
+  emailDomain,
+  setEmailDomain,
   handleNext,
 }: Step1Props) => {
+  // 도메인 드롭다운 상태 관리
+  const [domainOpen, setDomainOpen] = useState(false);
+
+  // 선택된 학교에 따른 도메인 리스트 가져오기
+  const availableDomains = school ? SCHOOL_DOMAINS[school] || [] : [];
+
+  // 학교가 변경되면 도메인 초기화
+  useEffect(() => {
+    setEmailDomain('');
+  }, [school, setEmailDomain]);
+
   return (
     <Step1Box>
       <Title $step={1}>회원가입</Title>
@@ -104,7 +124,49 @@ export const Step1 = ({
             value={emailId}
             onChange={(e) => setEmailId(e.target.value)}
           />
-          <EmailDomain>@ewha.ac.kr</EmailDomain>
+          <div style={{ position: 'relative' }}>
+            <EmailDomain
+              onClick={() => {
+                if (availableDomains.length > 0) {
+                  setDomainOpen(!domainOpen);
+                } else {
+                  alert('먼저 학교를 선택해주세요.');
+                }
+              }}
+              style={{
+                cursor: availableDomains.length > 0 ? 'pointer' : 'default',
+                color: emailDomain ? '#000' : '#7f7f7f', // 선택되면 검은색, 아니면 회색
+                display: 'flex',
+                justifyContent: 'space-between', // 텍스트와 화살표(만약 넣는다면) 배치
+                position: 'relative',
+              }}
+            >
+              {emailDomain ? `@${emailDomain}` : '@'}
+
+              {availableDomains.length > 0 && (
+                <Arrow $open={domainOpen} style={{ marginLeft: '8px' }}>
+                  <Image src={ShowMoreIcon} alt='arrow' priority />
+                </Arrow>
+              )}
+            </EmailDomain>
+
+            {/* 도메인 드롭다운 리스트 */}
+            {domainOpen && availableDomains.length > 0 && (
+              <SelectList style={{ width: '100%', top: '65px', zIndex: 20 }}>
+                {availableDomains.map((domain) => (
+                  <ListItem
+                    key={domain}
+                    onClick={() => {
+                      setEmailDomain(domain);
+                      setDomainOpen(false);
+                    }}
+                  >
+                    @{domain}
+                  </ListItem>
+                ))}
+              </SelectList>
+            )}
+          </div>
         </EmailBox>
       </InputBox>
 

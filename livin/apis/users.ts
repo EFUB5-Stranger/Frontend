@@ -13,13 +13,3 @@ export const updateUserProfileApi = async (nickname: string) => {
   });
   return res.data;
 };
-
-// 프로필 이미지 업로드 (multipart/form-data)
-export const updateUserProfileImageApi = async (formData: FormData) => {
-  const res = await axiosInstance.patch('/users/me/image', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-  return res.data;
-};

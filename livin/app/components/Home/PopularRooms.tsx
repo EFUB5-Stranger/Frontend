@@ -17,7 +17,7 @@ export default function PopularRooms() {
 
       <ScrollArea>
         <RoomCard
-          id='room1'
+          id={1}
           type='자취방'
           title='신촌 럭키아파트'
           address='서울 서대문구 이화여대길 50-12'
@@ -26,7 +26,7 @@ export default function PopularRooms() {
         />
 
         <RoomCard
-          id='room2'
+          id={2}
           type='자취방'
           title='홍대 하우스'
           address='서울 마포구 독막로 123'
@@ -35,7 +35,7 @@ export default function PopularRooms() {
         />
 
         <RoomCard
-          id='room3'
+          id={3}
           type='자취방'
           title='이대 프라임빌'
           address='서울 서대문구 대현동 11-3'
@@ -44,7 +44,7 @@ export default function PopularRooms() {
         />
 
         <RoomCard
-          id='room4'
+          id={4}
           type='자취방'
           title='신촌 스카이뷰'
           address='서울 서대문구 신촌로 45'

@@ -1,5 +1,5 @@
 'use client';
-import { useState ,useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import RoomCard from '@/components/Home/Rooms/RoomCard';
@@ -21,45 +21,49 @@ export default function HousesPage() {
   const [typeFilter, setTypeFilter] = useState('전체');
   const [districtFilter, setDistrictFilter] = useState('전체 주소');
 
-const toggleBookmark = async (houseId: number, bookmarked: boolean) => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await axiosInstance.post(`/bookmark/${houseId}`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const toggleBookmark = async (houseId: number, bookmarked: boolean) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axiosInstance.post(
+        `/bookmark/${houseId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    const { bookmarked: newStatus } = res.data;
+      const { bookmarked: newStatus } = res.data;
 
-    setHouses((prev) =>
-      prev.map((h) =>
-        h.houseId === houseId ? { ...h, bookmarked: newStatus } : h
-      )
-    );
-  } catch (error) {
-    console.error("북마크 처리 실패:", error);
-  }
-};
+      setHouses((prev) =>
+        prev.map((h) =>
+          h.houseId === houseId ? { ...h, bookmarked: newStatus } : h
+        )
+      );
+    } catch (error) {
+      console.error('북마크 처리 실패:', error);
+    }
+  };
   useEffect(() => {
     const fetchHouses = async () => {
       try {
-        const token = localStorage.getItem("token");
-        console.log("토큰:", token);
+        const token = localStorage.getItem('token');
+        console.log('토큰:', token);
 
         // 검색/필터링 API 호출
-        const res = await axiosInstance.get("/house/search", {
+        const res = await axiosInstance.get('/house/search', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
-            keyword: "",       // 검색어 없으면 빈 문자열
-            sort: "review",    // 리뷰별점순 or bookmark
-            type: "all",       // all / private / boarding
-            address: "all",    // all / 서대문구 / 마포구
-            page: 0,           // 첫 페이지
+            keyword: '', // 검색어 없으면 빈 문자열
+            sort: 'review', // 리뷰별점순 or bookmark
+            type: 'all', // all / private / boarding
+            address: 'all', // all / 서대문구 / 마포구
+            page: 0, // 첫 페이지
           },
         });
 
         setHouses(res.data.houses);
       } catch (error) {
-        console.error("건물 목록 불러오기 실패:", error);
+        console.error('건물 목록 불러오기 실패:', error);
       }
     };
 
@@ -73,11 +77,11 @@ const toggleBookmark = async (houseId: number, bookmarked: boolean) => {
         house.address.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((house) =>
-        typeFilter === '전체'
-          ? true
-          : (typeFilter === '자취방' && house.type === 'PRIVATE') ||
-            (typeFilter === '하숙집' && house.type === 'BOARDING')
-      )
+      typeFilter === '전체'
+        ? true
+        : (typeFilter === '자취방' && house.type === 'PRIVATE') ||
+          (typeFilter === '하숙집' && house.type === 'BOARDING')
+    )
 
     .filter((house) =>
       districtFilter === '전체 주소'
@@ -95,144 +99,144 @@ const toggleBookmark = async (houseId: number, bookmarked: boolean) => {
     });
 
   return (
-    <Wrapper>
-      <Header>
-        <BackBtn onClick={() => router.back()}>
-          <Image src='/arrow_back.svg' width={9} height={15} alt='back' />
-        </BackBtn>
-        <Title>자취방/하숙 목록</Title>
-      </Header>
+    <>
+      <Wrapper>
+        <Header>
+          <BackBtn onClick={() => router.back()}>
+            <Image src='/arrow_back.svg' width={9} height={15} alt='back' />
+          </BackBtn>
+          <Title>자취방/하숙 목록</Title>
+        </Header>
 
-      {/* 검색 */}
-      <SearchSection>
-        <SearchInputWrapper>
-          <SearchIcon src='/search.svg' alt='검색' width={20} height={20} />
-          <SearchInput
-            placeholder='원하는 자취방/하숙을 검색해주세요.'
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </SearchInputWrapper>
-      </SearchSection>
+        {/* 검색 */}
+        <SearchSection>
+          <SearchInputWrapper>
+            <SearchIcon src='/search.svg' alt='검색' width={20} height={20} />
+            <SearchInput
+              placeholder='원하는 자취방/하숙을 검색해주세요.'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </SearchInputWrapper>
+        </SearchSection>
 
-      <FilterSection>
-        {/* 정렬 */}
-        <FilterButtonWrapper>
-          <FilterButton
-            $active={false} // 정렬은 active 상태 없음
-            onClick={() => {
-              setSortOption(sortOption === 'rating' ? 'bookmark' : 'rating');
-            }}
-          >
-            {sortOption === 'rating' ? '평점순' : '북마크순'}
-          </FilterButton>
-        </FilterButtonWrapper>
+        <FilterSection>
+          {/* 정렬 */}
+          <FilterButtonWrapper>
+            <FilterButton
+              $active={false} // 정렬은 active 상태 없음
+              onClick={() => {
+                setSortOption(sortOption === 'rating' ? 'bookmark' : 'rating');
+              }}
+            >
+              {sortOption === 'rating' ? '평점순' : '북마크순'}
+            </FilterButton>
+          </FilterButtonWrapper>
 
-        {/* 타입 필터 */}
-        <FilterButtonWrapper>
-          <FilterButton
-            $active={activeFilter === '타입'}
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveFilter(activeFilter === '타입' ? null : '타입');
-            }}
-          >
-            {typeFilter}
-          </FilterButton>
+          {/* 타입 필터 */}
+          <FilterButtonWrapper>
+            <FilterButton
+              $active={activeFilter === '타입'}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveFilter(activeFilter === '타입' ? null : '타입');
+              }}
+            >
+              {typeFilter}
+            </FilterButton>
 
-          {activeFilter === '타입' && (
-            <FilterPopupFloating>
-              <PopupTitle>방 종류</PopupTitle>
-              <OptionList>
-                {['전체', '자취방', '하숙집'].map((t) => (
-                  <OptionButton
-                    key={t}
-                    $selected={typeFilter === t}
-                    onClick={() => {
-                      setTypeFilter(t);
-                      setActiveFilter(null);
-                    }}
-                  >
-                    {t}
-                  </OptionButton>
-                ))}
-              </OptionList>
-            </FilterPopupFloating>
-          )}
-        </FilterButtonWrapper>
+            {activeFilter === '타입' && (
+              <FilterPopupFloating>
+                <PopupTitle>방 종류</PopupTitle>
+                <OptionList>
+                  {['전체', '자취방', '하숙집'].map((t) => (
+                    <OptionButton
+                      key={t}
+                      $selected={typeFilter === t}
+                      onClick={() => {
+                        setTypeFilter(t);
+                        setActiveFilter(null);
+                      }}
+                    >
+                      {t}
+                    </OptionButton>
+                  ))}
+                </OptionList>
+              </FilterPopupFloating>
+            )}
+          </FilterButtonWrapper>
 
-        {/* 주소 필터 */}
-        <FilterButtonWrapper>
-          <FilterButton
-            $active={activeFilter === '주소'}
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveFilter(activeFilter === '주소' ? null : '주소');
-            }}
-          >
-            {districtFilter}
-          </FilterButton>
+          {/* 주소 필터 */}
+          <FilterButtonWrapper>
+            <FilterButton
+              $active={activeFilter === '주소'}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveFilter(activeFilter === '주소' ? null : '주소');
+              }}
+            >
+              {districtFilter}
+            </FilterButton>
 
-          {activeFilter === '주소' && (
-            <FilterPopupFloating $alignRight>
-              <PopupTitle>지역 선택</PopupTitle>
-              <OptionGrid>
-                {[
-                  '전체 주소',
-                  '강남구',
-                  '강동구',
-                  '마포구',
-                  '서대문구',
-                  '노원구',
-                  '종로구',
-                  '중구',
-                  '송파구',
-                  '용산구',
-                ].map((d) => (
-                  <OptionButton
-                    key={d}
-                    $selected={districtFilter === d}
-                    onClick={() => {
-                      setDistrictFilter(d);
-                      setActiveFilter(null);
-                    }}
-                  >
-                    {d}
-                  </OptionButton>
-                ))}
-              </OptionGrid>
-            </FilterPopupFloating>
-          )}
-        </FilterButtonWrapper>
-      </FilterSection>
+            {activeFilter === '주소' && (
+              <FilterPopupFloating $alignRight>
+                <PopupTitle>지역 선택</PopupTitle>
+                <OptionGrid>
+                  {[
+                    '전체 주소',
+                    '강남구',
+                    '강동구',
+                    '마포구',
+                    '서대문구',
+                    '노원구',
+                    '종로구',
+                    '중구',
+                    '송파구',
+                    '용산구',
+                  ].map((d) => (
+                    <OptionButton
+                      key={d}
+                      $selected={districtFilter === d}
+                      onClick={() => {
+                        setDistrictFilter(d);
+                        setActiveFilter(null);
+                      }}
+                    >
+                      {d}
+                    </OptionButton>
+                  ))}
+                </OptionGrid>
+              </FilterPopupFloating>
+            )}
+          </FilterButtonWrapper>
+        </FilterSection>
 
-      {/* 리스트 */}
-      <ScrollArea>
-        <CardGrid>
-          {filteredHouses.map((house) => (
-            <div key={house.houseId} style={{ position: "relative" }}>
-              <RoomCard
-                key={house.houseId}
-                id={String(house.houseId)}
-                type={house.type === 'PRIVATE' ? '자취방' : '하숙집'}
-                title={house.buildingName}
-                address={house.address}
-                rate={house.reviewScore ?? 0}
-                onClick={() => router.push(`/houses/${house.houseId}`)}
-              />
+        {/* 리스트 */}
+        <ScrollArea>
+          <CardGrid>
+            {filteredHouses.map((house) => (
+              <div key={house.houseId} style={{ position: 'relative' }}>
+                <RoomCard
+                  key={house.houseId}
+                  id={String(house.houseId)}
+                  type={house.type === 'PRIVATE' ? '자취방' : '하숙집'}
+                  title={house.buildingName}
+                  address={house.address}
+                  rate={house.reviewScore ?? 0}
+                  onClick={() => router.push(`/houses/${house.houseId}`)}
+                />
+              </div>
+            ))}
+          </CardGrid>
+        </ScrollArea>
 
-            </div>
-          ))}
-        </CardGrid>
-
-      </ScrollArea>
-
-      <FloatingButton onClick={() => router.push('/houses/new/step1')}>
-        <Image src='/writing.svg' alt='리뷰 작성' width={28} height={28} />
-        <span>+직접 추가</span>
-      </FloatingButton>
+        <FloatingButton onClick={() => router.push('/houses/new/step1')}>
+          <Image src='/writing.svg' alt='리뷰 작성' width={28} height={28} />
+          <span>+직접 추가</span>
+        </FloatingButton>
+      </Wrapper>
       <NavigationBar />
-    </Wrapper>
+    </>
   );
 }
 

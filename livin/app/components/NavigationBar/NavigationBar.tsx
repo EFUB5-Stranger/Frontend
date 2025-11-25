@@ -62,19 +62,21 @@ export default function NavigationBar() {
         </NavItem>
 
         {/* 중앙 버튼 */}
-        <CenterButtonContainer>
-          <CircleOuter>
-            <Image
-              src='/map.svg'
-              alt='지도'
-              width={24}
-              height={24}
-              style={{
-                opacity: isMap ? 1 : 0.75,
-              }}
-            />
-          </CircleOuter>
-        </CenterButtonContainer>
+        <NavItem href='/map' $active={pathname === '/map'}>
+          <CenterButtonContainer>
+            <CircleOuter>
+              <Image
+                src='/map.svg'
+                alt='지도'
+                width={24}
+                height={24}
+                style={{
+                  opacity: isMap ? 1 : 0.75,
+                }}
+              />
+            </CircleOuter>
+          </CenterButtonContainer>
+        </NavItem>
       </InnerBar>
     </Wrapper>
   );

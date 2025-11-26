@@ -1,15 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import EvaluationItem from '@/components/Dorm/EvaluationItem';
 import StarRating from '@/components/Dorm/StarRating';
 import ImageUpload from '@/components/Common/ImageUpload';
+import { createHouseReviewApi, uploadReviewImageApi, getHouseDetailApi } from '@apis/house';
+
+interface HouseDetail {
+  houseId: number;
+  buildingName: string;
+  address: string;
+  parking: boolean;
+  elevator: boolean;
+  floor: number;
+  type: 'PRIVATE' | 'BOARDING';
+  options: string | null;
+  imageUrl: string;
+  bookmarked: boolean;
+}
+
+// API 요구사항에 맞는 타입 매핑
+interface RatingMapping {
+  '더러워요': 'DIRTY';
+  '보통이에요': 'NORMAL';
+  '깨끗해요': 'CLEAN';
+  '나빠요': 'BAD';
+  '좋아요': 'GOOD';
+  '조용해요': 'NONE';
+  '시끄러워요': 'OFTEN';
+  '없어요': 'NONE';
+  '가끔 나와요': 'SOMETIMES';
+  '자주 나와요': 'OFTEN';
+}
 
 export default function HouseWritePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const houseId = searchParams.get('houseId');
   
   const [ratings, setRatings] = useState({
     시설: '',
@@ -22,28 +52,133 @@ export default function HouseWritePage() {
   const [reviewText, setReviewText] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [houseDetail, setHouseDetail] = useState<HouseDetail | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 임시 건물 정보
-  const houseInfo = {
-    name: '하늘이화대박빌라',
-    address: '서울특별시 서대문구 이화여대길 55',
+  useEffect(() => {
+    const fetchHouseDetail = async () => {
+      if (!houseId) return;
+      
+      try {
+        setLoading(true);
+        const data = await getHouseDetailApi(houseId);
+        setHouseDetail(data);
+      } catch (error) {
+        console.error('Failed to fetch house detail:', error);
+        alert('건물 정보를 가져오는데 실패했습니다.');
+        router.back();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHouseDetail();
+  }, [houseId, router]);
+
+  const mapRatingToEnum = (category: string, value: string): string => {
+    const mappings: Record<string, Record<string, string>> = {
+      시설: {
+        '더러워요': 'DIRTY',
+        '보통이에요': 'NORMAL',
+        '깨끗해요': 'CLEAN'
+      },
+      접근성: {
+        '나빠요': 'BAD',
+        '보통이에요': 'NORMAL',
+        '좋아요': 'GOOD'
+      },
+      방음: {
+        '조용해요': 'NONE',
+        '보통이에요': 'SOMETIMES',
+        '시끄러워요': 'OFTEN'
+      },
+      벌레: {
+        '없어요': 'NONE',
+        '가끔 나와요': 'SOMETIMES',
+        '자주 나와요': 'OFTEN'
+      }
+    };
+    
+    return mappings[category]?.[value] || '';
   };
 
-  const handleImageAdd = () => {
-    if (images.length < 5) {
-      console.log('이미지 추가');
+  const handleImageAdd = async (file: File) => {
+    try {
+      setIsUploading(true);
+      const imageUrl = await uploadReviewImageApi(file);
+      setImages(prev => [...prev, imageUrl]);
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const handleSubmit = () => {
-    console.log('리뷰 등록:', {
-      ratings,
-      overallRating,
-      reviewText,
-      images,
-    });
-    router.back();
+  const handleSubmit = async () => {
+    if (!houseId) {
+      alert('건물 ID가 없습니다.');
+      return;
+    }
+
+    // 필수 필드 검증
+    if (!ratings.시설 || !ratings.접근성 || !ratings.방음 || !ratings.벌레) {
+      alert('모든 세부 항목을 평가해주세요.');
+      return;
+    }
+
+    if (overallRating === 0) {
+      alert('종합 평가를 선택해주세요.');
+      return;
+    }
+
+    if (reviewText.trim().length < 15) {
+      alert('후기는 최소 15자 이상 작성해주세요.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      const reviewData = {
+        facilityRate: mapRatingToEnum('시설', ratings.시설) as 'DIRTY' | 'NORMAL' | 'CLEAN',
+        accessRate: mapRatingToEnum('접근성', ratings.접근성) as 'BAD' | 'NORMAL' | 'GOOD', 
+        soundRate: mapRatingToEnum('방음', ratings.방음) as 'NONE' | 'SOMETIMES' | 'OFTEN',
+        bugRate: mapRatingToEnum('벌레', ratings.벌레) as 'NONE' | 'SOMETIMES' | 'OFTEN',
+        finalRate: overallRating,
+        review: reviewText.trim(),
+        anonym: isAnonymous,
+        imageUrls: images,
+      };
+
+      await createHouseReviewApi(houseId, reviewData);
+      alert('리뷰가 성공적으로 등록되었습니다!');
+      router.push(`/houses/${houseId}`);
+    } catch (error) {
+      console.error('Failed to create review:', error);
+      alert('리뷰 등록에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loading || !houseDetail) {
+    return (
+      <Wrapper>
+        <Container>
+          <Header>
+            <BackButton onClick={() => router.back()}>
+              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            </BackButton>
+            <Title>{loading ? '로딩 중...' : '건물을 찾을 수 없습니다'}</Title>
+            <Spacer />
+          </Header>
+        </Container>
+      </Wrapper>
+    );
+  }
 
   return (
     <Wrapper>
@@ -59,10 +194,10 @@ export default function HouseWritePage() {
         <Content>
           {/* 건물 정보 */}
           <HouseInfoCard>
-            <HouseImage />
+            <HouseImage style={{ backgroundImage: houseDetail.imageUrl ? `url(${houseDetail.imageUrl})` : 'none' }} />
             <HouseDetails>
-              <HouseName>{houseInfo.name}</HouseName>
-              <HouseAddress>{houseInfo.address}</HouseAddress>
+              <HouseName>{houseDetail.buildingName}</HouseName>
+              <HouseAddress>{houseDetail.address}</HouseAddress>
             </HouseDetails>
           </HouseInfoCard>
 
@@ -153,12 +288,13 @@ export default function HouseWritePage() {
               onAddImage={handleImageAdd}
               isAnonymous={isAnonymous}
               onToggleAnonymous={setIsAnonymous}
+              isUploading={isUploading}
             />
           </Section>
         </Content>
 
-        <SubmitButton onClick={handleSubmit}>
-          리뷰 등록하기
+        <SubmitButton onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? '등록 중...' : '리뷰 등록하기'}
         </SubmitButton>
       </Container>
     </Wrapper>
@@ -232,6 +368,9 @@ const HouseImage = styled.div`
   height: 60px;
   border-radius: 8px;
   background: #d9d9d9;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   flex-shrink: 0;
 `;
 
@@ -336,12 +475,17 @@ const SubmitButton = styled.button`
   align-items: center;
   gap: 10px;
 
-  &:hover {
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
-  &:active {
+  &:not(:disabled):active {
     transform: translateY(0);
   }
 `;

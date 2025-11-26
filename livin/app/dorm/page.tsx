@@ -24,29 +24,36 @@ export default function DormPage() {
   const fetchReviews = async () => {
     try {
       setIsLoading(true);
-      const params: any = {};
       
-      if (searchText) params.buildName = searchText;
-      if (selectedRating > 0) params.minFinalRate = selectedRating;
-      if (selectedBuilding) params.buildName = selectedBuilding;
-      if (selectedDong) params.buildNum = selectedDong;
-
-      const data = await getDormReviewsApi(params);
-      setReviews(data);
-    } catch (error) {
+      // 전체 목록 조회 (params 없이)
+      const data = await getDormReviewsApi();
+      console.log('API Response:', data);
+      console.log('Response type:', typeof data);
+      console.log('Is array:', Array.isArray(data));
+      
+      if (Array.isArray(data)) {
+        setReviews(data);
+        console.log('Reviews loaded:', data.length);
+      } else {
+        console.log('Unexpected data structure:', data);
+        setReviews([]);
+      }
+    } catch (error: any) {
       console.error('리뷰 조회 실패:', error);
-      alert('리뷰를 불러오는데 실패했습니다.');
+      console.error('Error response:', error.response);
+      console.error('Error status:', error.response?.status);
+      console.error('Error data:', error.response?.data);
+      
+      setReviews([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 초기 로딩 및 필터 변경 시 재조회
   useEffect(() => {
     fetchReviews();
-  }, [selectedRating, selectedBuilding, selectedDong]);
+  }, []);
 
-  // 검색어 입력 후 엔터키 처리
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       fetchReviews();
@@ -196,11 +203,11 @@ export default function DormPage() {
             reviews.map((review) => (
               <DormReviewCard
                 key={review.id}
-                date={new Date(review.createdAt || Date.now()).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').slice(0, -1)}
+                date={'2025.11.26'}
                 name={review.nickname || '익명'}
                 score={review.finalrate || 0}
                 stars={review.finalrate || 0}
-                tags={[review.buildName, review.buildNum, `${review.roomPeople}인실`]}
+                tags={[review.buildName, review.buildNum, `${review.roomPeople}인실`].filter(Boolean)}
                 evaluations={{
                   방음: review.soundRate || '-',
                   시설: review.facilityRate || '-',

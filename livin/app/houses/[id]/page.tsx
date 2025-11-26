@@ -1,59 +1,110 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import DormReviewCard from '@/components/Dorm/DormReviewCard';
 import FloatingWriteButton from '@/components/Common/FloatingWriteButton';
+import { getHouseReviewsApi, getHouseDetailApi } from '@apis/house';
+
+interface HouseDetail {
+  houseId: number;
+  buildingName: string;
+  address: string;
+  parking: boolean;
+  elevator: boolean;
+  floor: number;
+  type: 'PRIVATE' | 'BOARDING';
+  options: string | null;
+  lon: string;
+  lat: string;
+  imageUrl: string;
+  place_url: string | null;
+  phone: string | null;
+  bookmarked: boolean;
+}
+
+interface HouseReview {
+  id: number;
+  createdAt: string;
+  finalRate: number;
+  facilityRate: 'DIRTY' | 'NORMAL' | 'CLEAN';
+  soundRate: 'NONE' | 'SOMETIMES' | 'OFTEN';
+  bugRate: 'NONE' | 'SOMETIMES' | 'OFTEN';
+  accessRate: 'BAD' | 'NORMAL' | 'GOOD';
+  imageUrls: string[];
+}
 
 export default function BuildingDetailPage() {
   const router = useRouter();
   const params = useParams();
   const [buildingInfo, setBuildingInfo] = useState('');
+  const [reviews, setReviews] = useState<HouseReview[]>([]);
+  const [houseDetail, setHouseDetail] = useState<HouseDetail | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 임시 건물 데이터
-  const building = {
-    id: params.id,
-    name: '하늘이화대박빌라',
-    address: '서울특별시 서대문구 이화여대길 55',
-    info: '지상 4층, 주차 가능, 엘리베이터 없음. 정문에서 도보 5분 거리',
-    image: '',
-    averageRating: 4.0,
-    reviewCount: 12,
-  };
+  // 평점 계산
+  const averageRating = reviews?.length > 0 
+    ? reviews.reduce((sum, review) => sum + review.finalRate, 0) / reviews.length 
+    : 0;
 
-  // 임시 리뷰 데이터
-  const reviews = [
-    {
-      id: 1,
-      date: '2025.09.27',
-      name: '구구',
-      score: 4.0,
-      stars: 4,
-      tags: ['한우리집', '101동'],
-      evaluations: {
-        방음: '보통',
-        시설: '보통',
-        접근성: '좋음',
-        벌레: '많음',
-      },
-    },
-    {
-      id: 2,
-      date: '2025.09.27',
-      name: '김이화',
-      score: 4.0,
-      stars: 4,
-      tags: ['한우리집', '건물 상태:좋음'],
-      evaluations: {
-        방음: '나쁨',
-        시설: '보통',
-        접근성: '좋음',
-        벌레: '많음',
-      },
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!params.id) return;
+      
+      try {
+        setLoading(true);
+        
+        // 건물 상세와 리뷰 목록 병렬 호출
+        const [houseDetailData, reviewsData] = await Promise.all([
+          getHouseDetailApi(params.id as string),
+          getHouseReviewsApi(params.id as string)
+        ]);
+        
+        setHouseDetail(houseDetailData);
+        setReviews(reviewsData.content);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <Wrapper>
+        <Container>
+          <Header>
+            <BackButton onClick={() => router.back()}>
+              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            </BackButton>
+            <Title>로딩 중...</Title>
+            <Spacer />
+          </Header>
+        </Container>
+      </Wrapper>
+    );
+  }
+
+  if (!houseDetail) {
+    return (
+      <Wrapper>
+        <Container>
+          <Header>
+            <BackButton onClick={() => router.back()}>
+              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            </BackButton>
+            <Title>건물을 찾을 수 없습니다</Title>
+            <Spacer />
+          </Header>
+        </Container>
+      </Wrapper>
+    );
+  }
 
   return (
     <Wrapper>
@@ -62,26 +113,32 @@ export default function BuildingDetailPage() {
           <BackButton onClick={() => router.back()}>
             <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
           </BackButton>
-          <Title>{building.name}</Title>
+          <Title>{houseDetail.buildingName}</Title>
           <Spacer />
         </Header>
 
-        <BuildingImageLarge />
+        <BuildingImageLarge style={{ backgroundImage: houseDetail.imageUrl ? `url(${houseDetail.imageUrl})` : 'none' }} />
 
         <BuildingInfoSection>
           <BuildingInfoText>
-            {building.info}
+            {houseDetail.address}<br/>
+            지상 {houseDetail.floor}층, 
+            주차 {houseDetail.parking ? '가능' : '불가'}, 
+            엘리베이터 {houseDetail.elevator ? '있음' : '없음'}
+            {houseDetail.options && (
+              <><br/>옵션: {houseDetail.options}</>
+            )}
           </BuildingInfoText>
         </BuildingInfoSection>
 
         <ReviewSection>
           <ReviewHeader>
-            <ReviewTitle>리뷰 평점 {building.averageRating.toFixed(1)} · {building.reviewCount}개</ReviewTitle>
+            <ReviewTitle>리뷰 평점 {averageRating.toFixed(1)} · {reviews?.length || 0}개</ReviewTitle>
             <Stars>
               {[1, 2, 3, 4, 5].map((star) => (
                 <Image
                   key={star}
-                  src={star <= Math.floor(building.averageRating) ? '/star.svg' : '/star_unfilled.svg'}
+                  src={star <= Math.floor(averageRating) ? '/star.svg' : '/star_unfilled.svg'}
                   alt='star'
                   width={16}
                   height={16}
@@ -94,23 +151,28 @@ export default function BuildingDetailPage() {
           </ReviewHeader>
 
           <ReviewList>
-            {reviews.map((review) => (
+            {reviews?.map((review) => (
               <DormReviewCard
                 key={review.id}
-                date={review.date}
-                name={review.name}
-                score={review.score}
-                stars={review.stars}
-                tags={review.tags}
-                evaluations={review.evaluations}
-                onClick={() => router.push(`/houses/review/${review.id}`)}
+                date={new Date(review.createdAt).toLocaleDateString()}
+                name='익명'
+                score={review.finalRate}
+                stars={review.finalRate}
+                tags={[]}
+                evaluations={{
+                  방음: review.soundRate,
+                  시설: review.facilityRate,
+                  접근성: review.accessRate,
+                  벌레: review.bugRate,
+                }}
+                onClick={() => router.push(`/houses/review/${review.id}?houseId=${params.id}`)}
               />
             ))}
           </ReviewList>
         </ReviewSection>
       </Container>
 
-      <FloatingWriteButton href='/houses/write' />
+      <FloatingWriteButton href={`/houses/write?houseId=${params.id}`} />
     </Wrapper>
   );
 }
@@ -165,6 +227,9 @@ const BuildingImageLarge = styled.div`
   width: 100%;
   height: 200px;
   background: #d9d9d9;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 16px;
   margin-bottom: 20px;
 `;

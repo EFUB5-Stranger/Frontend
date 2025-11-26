@@ -1,13 +1,15 @@
 'use client';
 
+import { useRef } from 'react';
 import styled from 'styled-components';
 
 interface ImageUploadProps {
   imageCount: number;
   maxImages?: number;
-  onAddImage: () => void;
+  onAddImage: (file: File) => void;
   isAnonymous: boolean;
   onToggleAnonymous: (value: boolean) => void;
+  isUploading?: boolean;
 }
 
 export default function ImageUpload({
@@ -16,7 +18,41 @@ export default function ImageUpload({
   onAddImage,
   isAnonymous,
   onToggleAnonymous,
+  isUploading = false,
 }: ImageUploadProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 파일 크기 체크 (5MB 제한)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('파일 크기는 5MB 이하만 업로드 가능합니다.');
+        return;
+      }
+
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+
+      onAddImage(file);
+    }
+    // input 값 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAddImageClick = () => {
+    if (imageCount >= maxImages) {
+      alert(`이미지는 최대 ${maxImages}장까지 업로드 가능합니다.`);
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
   return (
     <>
       <ImageUploadSection>
@@ -24,9 +60,15 @@ export default function ImageUpload({
           <ImagePreview>📷</ImagePreview>
           <ImageCount>{imageCount} / {maxImages}</ImageCount>
         </ImageBox>
-        <AddImageBox onClick={onAddImage}>
-          <PlusIcon>+</PlusIcon>
+        <AddImageBox onClick={handleAddImageClick} disabled={isUploading}>
+          <PlusIcon>{isUploading ? '⏳' : '+'}</PlusIcon>
         </AddImageBox>
+        <HiddenFileInput
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+        />
       </ImageUploadSection>
       <ImageFooter>
         <div></div>
@@ -74,6 +116,10 @@ const ImageCount = styled.div`
   color: #999;
 `;
 
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
 const AddImageBox = styled.button`
   width: 70px;
   height: 70px;
@@ -89,6 +135,11 @@ const AddImageBox = styled.button`
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
     background: #f8f8f8;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 `;
 

@@ -211,6 +211,7 @@ export default function HousesPage() {
                     address={building.address}
                     rate={building.rate}
                     thumbnailUrl={building.thumbnailUrl}
+                    onClick={() => router.push(`/houses/${building.id}`)}
                   />
                 </div>
               );

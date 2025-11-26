@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import axiosInstance from '@apis/axiosInstance';
-import { ServerBuildingType } from '@/types/building'; // 서버 타입 import
+import { BuildingType } from '@/types/building'; // 서버 타입 import
 
 // 서버로 보내는 payload 타입
 interface BookmarkPayload {
   id: number;
-  type: ServerBuildingType; 
+  type: BuildingType;
   title: string;
   address: string;
   rate: number;
@@ -15,10 +15,15 @@ interface BookmarkStore {
   bookmarks: BookmarkPayload[];
   toggleBookmark: (room: BookmarkPayload) => Promise<void>;
   isBookmarked: (id: number) => boolean;
+  setInitialBookmarks: (rooms: BookmarkPayload[]) => void;
 }
 
 export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   bookmarks: [],
+
+  setInitialBookmarks: (rooms: BookmarkPayload[]) => {
+    set({ bookmarks: rooms });
+  },
 
   toggleBookmark: async (room: BookmarkPayload) => {
     if (!room.id || Number.isNaN(room.id)) {
@@ -35,8 +40,8 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-       console.log("bookmark API response:", res.data);
-     const bookmarked = res.data.bookmarked;
+      console.log('bookmark API response:', res.data);
+      const bookmarked = res.data.bookmarked;
       const { bookmarks } = get();
 
       if (bookmarked) {

@@ -1,10 +1,10 @@
 import styled from 'styled-components';
 import RoomInfo from './RoomInfo';
-import { TagType } from '@/types/building';
+import { BuildingType } from '@/types/building';
 
 interface Props {
   id: number;
-  type: TagType;
+  type: BuildingType;
   title: string;
   address: string;
   rate?: number;
@@ -22,7 +22,7 @@ export default function RoomCard(props: Props) {
         address={props.address}
         rate={props.rate}
         thumbnailUrl={props.thumbnailUrl}
-        variant="card"   // ✅ 카드 레이아웃 지정
+        variant='card' // ✅ 카드 레이아웃 지정
       />
     </Wrapper>
   );

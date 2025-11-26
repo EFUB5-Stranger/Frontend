@@ -1,15 +1,13 @@
 import styled from 'styled-components';
+import { BuildingType } from '@/types/building';
 
-// 서버 타입과 매핑하기 쉽게 영어 키워드 사용
-export type TagType = 'privateHouse' | 'boardingHouse';
-
-export default function RoomTag({ type }: { type: TagType }) {
+export default function RoomTag({ type }: { type: BuildingType }) {
   // UI에 표시할 한글 라벨
-  const label = type === 'privateHouse' ? '자취방' : '하숙집';
+  const label = type === 'PRIVATE' ? '자취방' : '하숙집';
   return <Tag $type={type}>{label}</Tag>;
 }
 
-const Tag = styled.div<{ $type: TagType }>`
+const Tag = styled.div<{ $type: BuildingType }>`
   display: inline-flex;
   width: 42px;
   height: 18px;
@@ -25,8 +23,8 @@ const Tag = styled.div<{ $type: TagType }>`
   line-height: normal;
 
   color: ${({ $type, theme }) =>
-    $type === 'privateHouse' ? '#fff' : theme.colors.primary};
+    $type === 'PRIVATE' ? '#fff' : theme.colors.primary};
 
   background: ${({ $type, theme }) =>
-    $type === 'privateHouse' ? theme.colors.primary : '#fff'};
+    $type === 'PRIVATE' ? theme.colors.primary : '#fff'};
 `;

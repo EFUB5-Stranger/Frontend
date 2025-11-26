@@ -5,7 +5,7 @@ import { ServerBuildingType } from '@/types/building'; // 서버 타입 import
 // 서버로 보내는 payload 타입
 interface BookmarkPayload {
   id: number;
-  type: ServerBuildingType; // 서버 타입 (PRIVATE | BOARDING)
+  type: ServerBuildingType; 
   title: string;
   address: string;
   rate: number;

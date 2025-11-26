@@ -7,7 +7,7 @@ import FilterPopup from './FilterPopup';
 import styles from '@/styles/mapPage.module.css';
 import { FilterProvider } from 'hooks/FilterContext';
 import NavigationBar from './NavigationBar/NavigationBar';
-import { mapServerTypeToTag, ServerBuildingType } from '@/types/building';
+import { ServerBuildingType } from '@/types/building';
 
 declare global {
   interface Window {
@@ -27,42 +27,40 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
   const { setSelectedBuilding } = useMapContext();
 
   type MarkerCategory =
-  | 'privateHouse'
-  | 'boardingHouse'
-  | 'cafe'
-  | 'food'
-  | 'store'
-  | 'transport'
-  | 'default';
-// 서버 주거지 타입 → 마커 카테고리
-const houseCategoryFromServerType = (type: 'PRIVATE' | 'BOARDING'): MarkerCategory =>
-  type === 'PRIVATE' ? 'privateHouse' : 'boardingHouse';
+    | 'privateHouse'
+    | 'boardingHouse'
+    | 'cafe'
+    | 'food'
+    | 'store'
+    | 'transport'
+    | 'default';
 
-// ✅ 마커 생성 함수 (아이콘 적용 + 크기/오프셋 통일)
-const createMarker = (x: number, y: number, category: MarkerCategory, data: any) => {
-  const iconSrcMap: Record<MarkerCategory, string> = {
-    privateHouse: '/icons/privateHouse.svg',
-    boardingHouse: '/icons/boardingHouse.svg',
-    cafe: '/icons/cafe.svg',
-    food: '/icons/food.svg',
-    store: '/icons/store.svg',
-    transport: '/icons/transport.svg',
-    default: '/icons/store.svg', // 대체
-  };
+  // 서버 주거지 타입 → 마커 카테고리
+  const houseCategoryFromServerType = (type: 'PRIVATE' | 'BOARDING'): MarkerCategory =>
+    type === 'PRIVATE' ? 'privateHouse' : 'boardingHouse';
 
-const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
+  // ✅ 마커 생성 함수
+  const createMarker = (x: number, y: number, category: MarkerCategory, data: any) => {
+    const iconSrcMap: Record<MarkerCategory, string> = {
+      privateHouse: '/icons/privateHouse.svg',
+      boardingHouse: '/icons/boardingHouse.svg',
+      cafe: '/icons/cafe.svg',
+      food: '/icons/food.svg',
+      store: '/icons/store.svg',
+      transport: '/icons/transport.svg',
+      default: '/icons/store.svg',
+    };
 
-  const imageSize = new window.kakao.maps.Size(20, 20);
+    const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
+    const imageSize = new window.kakao.maps.Size(20, 20);
+    const imageOption = { offset: new window.kakao.maps.Point(20, 40) };
+    const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
 
-  const imageOption = { offset: new window.kakao.maps.Point(20, 40) };
-
-  const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
-
-  const marker = new window.kakao.maps.Marker({
-    position: new window.kakao.maps.LatLng(y, x),
-    image: markerImage,
-    map: mapInstance.current,
-  });
+    const marker = new window.kakao.maps.Marker({
+      position: new window.kakao.maps.LatLng(y, x),
+      image: markerImage,
+      map: mapInstance.current,
+    });
 
     // 클릭 이벤트 → 하단 팝업 띄우기
     window.kakao.maps.event.addListener(marker, 'click', () => {
@@ -70,7 +68,7 @@ const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
         setSelectedBuilding({
           id: Number(data.houseId),
           title: data.buildingName,
-          type: mapServerTypeToTag(data.type as ServerBuildingType),
+          type: data.type as ServerBuildingType, // ✅ 서버 타입 그대로
           address: data.address,
           thumbnailUrl: data.imageUrl || '/bookmark_unfilled.svg',
           rate: 0,
@@ -78,6 +76,7 @@ const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
         });
       } else {
         setSelectedBuilding({
+          // ✅ id는 optional이므로 undefined 허용
           id: undefined,
           title: data.placeName,
           type: null,
@@ -92,14 +91,14 @@ const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
     return marker;
   };
 
-  // ✅ 지도 초기화 (이화여대 좌표 고정)
+  // ✅ 지도 초기화
   useEffect(() => {
     if (window.kakao && mapRef.current) {
       window.kakao.maps.load(() => {
-        const center = new window.kakao.maps.LatLng(37.564213, 126.950288); // 이화여대
+        const center = new window.kakao.maps.LatLng(37.564213, 126.950288);
         const map = new window.kakao.maps.Map(mapRef.current, {
           center,
-          level: 4, // 캠퍼스 전체 보기 적당한 확대 레벨
+          level: 4,
         });
         mapInstance.current = map;
       });
@@ -111,9 +110,9 @@ const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
     if (!mapInstance.current || !mapData || !window.kakao) return;
 
     (mapData.houses || []).forEach((house: any) => {
-  const category = houseCategoryFromServerType(house.type as 'PRIVATE' | 'BOARDING');
-  createMarker(parseFloat(house.x), parseFloat(house.y), category, house);
-});
+      const category = houseCategoryFromServerType(house.type as 'PRIVATE' | 'BOARDING');
+      createMarker(parseFloat(house.x), parseFloat(house.y), category, house);
+    });
     (mapData.cafes || []).forEach((cafe: any) =>
       createMarker(cafe.x, cafe.y, 'cafe', cafe)
     );
@@ -160,10 +159,9 @@ const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false&libraries=services`}
           strategy="afterInteractive"
           onLoad={() => {
-            console.log('카카오 SDK 로드 완료');
-            if (window.kakao && window.kakao.maps && mapRef.current) {
+    if (window.kakao && mapRef.current) {
       window.kakao.maps.load(() => {
-        const center = new window.kakao.maps.LatLng(37.564213, 126.950288); // 이화여대
+        const center = new window.kakao.maps.LatLng(37.564213, 126.950288);
         const map = new window.kakao.maps.Map(mapRef.current, {
           center,
           level: 4,
@@ -171,11 +169,7 @@ const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
         mapInstance.current = map;
       });
     }
-          }}
-          onError={(e) => {
-            console.error('카카오 SDK 로드 실패:', e);
-            alert('카카오 지도 SDK 로드 실패');
-          }}
+  }}
         />
         <div ref={mapRef} className={styles.mapContainer} />
 

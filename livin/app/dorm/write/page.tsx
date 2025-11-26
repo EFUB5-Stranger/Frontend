@@ -4,10 +4,11 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import Dropdown from '@/components/Dorm/Dropdown';
-import EvaluationItem from '@/components/Dorm/EvaluationItem';
-import StarRating from '@/components/Dorm/StarRating';
-import ImageUpload from '@/components/Common/ImageUpload';
+import Dropdown from '@components/Dorm/Dropdown';
+import EvaluationItem from '@components/Dorm/EvaluationItem';
+import StarRating from '@components/Dorm/StarRating';
+import ImageUpload from '@components/Common/ImageUpload';
+import { createDormReviewApi } from '@apis/dorm';
 
 export default function DormWritePage() {
   const router = useRouter();
@@ -45,15 +46,48 @@ export default function DormWritePage() {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('리뷰 등록:', {
-      dormInfo,
-      ratings,
-      overallRating,
-      reviewText,
-      images,
-    });
-    router.back();
+  const handleSubmit = async () => {
+    // 유효성 검사
+    if (!dormInfo.building || !dormInfo.dong || !dormInfo.room) {
+      alert('기숙사 정보를 모두 입력해주세요.');
+      return;
+    }
+    if (!ratings.시설 || !ratings.청결 || !ratings.방음 || !ratings.벌레) {
+      alert('만족도 평가를 모두 선택해주세요.');
+      return;
+    }
+    if (overallRating === 0) {
+      alert('종합 평가를 입력해주세요.');
+      return;
+    }
+    if (reviewText.length < 15) {
+      alert('후기는 최소 15자 이상 작성해주세요.');
+      return;
+    }
+
+    try {
+      // roomPeople 숫자 추출 (예: "2인실" -> 2)
+      const roomPeople = parseInt(dormInfo.room.replace('인실', ''));
+
+      await createDormReviewApi(
+        dormInfo.building,     // buildName
+        dormInfo.dong,         // buildNum
+        roomPeople,            // roomPeople
+        ratings.시설,          // facilityRate
+        ratings.청결,          // accessRate
+        ratings.방음,          // soundRate
+        ratings.벌레,          // bugRate
+        overallRating,         // finalRate
+        reviewText,            // review
+        isAnonymous            // anonym
+      );
+
+      alert('리뷰가 등록되었습니다!');
+      router.push('/dorm');
+    } catch (error) {
+      console.error('리뷰 등록 실패:', error);
+      alert('리뷰 등록에 실패했습니다.');
+    }
   };
 
   return (

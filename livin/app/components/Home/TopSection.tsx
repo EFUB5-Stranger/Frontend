@@ -13,7 +13,8 @@ export default function TopSection() {
       try {
         const data = await getUserProfileApi();
         setNickname(data.nickname);
-      } catch (e) {
+      } catch (e: unknown) {
+        console.error('프로필 로딩 실패:', e);
         setNickname('사용자');
       }
     };

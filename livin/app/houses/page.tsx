@@ -1,19 +1,33 @@
 'use client';
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import RoomCard from '@/components/Home/Rooms/RoomCard';
+import RoomInfo from '@/components/Home/Rooms/RoomInfo';
 import Image from 'next/image';
 import NavigationBar from '@/components/NavigationBar/NavigationBar';
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@apis/axiosInstance';
-import { Building } from '@/types/building';
+import { BuildingType } from '@/types/building';
+import { useBookmarkStore } from '@/stores/useBookmarkStore';
+
+interface HouseData {
+  houseId: number;
+  buildingName: string;
+  address: string;
+  type: BuildingType;
+  imageUrl?: string;
+  rate?: number;
+  bookmarked?: boolean;
+}
 
 export default function HousesPage() {
   const router = useRouter();
 
+  const setInitialBookmarks = useBookmarkStore(
+    (state) => state.setInitialBookmarks
+  );
+  const isBookmarked = useBookmarkStore((state) => state.isBookmarked);
   const [searchTerm, setSearchTerm] = useState('');
-  const [bookmarks, setBookmarks] = useState<{ [key: number]: number }>({});
-  const [houses, setHouses] = useState<any[]>([]);
+  const [houses, setHouses] = useState<HouseData[]>([]);
 
   type FilterType = '정렬' | '타입' | '주소' | null;
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
@@ -35,14 +49,27 @@ export default function HousesPage() {
             page: 0,
           },
         });
-        setHouses(res.data.houses);
+        const fetchedHouses = res.data.houses;
+        setHouses(fetchedHouses);
+
+        const myBookmarks = fetchedHouses
+          .filter((h: HouseData) => h.bookmarked) // bookmarked가 true인 것만 필터링
+          .map((h: HouseData) => ({
+            id: h.houseId,
+            type: h.type,
+            title: h.buildingName,
+            address: h.address,
+            rate: h.rate || 0,
+          }));
+
+        setInitialBookmarks(myBookmarks);
       } catch (error) {
         console.error('건물 목록 불러오기 실패:', error);
       }
     };
 
     fetchHouses();
-  }, []);
+  }, [setInitialBookmarks]);
 
   const filteredHouses = houses
     .filter(
@@ -65,9 +92,9 @@ export default function HousesPage() {
       if (sortOption === 'rating') {
         return (b.rate ?? 0) - (a.rate ?? 0); // ✅ rate 사용
       } else {
-        const aBookmarks = bookmarks[a.houseId] || 0;
-        const bBookmarks = bookmarks[b.houseId] || 0;
-        return bBookmarks - aBookmarks;
+        const aMarked = isBookmarked(a.houseId) ? 1 : 0;
+        const bMarked = isBookmarked(b.houseId) ? 1 : 0;
+        return bMarked - aMarked;
       }
     });
 
@@ -189,29 +216,17 @@ export default function HousesPage() {
         <ScrollArea>
           <CardGrid>
             {filteredHouses.map((h) => {
-              const building: Building = {
-                id: h.houseId,
-                title: h.buildingName,
-                address: h.address,
-                type: h.type,
-                rate: 0,
-                thumbnailUrl: h.imageUrl,
-                bookmarked: h.bookmarked,
-              };
               return (
-                <div key={building.id} style={{ position: 'relative' }}>
-                  <RoomCard
-                    id={building.id}
-                    type={
-                      building.type === 'PRIVATE'
-                        ? 'privateHouse'
-                        : 'boardingHouse'
-                    }
-                    title={building.title}
-                    address={building.address}
-                    rate={building.rate}
-                    thumbnailUrl={building.thumbnailUrl}
-                    onClick={() => router.push(`/houses/${building.id}`)}
+                <div key={h.houseId} style={{ position: 'relative' }}>
+                  <RoomInfo
+                    id={h.houseId}
+                    type={h.type}
+                    title={h.buildingName}
+                    address={h.address}
+                    rate={h.rate}
+                    thumbnailUrl={h.imageUrl}
+                    variant='card'
+                    onClick={() => router.push(`/houses/${h.houseId}`)}
                   />
                 </div>
               );
@@ -226,7 +241,8 @@ export default function HousesPage() {
       </Wrapper>
       <NavigationBar />
     </>
-  );}
+  );
+}
 const Wrapper = styled.div`
   width: 360px;
   height: 800px;

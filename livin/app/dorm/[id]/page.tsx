@@ -1,68 +1,148 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import StarDisplay from '@/components/Dorm/StarDisplay';
 import EvaluationList from '@/components/Dorm/EvaluationList';
+import { getDormReviewDetailApi, deleteDormReviewApi, createCommentApi, deleteCommentApi } from '@apis/dorm';
+
+interface Review {
+  id: number;
+  buildName: string;
+  buildNum: string;
+  roomPeople: number;
+  review: string;
+  finalRate: number;
+  facilityRate: string;
+  soundRate: string;
+  bugRate: string;
+  accessRate: string;
+  imageUrls: string[];
+  createdAt?: string;
+  nickname?: string;
+  anonym?: boolean;
+  canDelete?: boolean;
+}
+
+interface Comment {
+  commentId: number;
+  userId?: number;
+  content: string;
+  nickname: string;
+  createdAt: string;
+  canDelete?: boolean;
+}
 
 export default function DormDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const [review, setReview] = useState<Review | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
-  // 임시 데이터
-  const review = {
-    id: params.id,
-    date: '2025.09.27',
-    name: '두둥',
-    score: 4.0,
-    stars: 4,
-    tags: ['한우리집', '102동', '2인실'],
-    evaluations: {
-      방음: '보통',
-      시설: '보통',
-      접근성: '좋음',
-      벌레: '많음',
-    },
-    images: [
-      { id: 1, url: '' },
-      { id: 2, url: '' },
-    ],
-    content: `1교시 수업이라면 10분 전에 나와도 지각 안할 수 있어요.
-다만 산 속이라 벌레가 많아서 방충망 꼭 닫고 자야 해요`,
-    comments: [
-      {
-        id: 1,
-        author: 'ㄱㄱ',
-        date: '2025.09.27 17:50',
-        text: '맞아요 여기 벌레 너무 많이 나와요ㅠ',
-        canDelete: true,
-      },
-      {
-        id: 2,
-        author: '익명1',
-        date: '2025.09.27 17:50',
-        text: '저는 벌레 별로 안 나오던데요?',
-        isReported: true,
-      },
-      {
-        id: 3,
-        author: '익명2',
-        date: '2025.09.27 17:50',
-        text: '저는 벌레 별로 안 나오던데요?',
-        isReported: true,
-      },
-    ],
+  const loadReviewData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getDormReviewDetailApi(params.id as string);
+      setReview(data);
+      
+      // 임시 댓글 데이터
+      setComments([
+        {
+          commentId: 1,
+          content: '맞아요 여기 벌레 너무 많이 나와요ㅠ',
+          nickname: 'ㄱㄱ',
+          createdAt: new Date().toISOString(),
+          canDelete: true,
+        },
+        {
+          commentId: 2,
+          content: '저는 벌레 별로 안 나오던데요?',
+          nickname: '익명1',
+          createdAt: new Date().toISOString(),
+        }
+      ]);
+    } catch (error) {
+      console.error('리뷰 데이터 로드 실패:', error);
+      alert('리뷰를 찾을 수 없습니다.');
+      router.back();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSubmitComment = () => {
-    if (!commentText.trim()) return;
-    console.log('댓글 작성:', { text: commentText, anonymous: isAnonymous });
-    setCommentText('');
+  useEffect(() => {
+    if (params.id) {
+      loadReviewData();
+    }
+  }, [params.id]);
+
+  // 댓글 작성
+  const handleSubmitComment = async () => {
+    if (!commentText.trim()) {
+      alert('댓글 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsSubmittingComment(true);
+      const newComment = await createCommentApi(params.id as string, {
+        content: commentText,
+        anonymous: isAnonymous
+      });
+      
+      setComments([...comments, newComment]);
+      setCommentText('');
+    } catch (error) {
+      console.error('댓글 작성 실패:', error);
+      alert('댓글 작성에 실패했습니다.');
+    } finally {
+      setIsSubmittingComment(false);
+    }
   };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    if (!confirm('댓글을 삭제하시겠습니까?')) return;
+
+    try {
+      await deleteCommentApi(commentId);
+      setComments(comments.filter(comment => comment.commentId !== commentId));
+    } catch (error) {
+      console.error('댓글 삭제 실패:', error);
+      alert('댓글 삭제에 실패했습니다.');
+    }
+  };
+
+  // 리뷰 삭제
+  const handleDeleteReview = async () => {
+    if (!confirm('리뷰를 삭제하시겠습니까?')) return;
+
+    try {
+      await deleteDormReviewApi(params.id as string);
+      alert('리뷰가 삭제되었습니다.');
+      router.push('/dorm');
+    } catch (error) {
+      console.error('리뷰 삭제 실패:', error);
+      alert('리뷰 삭제에 실패했습니다.');
+    }
+  };
+
+  // 로딩 상태
+  if (isLoading || !review) {
+    return (
+      <Wrapper>
+        <Container>
+          <LoadingText>로딩 중...</LoadingText>
+        </Container>
+      </Wrapper>
+    );
+  }
 
   return (
     <Wrapper>
@@ -72,7 +152,12 @@ export default function DormDetailPage() {
             <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
           </BackButton>
           <Title>리뷰 상세 조회</Title>
-          <Spacer />
+          {review.canDelete && (
+            <DeleteButton onClick={handleDeleteReview}>
+              <Image src='/trash.svg' alt='삭제' width={16} height={16} />
+            </DeleteButton>
+          )}
+          {!review.canDelete && <Spacer />}
         </Header>
 
         <ReviewCard>
@@ -81,58 +166,70 @@ export default function DormDetailPage() {
             <ProfileInfo>
               <TopRow>
                 <NameSection>
-                  <Name>{review.name}</Name>
+                  <Name>{review.anonym ? '익명' : (review.nickname || '사용자')}</Name>
                 </NameSection>
                 <TagRow>
-                  {review.tags.map((tag, i) => (
-                    <Tag key={i}>{tag}</Tag>
-                  ))}
+                  <Tag>{review.buildName}</Tag>
+                  <Tag>{review.buildNum}</Tag>
+                  <Tag>{review.roomPeople}인실</Tag>
                 </TagRow>
               </TopRow>
               <RatingRow>
-                <StarDisplay stars={review.stars} score={review.score} size="medium" />
-                <DateText>{review.date}</DateText>
+                <StarDisplay stars={review.finalRate} score={review.finalRate} size="medium" />
+                <DateText>{review.createdAt ? new Date(review.createdAt).toLocaleDateString('ko-KR') : ''}</DateText>
               </RatingRow>
             </ProfileInfo>
           </ProfileSection>
 
-          <ImageSection>
-            {review.images.map((img) => (
-              <ImagePlaceholder key={img.id} />
-            ))}
-          </ImageSection>
+          {review.imageUrls && review.imageUrls.length > 0 && (
+            <ImageSection>
+              {review.imageUrls.map((url, index) => (
+                <ReviewImage key={index} src={url} alt={`리뷰 이미지 ${index + 1}`} />
+              ))}
+            </ImageSection>
+          )}
 
-          <EvaluationList evaluations={review.evaluations} size="medium" />
+          <EvaluationList 
+            evaluations={{
+              방음: review.soundRate,
+              시설: review.facilityRate,
+              접근성: review.accessRate,
+              벌레: review.bugRate,
+            }} 
+            size="medium" 
+          />
 
           <ContentSection>
             <ContentTitle>후기</ContentTitle>
             <ContentBox>
-              <ContentText>{review.content}</ContentText>
+              <ContentText>{review.review}</ContentText>
             </ContentBox>
           </ContentSection>
         </ReviewCard>
 
         <CommentsSection>
-          <CommentsHeader>댓글 {review.comments.length}개</CommentsHeader>
+          <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
           
-          {review.comments.map((comment) => (
-            <CommentItem key={comment.id}>
+          {comments.map((comment) => (
+            <CommentItem key={comment.commentId}>
               <CommentTopRow>
                 <CommentLeft>
-                  <CommentAuthor>{comment.author}</CommentAuthor>
-                  <CommentDate>{comment.date}</CommentDate>
+                  <CommentAuthor>{comment.nickname}</CommentAuthor>
+                  <CommentDate>{new Date(comment.createdAt).toLocaleString('ko-KR')}</CommentDate>
                 </CommentLeft>
                 {comment.canDelete && (
                   <CommentActions>
-                    <ActionButton>수정</ActionButton>
-                    <Divider>|</Divider>
-                    <ActionButton>삭제</ActionButton>
+                    <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
                   </CommentActions>
                 )}
               </CommentTopRow>
-              <CommentText>{comment.text}</CommentText>
+              <CommentText>{comment.content}</CommentText>
             </CommentItem>
           ))}
+          
+          {comments.length === 0 && (
+            <EmptyComment>첫 댓글을 남겨보세요!</EmptyComment>
+          )}
         </CommentsSection>
 
         <CommentInputSection>
@@ -155,8 +252,12 @@ export default function DormDetailPage() {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="댓글 작성"
+              disabled={isSubmittingComment}
             />
-            <SubmitButton onClick={handleSubmitComment}>
+            <SubmitButton 
+              onClick={handleSubmitComment}
+              disabled={isSubmittingComment || !commentText.trim()}
+            >
               <Image src='/send.svg' alt='전송' width={17} height={17} />
             </SubmitButton>
           </InputRow>
@@ -210,6 +311,44 @@ const Title = styled.h1`
 
 const Spacer = styled.div`
   width: 24px;
+`;
+
+const DeleteButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+`;
+
+const LoadingText = styled.div`
+  text-align: center;
+  padding: 60px 0;
+  font-size: 16px;
+  color: #666;
+`;
+
+const EmptyComment = styled.div`
+  text-align: center;
+  padding: 40px 0;
+  font-size: 14px;
+  color: #999;
+`;
+
+const ReviewImage = styled.img`
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  object-fit: cover;
+  flex-shrink: 0;
 `;
 
 const ReviewCard = styled.div`
@@ -293,14 +432,21 @@ const ImageSection = styled.div`
   display: flex;
   gap: 14px;
   margin-bottom: 18px;
-`;
-
-const ImagePlaceholder = styled.div`
-  width: 120px;
-  height: 120px;
-  border-radius: 16px;
-  background: #d9d9d9;
-  flex-shrink: 0;
+  overflow-x: auto;
+  
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+  }
 `;
 
 const ContentSection = styled.div`
@@ -401,11 +547,6 @@ const ActionButton = styled.button`
   }
 `;
 
-const Divider = styled.span`
-  font-size: 11px;
-  color: #e0e0e0;
-`;
-
 const CommentInputSection = styled.div`
   position: fixed;
   bottom: 0;
@@ -480,6 +621,11 @@ const CommentInput = styled.input`
   &:focus {
     outline: none;
   }
+
+  &:disabled {
+    color: #999;
+    background: #f5f5f5;
+  }
 `;
 
 const SubmitButton = styled.button`
@@ -495,12 +641,17 @@ const SubmitButton = styled.button`
   transition: all 0.2s;
   flex-shrink: 0;
 
-  &:hover {
+  &:hover:not(:disabled) {
     transform: scale(1.05);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: scale(0.95);
+  }
+
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
   }
 
   img {

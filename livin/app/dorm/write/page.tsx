@@ -8,7 +8,7 @@ import Dropdown from '@components/Dorm/Dropdown';
 import EvaluationItem from '@components/Dorm/EvaluationItem';
 import StarRating from '@components/Dorm/StarRating';
 import ImageUpload from '@components/Common/ImageUpload';
-import { createDormReviewApi } from '@apis/dorm';
+import { createDormReviewApi, uploadReviewImageApi } from '@apis/dorm';
 
 export default function DormWritePage() {
   const router = useRouter();
@@ -25,24 +25,59 @@ export default function DormWritePage() {
 
   const [ratings, setRatings] = useState({
     시설: '',
-    청결: '',
+    접근성: '',
     방음: '',
     벌레: '',
   });
 
   const [overallRating, setOverallRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
-  const [images, setImages] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // 드롭다운 옵션
   const buildingOptions = ['E-HOUSE', '한우리집', 'I-HOUSE'];
   const dongOptions = ['101동', '102동', '103동', '201동', '202동', '203동'];
   const roomOptions = ['1인실', '2인실', '3인실', '4인실'];
 
-  const handleImageAdd = () => {
-    if (images.length < 5) {
-      console.log('이미지 추가');
+  // 평가 매핑 함수
+  const mapRatingToEnum = (category: string, value: string) => {
+    const mappings: Record<string, Record<string, string>> = {
+      시설: {
+        '더러워요': 'DIRTY',
+        '보통이에요': 'NORMAL',
+        '깨끗해요': 'CLEAN'
+      },
+      접근성: {
+        '나빠요': 'BAD',
+        '보통이에요': 'NORMAL',
+        '좋아요': 'GOOD'
+      },
+      방음: {
+        '조용해요': 'NONE',
+        '보통이에요': 'SOMETIMES',
+        '시끄러워요': 'OFTEN'
+      },
+      벌레: {
+        '없어요': 'NONE',
+        '가끔 나와요': 'SOMETIMES',
+        '자주 나와요': 'OFTEN'
+      }
+    };
+    return mappings[category]?.[value] || '';
+  };
+
+  const handleImageAdd = async (file: File) => {
+    try {
+      setIsUploading(true);
+      const imageUrl = await uploadReviewImageApi(file);
+      setImageUrls(prev => [...prev, imageUrl]);
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -52,7 +87,7 @@ export default function DormWritePage() {
       alert('기숙사 정보를 모두 입력해주세요.');
       return;
     }
-    if (!ratings.시설 || !ratings.청결 || !ratings.방음 || !ratings.벌레) {
+    if (!ratings.시설 || !ratings.접근성 || !ratings.방음 || !ratings.벌레) {
       alert('만족도 평가를 모두 선택해주세요.');
       return;
     }
@@ -69,18 +104,21 @@ export default function DormWritePage() {
       // roomPeople 숫자 추출 (예: "2인실" -> 2)
       const roomPeople = parseInt(dormInfo.room.replace('인실', ''));
 
-      await createDormReviewApi(
-        dormInfo.building,     // buildName
-        dormInfo.dong,         // buildNum
-        roomPeople,            // roomPeople
-        ratings.시설,          // facilityRate
-        ratings.청결,          // accessRate
-        ratings.방음,          // soundRate
-        ratings.벌레,          // bugRate
-        overallRating,         // finalRate
-        reviewText,            // review
-        isAnonymous            // anonym
-      );
+      const data = {
+        buildName: dormInfo.building,
+        buildNum: dormInfo.dong,
+        roomPeople,
+        facilityRate: mapRatingToEnum('시설', ratings.시설) as 'DIRTY' | 'NORMAL' | 'CLEAN',
+        accessRate: mapRatingToEnum('접근성', ratings.접근성) as 'BAD' | 'NORMAL' | 'GOOD',
+        soundRate: mapRatingToEnum('방음', ratings.방음) as 'NONE' | 'SOMETIMES' | 'OFTEN',
+        bugRate: mapRatingToEnum('벌레', ratings.벌레) as 'NONE' | 'SOMETIMES' | 'OFTEN',
+        finalRate: overallRating,
+        review: reviewText,
+        anonym: isAnonymous,
+        imageUrls: imageUrls
+      };
+
+      await createDormReviewApi(data);
 
       alert('리뷰가 등록되었습니다!');
       router.push('/dorm');
@@ -178,11 +216,11 @@ export default function DormWritePage() {
             />
 
             <EvaluationItem
-              icon='🧹'
-              name='청결도'
+              icon="🏢"
+              name="접근성"
               options={['나빠요', '보통이에요', '좋아요']}
-              selectedValue={ratings.청결}
-              onSelect={(value) => setRatings({ ...ratings, 청결: value })}
+              selectedValue={ratings.접근성}
+              onSelect={(value) => setRatings({ ...ratings, 접근성: value })}
             />
 
             <EvaluationItem
@@ -242,11 +280,12 @@ export default function DormWritePage() {
               <SectionTitle>사진 첨부 (선택, 최대 5장)</SectionTitle>
             </SectionHeader>
             <ImageUpload
-              imageCount={images.length}
+              imageCount={imageUrls.length}
               maxImages={5}
               onAddImage={handleImageAdd}
               isAnonymous={isAnonymous}
               onToggleAnonymous={setIsAnonymous}
+              isUploading={isUploading}
             />
           </Section>
         </Content>

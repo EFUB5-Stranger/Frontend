@@ -1,64 +1,112 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import StarDisplay from '@/components/Dorm/StarDisplay';
 import EvaluationList from '@/components/Dorm/EvaluationList';
+import { getHouseReviewDetailApi } from '@apis/house';
+
+interface ReviewDetail {
+  id: number;
+  buildName: string;
+  buildNum: string;
+  roomPeople: string;
+  review: string;
+  finalRate: number;
+  facilityRate: string;
+  soundRate: string;
+  bugRate: string;
+  accessRate: string;
+  imageUrls: string[];
+}
 
 export default function HouseDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const [commentText, setCommentText] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [review, setReview] = useState<ReviewDetail | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 임시 데이터
-  const review = {
-    id: params.id,
-    date: '2025.09.27',
-    name: '구구',
-    score: 4.0,
-    stars: 4,
-    title: '하늘이화대박빌라',
-    address: '서울특별시 서대문구 이화여대길 52',
-    tags: ['한우리집', '102동', '301호'],
-    evaluations: {
-      방음: '보통',
-      시설: '보통',
-      접근성: '좋음',
-      벌레: '많음',
+  const houseId = searchParams.get('houseId');
+
+  useEffect(() => {
+    const fetchReviewDetail = async () => {
+      if (!params.id || !houseId) return;
+      
+      try {
+        setLoading(true);
+        const data = await getHouseReviewDetailApi(houseId, params.id as string);
+        setReview(data);
+      } catch (error) {
+        console.error('Failed to fetch review detail:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviewDetail();
+  }, [params.id, houseId]);
+
+  // 임시 댓글 데이터 (댓글 API는 나중에 구현)
+  const comments = [
+    {
+      id: 1,
+      author: '구구',
+      date: '2025.09.27 17:50',
+      text: '맞아요 여기 벌레 너무 많이 나와요ㅠ',
+      canDelete: true,
     },
-    images: [
-      { id: 1, url: '' },
-      { id: 2, url: '' },
-    ],
-    content: `학교랑 가까워서 좋아요
-근데 벌레가 좀 많이 나와요......`,
-    comments: [
-      {
-        id: 1,
-        author: '구구',
-        date: '2025.09.27 17:50',
-        text: '맞아요 여기 벌레 너무 많이 나와요ㅠ',
-        canDelete: true,
-      },
-      {
-        id: 2,
-        author: '익명1',
-        date: '2025.09.27 17:50',
-        text: '저는 벌레 별로 안 나오던데요?',
-        isReported: false,
-      },
-      {
-        id: 3,
-        author: '익명2',
-        date: '2025.09.27 18:50',
-        text: '저는 벌레 별로 안 나오던데요?',
-        isReported: false,
-      },
-    ],
-  };
+    {
+      id: 2,
+      author: '익명1',
+      date: '2025.09.27 17:50',
+      text: '저는 벌레 별로 안 나오던데요?',
+      isReported: false,
+    },
+    {
+      id: 3,
+      author: '익명2',
+      date: '2025.09.27 18:50',
+      text: '저는 벌레 별로 안 나오던데요?',
+      isReported: false,
+    },
+  ];
+
+  if (loading) {
+    return (
+      <Wrapper>
+        <Container>
+          <Header>
+            <BackButton onClick={() => router.back()}>
+              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            </BackButton>
+            <Title>로딩 중...</Title>
+            <Spacer />
+          </Header>
+        </Container>
+      </Wrapper>
+    );
+  }
+
+  if (!review) {
+    return (
+      <Wrapper>
+        <Container>
+          <Header>
+            <BackButton onClick={() => router.back()}>
+              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            </BackButton>
+            <Title>리뷰를 찾을 수 없습니다</Title>
+            <Spacer />
+          </Header>
+        </Container>
+      </Wrapper>
+    );
+  }
 
   const handleSubmitComment = () => {
     if (!commentText.trim()) return;
@@ -73,7 +121,7 @@ export default function HouseDetailPage() {
           <BackButton onClick={() => router.back()}>
             <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
           </BackButton>
-          <Title>{review.title}</Title>
+          <Title>{review.buildName}</Title>
           <Spacer />
         </Header>
 
@@ -83,35 +131,40 @@ export default function HouseDetailPage() {
             <ProfileImage />
             <ProfileInfo>
               <NameSection>
-                <Name>{review.name}</Name>
+                <Name>익명</Name>
               </NameSection>
               <RatingRow>
-                <StarDisplay stars={review.stars} score={review.score} size="medium" />
-                <DateText>{review.date}</DateText>
+                <StarDisplay stars={review.finalRate} score={review.finalRate} size="medium" />
+                <DateText>2025.09.27</DateText>
               </RatingRow>
             </ProfileInfo>
           </ProfileSection>
 
           <ImageSection>
-            {review.images.map((img) => (
-              <ImagePlaceholder key={img.id} />
+            {review.imageUrls.map((url, index) => (
+              <ImagePlaceholder key={index} />
             ))}
           </ImageSection>
 
-          <EvaluationList evaluations={review.evaluations} size="medium" />
+          <EvaluationList evaluations={{
+            방음: review.soundRate,
+            시설: review.facilityRate, 
+            접근성: review.accessRate,
+            벌레: review.bugRate,
+          }} size="medium" />
 
           <ContentSection>
             <ContentTitle>후기</ContentTitle>
             <ContentBox>
-              <ContentText>{review.content}</ContentText>
+              <ContentText>{review.review}</ContentText>
             </ContentBox>
           </ContentSection>
         </ReviewCard>
 
         <CommentsSection>
-          <CommentsHeader>댓글 {review.comments.length}개</CommentsHeader>
+          <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
           
-          {review.comments.map((comment) => (
+          {comments.map((comment) => (
             <CommentItem key={comment.id}>
               <CommentTopRow>
                 <CommentLeft>

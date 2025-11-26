@@ -1,9 +1,12 @@
 import styled from 'styled-components';
 
-export type TagType = '자취방' | '하숙집';
+// 서버 타입과 매핑하기 쉽게 영어 키워드 사용
+export type TagType = 'privateHouse' | 'boardingHouse';
 
 export default function RoomTag({ type }: { type: TagType }) {
-  return <Tag $type={type}>{type}</Tag>;
+  // UI에 표시할 한글 라벨
+  const label = type === 'privateHouse' ? '자취방' : '하숙집';
+  return <Tag $type={type}>{label}</Tag>;
 }
 
 const Tag = styled.div<{ $type: TagType }>`
@@ -20,9 +23,10 @@ const Tag = styled.div<{ $type: TagType }>`
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+
   color: ${({ $type, theme }) =>
-    $type === '자취방' ? '#fff' : theme.colors.primary};
+    $type === 'privateHouse' ? '#fff' : theme.colors.primary};
 
   background: ${({ $type, theme }) =>
-    $type === '자취방' ? theme.colors.primary : '#fff'};
+    $type === 'privateHouse' ? theme.colors.primary : '#fff'};
 `;

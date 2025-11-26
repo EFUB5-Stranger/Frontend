@@ -1,12 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Link from 'next/link';
 import RoomCard from '@/components/Home/Rooms/RoomCard';
 import Image from 'next/image';
 import NavigationBar from '@/components/NavigationBar/NavigationBar';
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@apis/axiosInstance';
+import { Building } from '@/types/building';
 
 export default function HousesPage() {
   const router = useRouter();
@@ -21,46 +21,20 @@ export default function HousesPage() {
   const [typeFilter, setTypeFilter] = useState('전체');
   const [districtFilter, setDistrictFilter] = useState('전체 주소');
 
-  const toggleBookmark = async (houseId: number, bookmarked: boolean) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axiosInstance.post(
-        `/bookmark/${houseId}`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const { bookmarked: newStatus } = res.data;
-
-      setHouses((prev) =>
-        prev.map((h) =>
-          h.houseId === houseId ? { ...h, bookmarked: newStatus } : h
-        )
-      );
-    } catch (error) {
-      console.error('북마크 처리 실패:', error);
-    }
-  };
   useEffect(() => {
     const fetchHouses = async () => {
       try {
         const token = localStorage.getItem('token');
-        console.log('토큰:', token);
-
-        // 검색/필터링 API 호출
         const res = await axiosInstance.get('/house/search', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
-            keyword: '', // 검색어 없으면 빈 문자열
-            sort: 'review', // 리뷰별점순 or bookmark
-            type: 'all', // all / private / boarding
-            address: 'all', // all / 서대문구 / 마포구
-            page: 0, // 첫 페이지
+            keyword: '',
+            sort: 'review',
+            type: 'all',
+            address: 'all',
+            page: 0,
           },
         });
-
         setHouses(res.data.houses);
       } catch (error) {
         console.error('건물 목록 불러오기 실패:', error);
@@ -82,7 +56,6 @@ export default function HousesPage() {
         : (typeFilter === '자취방' && house.type === 'PRIVATE') ||
           (typeFilter === '하숙집' && house.type === 'BOARDING')
     )
-
     .filter((house) =>
       districtFilter === '전체 주소'
         ? true
@@ -90,10 +63,10 @@ export default function HousesPage() {
     )
     .sort((a, b) => {
       if (sortOption === 'rating') {
-        return b.rating - a.rating;
+        return (b.rate ?? 0) - (a.rate ?? 0); // ✅ rate 사용
       } else {
-        const aBookmarks = bookmarks[a.id] || 0;
-        const bBookmarks = bookmarks[b.id] || 0;
+        const aBookmarks = bookmarks[a.houseId] || 0;
+        const bBookmarks = bookmarks[b.houseId] || 0;
         return bBookmarks - aBookmarks;
       }
     });
@@ -120,14 +93,15 @@ export default function HousesPage() {
           </SearchInputWrapper>
         </SearchSection>
 
+        {/* 필터 */}
         <FilterSection>
           {/* 정렬 */}
           <FilterButtonWrapper>
             <FilterButton
-              $active={false} // 정렬은 active 상태 없음
-              onClick={() => {
-                setSortOption(sortOption === 'rating' ? 'bookmark' : 'rating');
-              }}
+              $active={false}
+              onClick={() =>
+                setSortOption(sortOption === 'rating' ? 'bookmark' : 'rating')
+              }
             >
               {sortOption === 'rating' ? '평점순' : '북마크순'}
             </FilterButton>
@@ -214,19 +188,33 @@ export default function HousesPage() {
         {/* 리스트 */}
         <ScrollArea>
           <CardGrid>
-            {filteredHouses.map((house) => (
-              <div key={house.houseId} style={{ position: 'relative' }}>
-                <RoomCard
-                  key={house.houseId}
-                  id={String(house.houseId)}
-                  type={house.type === 'PRIVATE' ? '자취방' : '하숙집'}
-                  title={house.buildingName}
-                  address={house.address}
-                  rate={house.reviewScore ?? 0}
-                  onClick={() => router.push(`/houses/${house.houseId}`)}
-                />
-              </div>
-            ))}
+            {filteredHouses.map((h) => {
+              const building: Building = {
+                id: h.houseId,
+                title: h.buildingName,
+                address: h.address,
+                type: h.type,
+                rate: 0,
+                thumbnailUrl: h.imageUrl,
+                bookmarked: h.bookmarked,
+              };
+              return (
+                <div key={building.id} style={{ position: 'relative' }}>
+                  <RoomCard
+                    id={building.id}
+                    type={
+                      building.type === 'PRIVATE'
+                        ? 'privateHouse'
+                        : 'boardingHouse'
+                    }
+                    title={building.title}
+                    address={building.address}
+                    rate={building.rate}
+                    thumbnailUrl={building.thumbnailUrl}
+                  />
+                </div>
+              );
+            })}
           </CardGrid>
         </ScrollArea>
 
@@ -237,9 +225,7 @@ export default function HousesPage() {
       </Wrapper>
       <NavigationBar />
     </>
-  );
-}
-
+  );}
 const Wrapper = styled.div`
   width: 360px;
   height: 800px;

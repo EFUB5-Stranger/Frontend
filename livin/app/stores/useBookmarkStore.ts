@@ -1,30 +1,30 @@
 import { create } from 'zustand';
-import { TagType } from '../components/Home/Rooms/TagComponents';
 import axiosInstance from '@apis/axiosInstance';
+import { ServerBuildingType } from '@/types/building'; // 서버 타입 import
 
-interface Room {
+// 서버로 보내는 payload 타입
+interface BookmarkPayload {
   id: number;
-  type: TagType;
+  type: ServerBuildingType; // 서버 타입 (PRIVATE | BOARDING)
   title: string;
   address: string;
   rate: number;
 }
 
 interface BookmarkStore {
-  bookmarks: Room[];
-  toggleBookmark: (room: Room) => Promise<void>;
+  bookmarks: BookmarkPayload[];
+  toggleBookmark: (room: BookmarkPayload) => Promise<void>;
   isBookmarked: (id: number) => boolean;
 }
 
 export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   bookmarks: [],
 
-  // 북마크 토글 시 서버 API 호출
-  toggleBookmark: async (room: Room) => {
+  toggleBookmark: async (room: BookmarkPayload) => {
     if (!room.id || Number.isNaN(room.id)) {
-  console.error('Invalid room.id:', room.id);
-  return;
-}
+      console.error('Invalid room.id:', room.id);
+      return;
+    }
 
     try {
       const token = localStorage.getItem('token');
@@ -35,10 +35,9 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      const { bookmarked } = res.data;
+       console.log("bookmark API response:", res.data);
+     const bookmarked = res.data.bookmarked;
       const { bookmarks } = get();
-      
 
       if (bookmarked) {
         // 북마크 추가

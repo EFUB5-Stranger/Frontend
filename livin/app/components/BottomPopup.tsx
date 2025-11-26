@@ -4,7 +4,7 @@ import { useMapContext } from 'hooks/MapContext';
 import styles from '@/styles/mapPage.module.css';
 import Image from 'next/image';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
-import { mapTagToServerType } from '@/app/types/building';
+import { isServerBuilding, mapTagToServerType} from '@/types/building'
 
 interface BottomPopupProps {
   onHeightChange?: (height: number) => void;
@@ -15,8 +15,9 @@ export default function BottomPopup({ onHeightChange }: BottomPopupProps) {
   const popupRef = useRef<HTMLDivElement | null>(null);
   const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
   const isBookmarked = useBookmarkStore((state) =>
-    selectedBuilding ? state.isBookmarked(selectedBuilding.id) : false
-  );
+  selectedBuilding?.id ? state.isBookmarked(selectedBuilding.id!) : false
+);
+
 
   useEffect(() => {
     if (selectedBuilding && popupRef.current && onHeightChange) {
@@ -41,23 +42,34 @@ export default function BottomPopup({ onHeightChange }: BottomPopupProps) {
           <p className={styles.buildingRating}>⭐ {selectedBuilding.rate ?? '평점 없음'}</p>
         </div>
 
-        <Image
-        src={isBookmarked ? '/bookmark_filled.svg' : '/bookmark_unfilled.svg'}
-        width={20}
-        height={24}
-        alt="bookmark"
-        className={styles.bookmarkIcon}
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleBookmark({
-            id: selectedBuilding.id,
-            type: mapTagToServerType(selectedBuilding.type), // ✅ UI → 서버 변환
-            title: selectedBuilding.title,
-            address: selectedBuilding.address,
-            rate: selectedBuilding.rate ?? 0,
-          });
-        }}
-      />
+        
+<button
+  className={styles.bookmarkBtn}
+  disabled={!isServerBuilding(selectedBuilding)} 
+  onClick={(e) => {
+    e.stopPropagation();
+    if (!isServerBuilding(selectedBuilding)) return; // ✅ 여기서 타입 내로잉
+
+    if (!selectedBuilding?.id || !selectedBuilding?.type) return;
+
+toggleBookmark({
+  id: selectedBuilding.id!, // ✅ 여기서 number로 확정
+  type: mapTagToServerType(selectedBuilding.type),
+  title: selectedBuilding.title,
+  address: selectedBuilding.address,
+  rate: selectedBuilding.rate ?? 0,
+});
+
+  }}
+>
+  <Image
+    src={isBookmarked ? '/bookmark_filled.svg' : '/bookmark_unfilled.svg'}
+    width={20}
+    height={24}
+    alt="bookmark"
+    className={styles.bookmarkIcon}
+  />
+</button>
       </div>
 
       <div className={styles.bottomRow}>

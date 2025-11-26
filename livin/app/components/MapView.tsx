@@ -28,6 +28,8 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
 
   // ✅ 마커 생성 함수 (카테고리별 아이콘 적용)
   const createMarker = (x: number, y: number, category: string, data: any) => {
+    console.log("marker raw data:", data);
+
     let imageSrc = '';
     switch (category) {
       case 'house':
@@ -61,17 +63,31 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
 
     // 클릭 이벤트 → 하단 팝업 띄우기
     window.kakao.maps.event.addListener(marker, 'click', () => {
-      setSelectedBuilding({
-        id: data.houseId,
-        title: data.buildingName,
-        type: mapServerTypeToTag(data.type as ServerBuildingType), 
-        address: data.address,
-        thumbnailUrl: data.thumbnailUrl,
-        rate: data.reviewScore,
-        bookmarked: data.bookmarked,
-      });
-      mapInstance.current.setCenter(new window.kakao.maps.LatLng(y, x));
+      console.log("marker data:", data);
+      if (data.houseId) {
+    // ✅ 서버 데이터 (북마크 가능)
+    setSelectedBuilding({
+      id: Number(data.houseId), // 반드시 숫자로 변환
+      title: data.buildingName,
+      type: mapServerTypeToTag(data.type as ServerBuildingType),
+      address: data.address,
+      thumbnailUrl: data.imageUrl || '/bookmark_unfilled.svg',
+      rate: 0,
+      bookmarked: data.bookmarked,
     });
+  } else {
+    // ✅ 카카오맵 데이터 (북마크 불가)
+    setSelectedBuilding({
+      id: undefined,
+      title: data.placeName,
+      type: null,
+      address: data.address,
+      thumbnailUrl: '/bookmark_unfilled.svg',
+      rate: 0,
+      bookmarked: false,
+    });
+  }
+});
 
     return marker;
   };

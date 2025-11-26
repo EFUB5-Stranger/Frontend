@@ -219,8 +219,8 @@
   margin: 0 ;
 }
 .bookmarkIcon {
-  width: 1.875rem;   /* 30px */
-  height: 1.875rem;  /* 30px */
+ width: 1.09375rem;
+height: 1.40625rem;
   aspect-ratio: 1/1;
   cursor: pointer;
   flex-shrink: 0;
@@ -232,13 +232,16 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
+  width: 1.875rem;
+height: 1.875rem;
+aspect-ratio: 1/1;
 }
 .buildingName {
-  width: 10.3125rem;
-height: 1.625rem;
+  width: flex;
+height: flex;
 color: #111;
 font-family: Pretendard;
-font-size: 1.5rem;
+font-size: 1rem;
 font-style: normal;
 font-weight: 400;
 line-height: normal;

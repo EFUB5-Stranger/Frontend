@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import Image from 'next/image';
 import RoomTag, { TagType } from './TagComponents';
 import { useBookmarkStore } from '../../../stores/useBookmarkStore';
+import { mapTagToServerType } from '@/types/building'; 
 
 interface Props {
   id: number;
@@ -44,7 +45,13 @@ export default function RoomCard({
             alt='bookmark'
             onClick={(e) => {
               e.stopPropagation();
-              toggleBookmark({ id, type, title, address, rate });
+               toggleBookmark({
+                id,
+                type: mapTagToServerType(type),
+                title,
+                address,
+                rate,
+              });
             }}
           />
         </TitleBox>

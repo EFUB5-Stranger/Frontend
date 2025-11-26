@@ -135,6 +135,10 @@ export default function MyPage() {
             북마크
             <Image src='/more.svg' width={6.63} height={14.5} alt='more' />
           </MenuItem>
+          <MenuItem onClick={() => router.push('/mypage/comments')}>
+            댓글
+            <Image src='/more.svg' width={6.63} height={14.5} alt='more' />
+          </MenuItem>
           <MenuItem onClick={() => setShowLogoutModal(true)}>
             로그아웃
             <Image src='/more.svg' width={6.63} height={14.5} alt='more' />

@@ -1,7 +1,7 @@
 'use client';
 import { useRef, useEffect } from 'react';
 import Script from 'next/script';
-import { useMapContext} from 'hooks/MapContext'
+import { useMapContext } from 'hooks/MapContext';
 import FilterFloating from './FilterFloating';
 import FilterPopup from './FilterPopup';
 import styles from '@/styles/mapPage.module.css';
@@ -26,93 +26,94 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
   const mapInstance = useRef<any>(null);
   const { setSelectedBuilding } = useMapContext();
 
-  // ✅ 마커 생성 함수 (카테고리별 아이콘 적용)
-  const createMarker = (x: number, y: number, category: string, data: any) => {
-    console.log("marker raw data:", data);
+  type MarkerCategory =
+  | 'privateHouse'
+  | 'boardingHouse'
+  | 'cafe'
+  | 'food'
+  | 'store'
+  | 'transport'
+  | 'default';
+// 서버 주거지 타입 → 마커 카테고리
+const houseCategoryFromServerType = (type: 'PRIVATE' | 'BOARDING'): MarkerCategory =>
+  type === 'PRIVATE' ? 'privateHouse' : 'boardingHouse';
 
-    let imageSrc = '';
-    switch (category) {
-      case 'house':
-        imageSrc = '/icons/house.png';
-        break;
-      case 'cafe':
-        imageSrc = '/icons/cafe.png';
-        break;
-      case 'food':
-        imageSrc = '/icons/food.png';
-        break;
-      case 'store':
-        imageSrc = '/icons/store.png';
-        break;
-      case 'transport':
-        imageSrc = '/icons/transport.png';
-        break;
-      default:
-        imageSrc = '/icons/default.png';
-    }
+// ✅ 마커 생성 함수 (아이콘 적용 + 크기/오프셋 통일)
+const createMarker = (x: number, y: number, category: MarkerCategory, data: any) => {
+  const iconSrcMap: Record<MarkerCategory, string> = {
+    privateHouse: '/icons/privateHouse.svg',
+    boardingHouse: '/icons/boardingHouse.svg',
+    cafe: '/icons/cafe.svg',
+    food: '/icons/food.svg',
+    store: '/icons/store.svg',
+    transport: '/icons/transport.svg',
+    default: '/icons/store.svg', // 대체
+  };
 
-    const imageSize = new window.kakao.maps.Size(32, 32);
-    const imageOption = { offset: new window.kakao.maps.Point(16, 32) };
-    const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+const imageSrc = iconSrcMap[category] ?? iconSrcMap.default;
 
-    const marker = new window.kakao.maps.Marker({
-      position: new window.kakao.maps.LatLng(y, x),
-      image: markerImage,
-      map: mapInstance.current,
-    });
+  const imageSize = new window.kakao.maps.Size(20, 20);
+
+  const imageOption = { offset: new window.kakao.maps.Point(20, 40) };
+
+  const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+
+  const marker = new window.kakao.maps.Marker({
+    position: new window.kakao.maps.LatLng(y, x),
+    image: markerImage,
+    map: mapInstance.current,
+  });
 
     // 클릭 이벤트 → 하단 팝업 띄우기
     window.kakao.maps.event.addListener(marker, 'click', () => {
-      console.log("marker data:", data);
       if (data.houseId) {
-    // ✅ 서버 데이터 (북마크 가능)
-    setSelectedBuilding({
-      id: Number(data.houseId), // 반드시 숫자로 변환
-      title: data.buildingName,
-      type: mapServerTypeToTag(data.type as ServerBuildingType),
-      address: data.address,
-      thumbnailUrl: data.imageUrl || '/bookmark_unfilled.svg',
-      rate: 0,
-      bookmarked: data.bookmarked,
+        setSelectedBuilding({
+          id: Number(data.houseId),
+          title: data.buildingName,
+          type: mapServerTypeToTag(data.type as ServerBuildingType),
+          address: data.address,
+          thumbnailUrl: data.imageUrl || '/bookmark_unfilled.svg',
+          rate: 0,
+          bookmarked: data.bookmarked,
+        });
+      } else {
+        setSelectedBuilding({
+          id: undefined,
+          title: data.placeName,
+          type: null,
+          address: data.address,
+          thumbnailUrl: '/bookmark_unfilled.svg',
+          rate: 0,
+          bookmarked: false,
+        });
+      }
     });
-  } else {
-    // ✅ 카카오맵 데이터 (북마크 불가)
-    setSelectedBuilding({
-      id: undefined,
-      title: data.placeName,
-      type: null,
-      address: data.address,
-      thumbnailUrl: '/bookmark_unfilled.svg',
-      rate: 0,
-      bookmarked: false,
-    });
-  }
-});
 
     return marker;
   };
 
-  // 지도 초기화
+  // ✅ 지도 초기화 (이화여대 좌표 고정)
   useEffect(() => {
     if (window.kakao && mapRef.current) {
       window.kakao.maps.load(() => {
-        const center = new window.kakao.maps.LatLng(37.5665, 126.978);
+        const center = new window.kakao.maps.LatLng(37.564213, 126.950288); // 이화여대
         const map = new window.kakao.maps.Map(mapRef.current, {
           center,
-          level: 4,
+          level: 4, // 캠퍼스 전체 보기 적당한 확대 레벨
         });
         mapInstance.current = map;
       });
     }
   }, []);
 
-  // 데이터가 들어오면 마커 생성
+  // ✅ 데이터 들어오면 마커 생성
   useEffect(() => {
     if (!mapInstance.current || !mapData || !window.kakao) return;
 
-    (mapData.houses || []).forEach((house: any) =>
-      createMarker(parseFloat(house.x), parseFloat(house.y), 'house', house)
-    );
+    (mapData.houses || []).forEach((house: any) => {
+  const category = houseCategoryFromServerType(house.type as 'PRIVATE' | 'BOARDING');
+  createMarker(parseFloat(house.x), parseFloat(house.y), category, house);
+});
     (mapData.cafes || []).forEach((cafe: any) =>
       createMarker(cafe.x, cafe.y, 'cafe', cafe)
     );
@@ -127,7 +128,7 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
     );
   }, [mapData]);
 
-  // 현위치 버튼
+  // ✅ 현위치 버튼
   const handleCurrentLocation = () => {
     if (!mapInstance.current) return;
     if (navigator.geolocation) {
@@ -161,20 +162,15 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
           onLoad={() => {
             console.log('카카오 SDK 로드 완료');
             if (window.kakao && window.kakao.maps && mapRef.current) {
-              window.kakao.maps.load(() => {
-                const options = {
-                  center: new window.kakao.maps.LatLng(37.5665, 126.9780),
-                  level: 3,
-                };
-                const map = new window.kakao.maps.Map(mapRef.current, options);
-                mapInstance.current = map;
-
-                new window.kakao.maps.Marker({
-                  position: new window.kakao.maps.LatLng(37.5665, 126.9780),
-                  map,
-                });
-              });
-            }
+      window.kakao.maps.load(() => {
+        const center = new window.kakao.maps.LatLng(37.564213, 126.950288); // 이화여대
+        const map = new window.kakao.maps.Map(mapRef.current, {
+          center,
+          level: 4,
+        });
+        mapInstance.current = map;
+      });
+    }
           }}
           onError={(e) => {
             console.error('카카오 SDK 로드 실패:', e);

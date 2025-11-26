@@ -1,13 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import EvaluationItem from '@/components/Dorm/EvaluationItem';
 import StarRating from '@/components/Dorm/StarRating';
 import ImageUpload from '@/components/Common/ImageUpload';
-import { createHouseReviewApi, uploadReviewImageApi } from '@apis/house';
+import { createHouseReviewApi, uploadReviewImageApi, getHouseDetailApi } from '@apis/house';
+
+interface HouseDetail {
+  houseId: number;
+  buildingName: string;
+  address: string;
+  parking: boolean;
+  elevator: boolean;
+  floor: number;
+  type: 'PRIVATE' | 'BOARDING';
+  options: string | null;
+  imageUrl: string;
+  bookmarked: boolean;
+}
 
 // API 요구사항에 맞는 타입 매핑
 interface RatingMapping {
@@ -41,14 +54,29 @@ export default function HouseWritePage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [houseDetail, setHouseDetail] = useState<HouseDetail | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 임시 건물 정보
-  const houseInfo = {
-    name: '하늘이화대박빌라',
-    address: '서울특별시 서대문구 이화여대길 55',
-  };
+  useEffect(() => {
+    const fetchHouseDetail = async () => {
+      if (!houseId) return;
+      
+      try {
+        setLoading(true);
+        const data = await getHouseDetailApi(houseId);
+        setHouseDetail(data);
+      } catch (error) {
+        console.error('Failed to fetch house detail:', error);
+        alert('건물 정보를 가져오는데 실패했습니다.');
+        router.back();
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 평가 옵션을 API 요구사항에 맞는 enum으로 변환
+    fetchHouseDetail();
+  }, [houseId, router]);
+
   const mapRatingToEnum = (category: string, value: string): string => {
     const mappings: Record<string, Record<string, string>> = {
       시설: {
@@ -136,6 +164,22 @@ export default function HouseWritePage() {
     }
   };
 
+  if (loading || !houseDetail) {
+    return (
+      <Wrapper>
+        <Container>
+          <Header>
+            <BackButton onClick={() => router.back()}>
+              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            </BackButton>
+            <Title>{loading ? '로딩 중...' : '건물을 찾을 수 없습니다'}</Title>
+            <Spacer />
+          </Header>
+        </Container>
+      </Wrapper>
+    );
+  }
+
   return (
     <Wrapper>
       <Container>
@@ -150,10 +194,10 @@ export default function HouseWritePage() {
         <Content>
           {/* 건물 정보 */}
           <HouseInfoCard>
-            <HouseImage />
+            <HouseImage style={{ backgroundImage: houseDetail.imageUrl ? `url(${houseDetail.imageUrl})` : 'none' }} />
             <HouseDetails>
-              <HouseName>{houseInfo.name}</HouseName>
-              <HouseAddress>{houseInfo.address}</HouseAddress>
+              <HouseName>{houseDetail.buildingName}</HouseName>
+              <HouseAddress>{houseDetail.address}</HouseAddress>
             </HouseDetails>
           </HouseInfoCard>
 
@@ -324,6 +368,9 @@ const HouseImage = styled.div`
   height: 60px;
   border-radius: 8px;
   background: #d9d9d9;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   flex-shrink: 0;
 `;
 

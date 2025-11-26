@@ -7,7 +7,7 @@ import FilterPopup from './FilterPopup';
 import styles from '@/styles/mapPage.module.css';
 import { FilterProvider } from 'hooks/FilterContext';
 import NavigationBar from './NavigationBar/NavigationBar';
-import { ServerBuildingType } from '@/types/building';
+import { BuildingType } from '@/types/building';
 
 declare global {
   interface Window {
@@ -68,7 +68,7 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
         setSelectedBuilding({
           id: Number(data.houseId),
           title: data.buildingName,
-          type: data.type as ServerBuildingType, // ✅ 서버 타입 그대로
+          type: data.type as BuildingType, // ✅ 서버 타입 그대로
           address: data.address,
           thumbnailUrl: data.imageUrl || '/bookmark_unfilled.svg',
           rate: 0,

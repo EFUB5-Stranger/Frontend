@@ -5,8 +5,17 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getUserProfileApi } from '@apis/users';
 
+const MENT_LIST = [
+  { suffix: '님,', text: '내일의 자취방을 찾아볼까요?' },
+  { suffix: '님,', text: '오늘보다 더 편한 내일, 함께 찾아봐요.' },
+  { suffix: '님에게', text: '꼭 맞는 방, 제가 찾아드릴게요!' },
+  { suffix: '님', text: '주변의 인기 자취방을 보여드릴게요.' },
+  { suffix: '님,', text: '나만의 공간을 찾아봐요!' },
+];
+
 export default function TopSection() {
   const [nickname, setNickname] = useState('');
+  const [currentMent, setCurrentMent] = useState(MENT_LIST[0]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -21,6 +30,15 @@ export default function TopSection() {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * MENT_LIST.length);
+      setCurrentMent(MENT_LIST[randomIndex]);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <Wrapper>
       <Logo src='/livin_logo.svg' alt='Livin' width={77} height={50} />
@@ -28,16 +46,11 @@ export default function TopSection() {
       <Title>
         <PrimaryBlue>{nickname}</PrimaryBlue>
         <DarkBlue>
-          님,
+          {currentMent.suffix}
           <br />
-          내일의 자취방을 찾아볼까요?
+          {currentMent.text}
         </DarkBlue>
       </Title>
-
-      {/* <SearchBox>
-        <SearchIcon src='/search.svg' alt='검색' width={18} height={18} />
-        <input placeholder='원하는 자취방/하숙을 검색해주세요.' />
-      </SearchBox> */}
     </Wrapper>
   );
 }
@@ -71,38 +84,3 @@ const DarkBlue = styled.span`
   color: var(--main-pri, #112d4e);
   font-weight: 600;
 `;
-
-// const SearchBox = styled.div`
-//   display: flex;
-//   width: 320px;
-//   height: 35px;
-//   margin-top: 18px;
-//   padding: 10px 14px;
-//   flex-direction: row;
-//   align-items: flex-start;
-//   gap: 10px;
-//   flex-shrink: 0;
-//   border-radius: 15px;
-//   border: 1px solid ${({ theme }) => theme.colors.secondary};
-//   background: #fff;
-
-//   input {
-//     flex: 1;
-//     border: none;
-//     outline: none;
-//     color: var(--gray-300, #b6b6b6);
-//     font-family: ${({ theme }) => theme.fonts.main};
-//     font-size: 13px;
-//     font-style: normal;
-//     font-weight: 500;
-//     line-height: 18px;
-//     letter-spacing: 0.65px;
-//   }
-// `;
-
-// const SearchIcon = styled(Image)`
-//   width: 13px;
-//   height: 13px;
-//   stroke-width: 2px;
-//   stroke: var(--main-pri, #112d4e);
-// `;

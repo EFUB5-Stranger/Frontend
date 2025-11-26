@@ -86,7 +86,7 @@ const Wrapper = styled.div`
   width: 100%;
   margin-top: 10px;
   padding: 0 20px;
-  margin-bottom: 44px;
+  margin-bottom: 30px;
 `;
 
 const Title = styled.div`
@@ -94,7 +94,7 @@ const Title = styled.div`
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 15px;
-  margin-top: 20px;
+  margin-top: 10px;
 `;
 
 const ScrollArea = styled.div`

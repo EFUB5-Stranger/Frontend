@@ -5,6 +5,8 @@ import Image from 'next/image'; // Next.js Image 최적화 사용
 import { BuildingType } from '@/types/building';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import RoomTag from './TagComponents';
+import { getHouseReviewsApi } from '@apis/house';
+import { useEffect, useState } from 'react';
 
 interface RoomInfoProps {
   id: number;
@@ -22,13 +24,49 @@ export default function RoomInfo({
   type,
   title,
   address,
-  rate = 0,
+  rate: initialRate = 0,
   thumbnailUrl,
   variant = 'card',
   onClick,
 }: RoomInfoProps) {
   const toggleBookmark = useBookmarkStore((s) => s.toggleBookmark);
   const isBookmarked = useBookmarkStore((s) => s.isBookmarked(id));
+
+  // 평점 상태 관리 (초기값은 부모가 준 값 혹은 0)
+  const [currentRate, setCurrentRate] = useState<number>(initialRate);
+
+  // 컴포넌트가 마운트되거나 ID가 바뀌면 리뷰 데이터를 새로 가져옴
+  useEffect(() => {
+    const fetchRating = async () => {
+      try {
+        // 리뷰 목록 조회 API 호출
+        const res = await getHouseReviewsApi(id);
+
+        // API 응답 구조가 { content: [...] } 라고 가정 (이전 이미지 기반)
+        const reviews = res.content || [];
+
+        if (reviews.length > 0) {
+          // 평균 계산
+          const sum = reviews.reduce(
+            (acc: number, review: any) => acc + review.finalRate,
+            0
+          );
+          const avg = sum / reviews.length;
+          setCurrentRate(avg);
+        } else {
+          // 리뷰 없으면 0점
+          setCurrentRate(0);
+        }
+      } catch (error) {
+        console.error(`리뷰 평점 조회 실패 (ID: ${id})`, error);
+        // 에러 시 기존 값 유지 혹은 0 처리
+      }
+    };
+
+    fetchRating();
+  }, [id]);
+
+  const formattedRate = Number(currentRate).toFixed(1);
 
   // 팝업용 레이아웃 (기존 유지)
   if (variant === 'popup') {
@@ -59,7 +97,7 @@ export default function RoomInfo({
                   type,
                   title,
                   address,
-                  rate,
+                  rate: currentRate,
                 });
               }}
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}
@@ -77,13 +115,13 @@ export default function RoomInfo({
             </button>
           </div>
           <p>{address}</p>
-          <p>⭐ {rate}</p>
+          <p>⭐ {formattedRate}</p>
         </div>
       </div>
     );
   }
 
-  // 카드용 레이아웃 (요청하신 스타일 적용)
+  // 카드용 레이아웃
   return (
     <Wrapper onClick={onClick}>
       {/* 썸네일 영역 (배경 이미지로 처리) */}
@@ -111,7 +149,7 @@ export default function RoomInfo({
                 type,
                 title,
                 address,
-                rate,
+                rate: currentRate,
               });
             }}
           />
@@ -119,7 +157,7 @@ export default function RoomInfo({
         <RoomAddr>{address}</RoomAddr>
         <Rate>
           <StarIcon src='/star.svg' alt='star' width={13} height={13} />
-          <span>{rate}</span>
+          <span>{formattedRate}</span>
         </Rate>
       </Text>
     </Wrapper>
@@ -129,7 +167,7 @@ export default function RoomInfo({
 /* ---------------- Styled Components ---------------- */
 
 const Wrapper = styled.div`
-  min-width: 150px;
+  width: 150px;
   display: flex;
   flex-direction: column;
   border-radius: 16px;
@@ -188,15 +226,20 @@ const RoomTitle = styled.div`
   font-family: ${({ theme }) => theme.fonts.main};
   font-size: 15px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
 `;
 
 const RoomAddr = styled.div`
   color: #868686;
   font-family: ${({ theme }) => theme.fonts.main};
   font-size: 11px;
-  white-space: nowrap; /* 주소가 길어질 경우 줄바꿈 방지 */
-  overflow: hidden; /* 넘치는 텍스트 숨김 */
-  text-overflow: ellipsis; /* 말줄임표(...) 처리 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   max-width: 100%;
 `;
 
@@ -206,7 +249,7 @@ const Rate = styled.div`
   align-items: center;
   color: #000;
   font-size: 12px;
-  gap: 2px; /* 별 아이콘과 점수 사이 간격 */
+  gap: 2px;
 `;
 
 const StarIcon = styled(Image)`

@@ -141,7 +141,6 @@ const Header = styled.div`
   align-items: center;
   margin-top: 16px;
   margin-bottom: 20px;
-  padding: 0 10px;
 `;
 
 const BackBtn = styled.button`
@@ -164,6 +163,7 @@ const Title = styled.div`
   font-style: normal;
   font-weight: 600;
   line-height: normal;
+  white-space: nowrap;
 `;
 
 const ScrollArea = styled.div`

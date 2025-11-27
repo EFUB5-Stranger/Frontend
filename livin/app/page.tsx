@@ -21,7 +21,13 @@ export default function SplashPage() {
   return (
     <SplashWrapper>
       <Card>
-        <Image src={Livin_logo} alt='Livin 로고' width={150} height={80} />
+        <Image
+          src={Livin_logo}
+          alt='Livin 로고'
+          width={150}
+          height={80}
+          priority
+        />
       </Card>
     </SplashWrapper>
   );

@@ -31,6 +31,11 @@ export default function RoomInfo({
 }: RoomInfoProps) {
   const toggleBookmark = useBookmarkStore((s) => s.toggleBookmark);
   const isBookmarked = useBookmarkStore((s) => s.isBookmarked(id));
+  const validThumbnail =
+  thumbnailUrl && !thumbnailUrl.includes('bookmark_unfilled.svg')
+    ? thumbnailUrl
+    : '/default_img.jpg';
+
 
   // 평점 상태 관리 (초기값은 부모가 준 값 혹은 0)
   const [currentRate, setCurrentRate] = useState<number>(initialRate);
@@ -73,10 +78,10 @@ export default function RoomInfo({
     return (
       <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
         <Image
-          src={thumbnailUrl || '/default.png'}
+          src={validThumbnail}
           alt={title}
-          width={120}
-          height={80}
+          width={95}
+          height={95}
           style={{ borderRadius: '8px', objectFit: 'cover' }}
         />
         <div>
@@ -189,7 +194,9 @@ const Thumb = styled.div<{ $bgUrl?: string }>`
   position: relative;
   /* 이미지가 없으면 기본 색상 혹은 기본 이미지 표시 */
   background: ${({ $bgUrl }) =>
-    $bgUrl ? `url(${$bgUrl})` : `url('/default.png')`};
+      $bgUrl && !$bgUrl.includes('bookmark_unfilled.svg')
+        ? `url(${$bgUrl})`
+        : `url('/default_img.jpg')`};  
   background-color: lightgray;
   background-position: 50%;
   background-size: cover;
@@ -236,7 +243,7 @@ const RoomTitle = styled.div`
 const RoomAddr = styled.div`
   color: #868686;
   font-family: ${({ theme }) => theme.fonts.main};
-  font-size: 11px;
+  font-size: 10px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

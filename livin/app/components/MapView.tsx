@@ -5,7 +5,7 @@ import { useMapContext } from 'hooks/MapContext';
 import FilterFloating from './FilterFloating';
 import FilterPopup from './FilterPopup';
 import styles from '@/styles/mapPage.module.css';
-import { FilterProvider } from 'hooks/FilterContext';
+import { FilterProvider, useFilter } from 'hooks/FilterContext';
 import NavigationBar from './NavigationBar/NavigationBar';
 import { BuildingType } from '@/types/building';
 
@@ -24,7 +24,20 @@ interface MapViewProps {
 export default function MapView({ popupHeight = 0, mapData, loading }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
+  const markersRef = useRef<{ marker: any; category: string; data: any }[]>([]);
   const { setSelectedBuilding } = useMapContext();
+  const { activeFilter, subFilters } = useFilter();
+  // 한글 필터명 → 서버 타입/카테고리 매핑
+const filterMap: Record<string, string> = {
+  '자취방': 'PRIVATE',
+  '기숙사': 'DORMITORY',
+  '하숙': 'BOARDING',
+  '카페': 'cafe',
+  '음식점': 'food',
+  '편의점': 'store',
+  '교통': 'transport',
+};
+
 
   type MarkerCategory =
     | 'privateHouse'
@@ -68,26 +81,19 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
         setSelectedBuilding({
           id: Number(data.houseId),
           title: data.buildingName,
-          type: data.type as BuildingType, // ✅ 서버 타입 그대로
+          type: data.type as BuildingType,
           address: data.address,
-          thumbnailUrl: data.imageUrl || '/bookmark_unfilled.svg',
+          thumbnailUrl: data.imageUrl || '/default_img.jpg',
           rate: 0,
           bookmarked: data.bookmarked,
         });
       } else {
-        setSelectedBuilding({
-          // ✅ id는 optional이므로 undefined 허용
-          id: undefined,
-          title: data.placeName,
-          type: null,
-          address: data.address,
-          thumbnailUrl: '/bookmark_unfilled.svg',
-          rate: 0,
-          bookmarked: false,
-        });
+        setSelectedBuilding(null);
       }
     });
 
+    // 생성된 마커 저장
+    markersRef.current.push({ marker, category, data });
     return marker;
   };
 
@@ -109,6 +115,8 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
   useEffect(() => {
     if (!mapInstance.current || !mapData || !window.kakao) return;
 
+    markersRef.current = []; // 초기화
+
     (mapData.houses || []).forEach((house: any) => {
       const category = houseCategoryFromServerType(house.type as 'PRIVATE' | 'BOARDING');
       createMarker(parseFloat(house.x), parseFloat(house.y), category, house);
@@ -126,6 +134,48 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
       createMarker(transport.x, transport.y, 'transport', transport)
     );
   }, [mapData]);
+
+  // ✅ 필터 반영 (보였다/안 보였다 처리)
+  useEffect(() => {
+    if (!mapInstance.current) return;
+
+    console.log('MapView 필터 상태:', activeFilter, subFilters);
+
+    markersRef.current.forEach(({ marker, category, data }) => {
+      let shouldShow = false;
+
+      if (activeFilter === 'building') {
+        // 주거지 타입만 비교
+        shouldShow = subFilters.some(f => filterMap[f] === data.type);
+      } else if (activeFilter === 'facility') {
+        // 편의시설 카테고리만 비교
+        shouldShow = subFilters.some(f => filterMap[f] === category);
+      }
+
+      console.log('마커:', data.buildingName || category, '보임?', shouldShow);
+
+      marker.setMap(shouldShow ? mapInstance.current : null);
+    });
+  }, [activeFilter, subFilters]);
+  //초기화 버튼
+useEffect(() => {
+  if (!mapInstance.current) return;
+
+  markersRef.current.forEach(({ marker, category, data }) => {
+    let shouldShow = true; // ✅ 기본은 항상 보이기
+
+    if (activeFilter === 'building' && subFilters.length > 0) {
+      // 주거지 필터가 선택된 경우만 적용
+      shouldShow = subFilters.some(f => filterMap[f] === data.type);
+    } else if (activeFilter === 'facility' && subFilters.length > 0) {
+      // 편의시설 필터가 선택된 경우만 적용
+      shouldShow = subFilters.some(f => filterMap[f] === category);
+    }
+    // activeFilter === null 또는 subFilters === [] → 기본값 true 유지
+
+    marker.setMap(shouldShow ? mapInstance.current : null);
+  });
+}, [activeFilter, subFilters]);
 
   // ✅ 현위치 버튼
   const handleCurrentLocation = () => {
@@ -152,56 +202,54 @@ export default function MapView({ popupHeight = 0, mapData, loading }: MapViewPr
     }
   };
 
-  return (
-    <FilterProvider>
-      <div className={styles.mapArea}>
-        <Script
-          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false&libraries=services`}
-          strategy="afterInteractive"
-          onLoad={() => {
-    if (window.kakao && mapRef.current) {
-      window.kakao.maps.load(() => {
-        const center = new window.kakao.maps.LatLng(37.564213, 126.950288);
-        const map = new window.kakao.maps.Map(mapRef.current, {
-          center,
-          level: 4,
-        });
-        mapInstance.current = map;
-      });
-    }
-  }}
-        />
-        <div ref={mapRef} className={styles.mapContainer} />
+return (
+  
+    <div className={styles.mapArea}>
+      <Script
+        src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}&autoload=false&libraries=services`}
+        strategy="afterInteractive"
+        onLoad={() => {
+          if (window.kakao && mapRef.current) {
+            window.kakao.maps.load(() => {
+              const center = new window.kakao.maps.LatLng(37.564213, 126.950288);
+              const map = new window.kakao.maps.Map(mapRef.current, {
+                center,
+                level: 4,
+              });
+              mapInstance.current = map;
+            });
+          }
+        }}
+      />
+      <div ref={mapRef} className={styles.mapContainer} />
 
-        <FilterFloating />
-        <FilterPopup />
+      <FilterFloating />
+      <FilterPopup />
 
-        <button
-          className={styles.locationBtn}
-          onClick={handleCurrentLocation}
-          style={{ bottom: `${popupHeight + 80}px` }}
-        >
-          {/* 위치 버튼 아이콘 */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
-            <path
-              d="M9 12C9 12.7956 9.31607 13.5587 9.87868 14.1213C10.4413 14.6839 11.2044 15 12 15C12.7956 15 13.5587 14.6839 14.1213 14.1213C14.6839 13.5587 15 12.7956 15 12C15 11.2044 14.6839 10.4413 14.1213 9.87868C13.5587 9.31607 12.7956 9 12 9C11.2044 9 10.4413 9.31607 9.87868 9.87868C9.31607 10.4413 9 11.2044 9 12Z"
-              stroke="black"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M4 12C4 14.1217 4.84285 16.1566 6.34315 17.6569C7.84344 19.1571 9.87827 20 12 20M4 12C4 9.87827 4.84285 7.84344 6.34315 6.34315C7.84344 4.84285 9.87827 4 12 4M4 12H2M12 20C14.1217 20 16.1566 19.1571 17.6569 17.6569C19.1571 16.1566 20 14.1217 20 12M12 20V22M20 12C20 9.87827 19.1571 7.84344 17.6569 6.34315C16.1566 4.84285 14.1217 4 12 4M20 12H22M12 4V2"
-              stroke="black"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+      <button
+        className={styles.locationBtn}
+        onClick={handleCurrentLocation}
+        style={{ bottom: `${popupHeight + 80}px` }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+          <path
+            d="M9 12C9 12.7956 9.31607 13.5587 9.87868 14.1213C10.4413 14.6839 11.2044 15 12 15C12.7956 15 13.5587 14.6839 14.1213 14.1213C14.6839 13.5587 15 12.7956 15 12C15 11.2044 14.6839 10.4413 14.1213 9.87868C13.5587 9.31607 12.7956 9 12 9C11.2044 9 10.4413 9.31607 9.87868 9.87868C9.31607 10.4413 9 11.2044 9 12Z"
+            stroke="black"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M4 12C4 14.1217 4.84285 16.1566 6.34315 17.6569C7.84344 19.1571 9.87827 20 12 20M4 12C4 9.87827 4.84285 7.84344 6.34315 6.34315C7.84344 4.84285 9.87827 4 12 4M4 12H2M12 20C14.1217 20 16.1566 19.1571 17.6569 17.6569C19.1571 16.1566 20 14.1217 20 12M12 20V22M20 12C20 9.87827 19.1571 7.84344 17.6569 6.34315C16.1566 4.84285 14.1217 4 12 4M20 12H22M12 4V2"
+            stroke="black"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
 
-        <NavigationBar />
-      </div>
-    </FilterProvider>
-  );
+      <NavigationBar />
+    </div>
+);
 }

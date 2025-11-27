@@ -3,7 +3,7 @@ import { useFilter } from 'hooks/FilterContext';
 import styles from '@/styles/mapPage.module.css';
 
 export default function FilterPopup() {
-  const { activeFilter, subFilters, toggleSubFilter, applyFilters } =
+  const { activeFilter, subFilters, toggleSubFilter, resetFilters } =
     useFilter();
 
   if (!activeFilter) return null;
@@ -59,13 +59,29 @@ export default function FilterPopup() {
             >
               카페
             </button>
+            <button 
+             className={`${styles.subFilter} ${
+                subFilters.includes('교통') ? styles.selected : ''
+              }`}
+            onClick={() => toggleSubFilter('교통')}>
+              교통 
+              </button>
+            <button 
+            className={`${styles.subFilter} ${
+                subFilters.includes('음식점') ? styles.selected : ''
+              }`}
+            onClick={() => toggleSubFilter('음식점')}>
+              음식점
+            </button>
+
           </>
         )}
       </div>
       <div className={styles.applyRow}>
-        <button className={styles.applyBtn} onClick={applyFilters}>
+         <button className={styles.applyBtn} onClick={resetFilters}>초기화</button>
+        {/* <button className={styles.applyBtn} onClick={applyFilters}>
           적용하기
-        </button>
+        </button> */}
       </div>
     </div>
   );

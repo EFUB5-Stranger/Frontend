@@ -123,6 +123,7 @@
   background: #fff;
   border: 1px solid #ccc;
   cursor: pointer;
+  margin-bottom: 2rem;
   z-index: 1000; /* 지도 위에 보이도록 */
 }
 .locationBtn svg {
@@ -182,14 +183,19 @@
   background: var(--main-pri, #112D4E);
   color: #FFF;
   cursor: pointer;
+  margin-top: 1rem;;
 }
 
 .bottomPopup {
-  padding:1rem;
+  display: flex;
+  flex-direction: column;
+  padding:1.5rem;
   position: fixed;
   bottom: 0;
   left: 50%;    
-  height: flex;      
+  height: auto;  
+  min-height: 80px;    
+  max-height: 60vh; 
   transform: translateX(-50%); 
   width: 90%;            
   max-width: 360px;       
@@ -198,7 +204,7 @@
   z-index: 3000;          
   box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
   border-radius: 12px 12px 0 0; 
-  
+  gap: 1rem;
 }
 .topRow {
   display: flex;
@@ -261,7 +267,7 @@ line-height: normal;
 }
 
 .reviewBtn {
-  width: 20.75rem;
+  width: 312.002px;
   height: 3.125rem;
   border-radius: 0.9375rem;
   background: #112D4E;

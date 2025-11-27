@@ -1,15 +1,15 @@
 'use client';
 import { createContext, useContext, useState } from 'react';
-import type { SelectedBuilding,ServerBuildingType } from '@/types/building';
+import type { Building} from '@/types/building';
 interface MapContextType {
-  selectedBuilding: SelectedBuilding | null;
-  setSelectedBuilding: (building: SelectedBuilding | null) => void;
+  selectedBuilding: Building | null;
+  setSelectedBuilding: (building: Building | null) => void;
 }
 
 const MapContext = createContext<MapContextType | undefined>(undefined);
 
 export const MapProvider = ({ children }: { children: React.ReactNode }) => {
-  const [selectedBuilding, setSelectedBuilding] = useState<SelectedBuilding | null>(null);
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
 
   return (
     <MapContext.Provider value={{ selectedBuilding, setSelectedBuilding }}>

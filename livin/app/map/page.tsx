@@ -10,12 +10,10 @@ import { useEffect, useState } from 'react';
 import axiosInstance from '@apis/axiosInstance';
 
 export default function MapPage() {
-  // BottomPopup 높이를 관리해서 지도 높이를 동적으로 조정
   const [popupHeight, setPopupHeight] = useState(0);
   const [mapData, setMapData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // 지도 데이터 불러오기
   useEffect(() => {
     const fetchMapData = async () => {
       setLoading(true);
@@ -56,12 +54,10 @@ export default function MapPage() {
             searchPlaceholder="건물명, 주소, 키워드 검색"
           />
 
-          {/* 지도 컴포넌트: 데이터/팝업 높이 전달 */}
           <MapView popupHeight={popupHeight} mapData={mapData} loading={loading} />
 
           <FilterPopup />
 
-          {/* BottomPopup이 높이를 계산해 부모 상태로 콜백 전달 */}
           <BottomPopup onHeightChange={setPopupHeight} />
         </div>
       </MapProvider>

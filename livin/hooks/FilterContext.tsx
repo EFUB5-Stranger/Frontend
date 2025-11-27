@@ -9,7 +9,9 @@ interface FilterContextType {
   toggleFilter: (filter: FilterType) => void;
   subFilters: string[];
   toggleSubFilter: (filter: string) => void;
-  applyFilters: () => void;}
+  applyFilters: () => void;
+  resetFilters: () => void; 
+}
 
 const FilterContext = createContext<FilterContextType | null>(null);
 
@@ -27,10 +29,12 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
       prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]
     );
   };
-
+const resetFilters = () => {
+  setActiveFilter(null);
+  setSubFilters([]);
+};
   const applyFilters = () => {
     console.log('적용된 필터:', activeFilter, subFilters);
-    setActiveFilter(null);
   };
 
   return (
@@ -41,7 +45,8 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
         subFilters, 
         toggleFilter, 
         toggleSubFilter, 
-        applyFilters }}
+        applyFilters,
+      resetFilters, }}
     >
       {children}
     </FilterContext.Provider>

@@ -129,7 +129,7 @@ export default function HousesPage() {
               onClick={() =>
                 setSortOption(sortOption === 'rating' ? 'bookmark' : 'rating')
               }
-            >
+            > <SortIcon src='/sort_icon.svg' alt='정렬' width={10} height={10} />
               {sortOption === 'rating' ? '평점순' : '북마크순'}
             </FilterButton>
           </FilterButtonWrapper>
@@ -144,6 +144,7 @@ export default function HousesPage() {
               }}
             >
               {typeFilter}
+              <SortIcon src='/dropdown.svg' alt='정렬' width={10} height={10} />
             </FilterButton>
 
             {activeFilter === '타입' && (
@@ -177,6 +178,7 @@ export default function HousesPage() {
               }}
             >
               {districtFilter}
+              <SortIcon src='/dropdown.svg' alt='정렬' width={10} height={10} />
             </FilterButton>
 
             {activeFilter === '주소' && (
@@ -353,8 +355,9 @@ const FilterButtonWrapper = styled.div`
 `;
 
 const FilterButton = styled.button<{ $active?: boolean }>`
+gap:2px;
   display: inline-flex;
-  width: 60px;
+  width: flex;
   height: 28px;
   padding: 6px 14px;
   justify-content: center;
@@ -378,7 +381,10 @@ const FilterButton = styled.button<{ $active?: boolean }>`
       $active ? theme.colors.primary : '#b0b0b0'};
   }
 `;
-
+const SortIcon = styled(Image)`
+  margin:1px;
+  opacity: 0.5;
+`;
 const FilterPopupFloating = styled.div<{ $alignRight?: boolean }>`
   position: absolute;
   top: calc(100% + 8px);

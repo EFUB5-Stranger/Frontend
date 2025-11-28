@@ -9,18 +9,20 @@ interface TopBarProps {
   showSearch?: boolean;
   showBack?: boolean;
   searchPlaceholder?: string; // ✅ placeholder를 prop으로 받도록 추가
+  className?: string;
 }
 
 export default function TopBar({ 
   title, 
   showSearch = false, 
   showBack = false, 
-  searchPlaceholder 
+  searchPlaceholder ,
+   className,
 }: TopBarProps) {
   const router = useRouter();  
 
   return (
-    <div className={styles.topBar}>
+     <div className={`${styles.topBar} ${className ?? ''}`}>
       <div className={styles.mapHeader}>
         {showBack && (
           <button className={styles.backBtn} onClick={() => router.back()}>
@@ -35,8 +37,7 @@ export default function TopBar({
         <div className={styles.mapTitle}>{title}</div>      
       </div>
 
-      {/* ✅ showSearch가 true일 때 SearchBar 렌더링, placeholder는 prop으로 전달 */}
-      {showSearch && <SearchBar placeholder={searchPlaceholder} />}
+      {showSearch && <SearchBar placeholder={searchPlaceholder} className={className} />}
     </div>
   );
 }

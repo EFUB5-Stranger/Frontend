@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
-import DormReviewCard from '@/components/Dorm/DormReviewCard';
+import HouseReviewCard from '@/components/House/HouseReviewCard';
 import FloatingWriteButton from '@/components/Common/FloatingWriteButton';
 import { getHouseReviewsApi, getHouseDetailApi } from '@apis/house';
 
@@ -29,11 +29,12 @@ interface HouseReview {
   id: number;
   createdAt: string;
   finalRate: number;
-  facilityRate: 'DIRTY' | 'NORMAL' | 'CLEAN';
-  soundRate: 'NONE' | 'SOMETIMES' | 'OFTEN';
-  bugRate: 'NONE' | 'SOMETIMES' | 'OFTEN';
-  accessRate: 'BAD' | 'NORMAL' | 'GOOD';
+  facilityRate: 'BAD' | 'NORMAL' | 'GOOD' | 'VERY_GOOD';
+  soundRate: 'NONE' | 'SOMETIMES' | 'OFTEN' | 'BAD' | 'NORMAL' | 'GOOD' | 'VERY_GOOD';
+  bugRate: 'NONE' | 'SOMETIMES' | 'OFTEN' | 'BAD' | 'NORMAL' | 'GOOD' | 'VERY_GOOD';
+  accessRate: 'BAD' | 'NORMAL' | 'GOOD' | 'VERY_GOOD';
   imageUrls: string[];
+  nickname: string;
 }
 
 export default function BuildingDetailPage() {
@@ -63,7 +64,9 @@ export default function BuildingDetailPage() {
         ]);
         
         setHouseDetail(houseDetailData);
-        setReviews(reviewsData.content);
+        console.log('Reviews API Response:', reviewsData);
+        // API 응답이 직접 배열로 오므로 content 없이 직접 사용
+        setReviews(reviewsData || []);
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -151,23 +154,26 @@ export default function BuildingDetailPage() {
           </ReviewHeader>
 
           <ReviewList>
-            {reviews?.map((review) => (
-              <DormReviewCard
-                key={review.id}
-                date={new Date(review.createdAt).toLocaleDateString()}
-                name='익명'
-                score={review.finalRate}
-                stars={review.finalRate}
-                tags={[]}
-                evaluations={{
-                  방음: review.soundRate,
-                  시설: review.facilityRate,
-                  접근성: review.accessRate,
-                  벌레: review.bugRate,
-                }}
-                onClick={() => router.push(`/houses/review/${review.id}?houseId=${params.id}`)}
-              />
-            ))}
+            {reviews?.length > 0 ? (
+              reviews.map((review) => (
+                <HouseReviewCard
+                  key={review.id}
+                  date={new Date(review.createdAt).toLocaleDateString()}
+                  name={review.nickname || '익명'}
+                  score={review.finalRate}
+                  stars={review.finalRate}
+                  evaluations={{
+                    방음: review.soundRate,
+                    시설: review.facilityRate,
+                    접근성: review.accessRate,
+                    벌레: review.bugRate,
+                  }}
+                  onClick={() => router.push(`/houses/review/${review.id}?houseId=${params.id}`)}
+                />
+              ))
+            ) : (
+              <NoReviews>아직 리뷰가 없습니다.</NoReviews>
+            )}
           </ReviewList>
         </ReviewSection>
       </Container>
@@ -295,4 +301,11 @@ const ReviewList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+`;
+
+const NoReviews = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
 `;

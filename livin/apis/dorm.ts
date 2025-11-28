@@ -46,7 +46,7 @@ export const deleteDormReviewApi = async (review_id: string | number) => {
 // 리뷰 이미지 업로드
 export const uploadReviewImageApi = async (imageFile: File) => {
   const formData = new FormData();
-  formData.append('image', imageFile);
+  formData.append('images', imageFile);
   
   const res = await axiosInstance.post('/review/images', formData, {
     headers: {

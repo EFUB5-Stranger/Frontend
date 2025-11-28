@@ -21,9 +21,9 @@ export default function MapPage() {
         const res = await axiosInstance.get('/house/map', {
           params: {
             minLat: 37.5567,
-            maxLat: 37.5600,
-            minLon: 126.9470,
-            maxLon: 126.9520,
+            maxLat: 37.56,
+            minLon: 126.947,
+            maxLon: 126.952,
             centerLat: 37.561176,
             centerLon: 126.94638,
             radius: 500,
@@ -49,14 +49,16 @@ export default function MapPage() {
       <MapProvider>
         <div className={styles.mapPage}>
           <TopBar
-            title="지도"
+            title='지도'
             showSearch={true}
-            searchPlaceholder="건물명, 주소, 키워드 검색"
+            searchPlaceholder='건물명, 주소, 키워드 검색'
           />
 
-          <MapView popupHeight={popupHeight} mapData={mapData} loading={loading} />
-
-          <FilterPopup />
+          <MapView
+            popupHeight={popupHeight}
+            mapData={mapData}
+            loading={loading}
+          />
 
           <BottomPopup onHeightChange={setPopupHeight} />
         </div>

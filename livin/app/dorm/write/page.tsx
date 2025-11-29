@@ -72,7 +72,12 @@ export default function DormWritePage() {
     try {
       setIsUploading(true);
       const imageUrl = await uploadReviewImageApi(file);
-      setImageUrls(prev => [...prev, imageUrl]);
+      // imageUrl이 배열(string[])로 올 경우 첫 번째 값만 사용
+      if (Array.isArray(imageUrl)) {
+        setImageUrls(prev => [...prev, ...imageUrl]);
+      } else {
+        setImageUrls(prev => [...prev, imageUrl]);
+      }
     } catch (error) {
       console.error('Failed to upload image:', error);
       alert('이미지 업로드에 실패했습니다.');

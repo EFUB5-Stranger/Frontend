@@ -24,7 +24,6 @@ interface Review {
   createdAt?: string;
   nickname?: string;
   anonym?: boolean;
-  canDelete?: boolean;
 }
 
 interface Comment {
@@ -33,7 +32,6 @@ interface Comment {
   content: string;
   nickname: string;
   createdAt: string;
-  canDelete?: boolean;
 }
 
 export default function DormDetailPage() {
@@ -144,12 +142,9 @@ export default function DormDetailPage() {
             <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
           </BackButton>
           <Title>리뷰 상세 조회</Title>
-          {review.canDelete && (
-            <DeleteButton onClick={handleDeleteReview}>
-              <Image src='/trash.svg' alt='삭제' width={16} height={16} />
-            </DeleteButton>
-          )}
-          {!review.canDelete && <Spacer />}
+          <DeleteButton onClick={handleDeleteReview}>
+            <Image src='/trash.svg' alt='삭제' width={16} height={16} />
+          </DeleteButton>
         </Header>
 
         <ReviewCard>

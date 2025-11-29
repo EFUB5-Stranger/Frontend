@@ -12,11 +12,25 @@ export const createDormReviewApi = async (data: {
   finalRate: number;
   review: string;
   anonym: boolean;
-  imageUrls?: string[];
 }) => {
   const res = await axiosInstance.post('/dorm/review', data);
   return res.data;
 };
+
+export interface DormList {
+  id: number;
+  buildName: string;
+  buildNum: string;
+  roomPeople: string;
+  finalrate: number;
+  facilityRate: string;
+  soundRate: string;
+  bugRate: string;
+  accessRate: string;
+  imageUrl: string | null;
+  nickname: string;
+
+}
 
 // 기숙사 리뷰 목록 조회
 export const getDormReviewsApi = async (params?: {
@@ -25,37 +39,37 @@ export const getDormReviewsApi = async (params?: {
   minFinalRate?: number;
 }) => {
   // params가 없으면 빈 객체로 전달 (전체 목록 조회)
-  const res = await axiosInstance.get('/dorm/review', {
+  const res = await axiosInstance.get<DormList[]>('/dorm/review', {
     params: params || undefined,
   });
   return res.data;
 };
 
 // 기숙사 리뷰 상세 조회
-export const getDormReviewDetailApi = async (review_id: string | number) => {
+export const getDormReviewDetailApi = async (review_id: number) => {
   const res = await axiosInstance.get(`/dorm/review/${review_id}`);
   return res.data;
 };
 
 // 기숙사 리뷰 삭제
-export const deleteDormReviewApi = async (review_id: string | number) => {
+export const deleteDormReviewApi = async (review_id: number) => {
   const res = await axiosInstance.delete(`/dorm/review/${review_id}`);
   return res.status;
 };
 
 // 리뷰 이미지 업로드
-export const uploadReviewImageApi = async (imageFile: File) => {
+export const uploadReviewImageApi = async (images: File) => {
   const formData = new FormData();
-  formData.append('images', imageFile);
+  formData.append('images', images);
   
   const res = await axiosInstance.post('/review/images', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
-  return res.data; // imageUrl 반환
+  
+  return res.data;
 };
-
 
 
 // 내 리뷰 조회

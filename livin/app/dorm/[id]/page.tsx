@@ -202,7 +202,7 @@ export default function DormDetailPage() {
         <CommentsSection>
           <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
           
-          {comments.map((comment) => (
+          {Array.isArray(comments) && comments.map((comment) => (
             <CommentItem key={comment.commentId}>
               <CommentTopRow>
                 <CommentLeft>

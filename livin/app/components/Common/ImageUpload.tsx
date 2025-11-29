@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import styled from 'styled-components';
 
 interface ImageUploadProps {
@@ -21,6 +21,7 @@ export default function ImageUpload({
   isUploading = false,
 }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -37,12 +38,24 @@ export default function ImageUpload({
         return;
       }
 
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result) {
+          setPreviewImages((prev) => [...prev, reader.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+
       onAddImage(file);
     }
     // input 값 초기화
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setPreviewImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddImageClick = () => {
@@ -66,20 +79,24 @@ export default function ImageUpload({
   return (
     <>
       <ImageUploadSection>
-        <ImageBox>
-          <ImagePreview>📷</ImagePreview>
-          <ImageCount>{imageCount} / {maxImages}</ImageCount>
-        </ImageBox>
-        <AddImageBox 
-          as="div"
-          onClick={handleAddImageClick} 
-          style={{ 
-            pointerEvents: isUploading ? 'none' : 'auto',
-            cursor: isUploading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          <PlusIcon>{isUploading ? '⏳' : '+'}</PlusIcon>
-        </AddImageBox>
+        {previewImages.map((src, index) => (
+          <ImagePreviewBox key={index}>
+            <PreviewImage src={src} alt={`preview-${index}`} />
+            <RemoveButton onClick={() => handleRemoveImage(index)}>×</RemoveButton>
+          </ImagePreviewBox>
+        ))}
+        {imageCount < maxImages && (
+          <AddImageBox 
+            as="div"
+            onClick={handleAddImageClick} 
+            style={{ 
+              pointerEvents: isUploading ? 'none' : 'auto',
+              cursor: isUploading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            <PlusIcon>{isUploading ? '⏳' : '+'}</PlusIcon>
+          </AddImageBox>
+        )}
         <HiddenFileInput
           ref={fileInputRef}
           type="file"
@@ -110,31 +127,36 @@ const ImageUploadSection = styled.div`
   gap: 10px;
 `;
 
-const ImageBox = styled.div`
+const ImagePreviewBox = styled.div`
   position: relative;
   width: 70px;
   height: 70px;
   border-radius: 8px;
-  border: 2px dashed #d0d0d0;
-  background: #f8f8f8;
+  overflow: hidden;
+  border: 1px solid #d0d0d0;
+`;
+
+const PreviewImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const RemoveButton = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-`;
-
-const ImagePreview = styled.div`
-  font-size: 24px;
-`;
-
-const ImageCount = styled.div`
-  font-size: 10px;
-  color: #999;
-`;
-
-const HiddenFileInput = styled.input`
-  display: none;
+  font-size: 14px;
 `;
 
 const AddImageBox = styled.div`
@@ -154,6 +176,10 @@ const AddImageBox = styled.div`
     border-color: ${({ theme }) => theme.colors.primary};
     background: #f8f8f8;
   }
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
 `;
 
 const PlusIcon = styled.span`

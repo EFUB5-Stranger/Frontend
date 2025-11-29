@@ -154,7 +154,12 @@ export default function DormDetailPage() {
 
         <ReviewCard>
           <ProfileSection>
-            <ProfileImage />
+            <ProfileImage
+              src={'/profile_white.svg'}
+              alt='프로필 이미지'
+              width={50}
+              height={50}
+            />
             <ProfileInfo>
               <TopRow>
                 <NameSection>
@@ -357,11 +362,11 @@ const ProfileSection = styled.div`
   margin-bottom: 14px;
 `;
 
-const ProfileImage = styled.div`
-  width: 60px;
-  height: 60px;
+const ProfileImage = styled(Image)`
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: #d9d9d9;
+  object-fit: cover;
   flex-shrink: 0;
 `;
 

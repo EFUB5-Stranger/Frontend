@@ -1,10 +1,43 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import DormReviewCard from '@/components/Dorm/DormReviewCard';
+import { getMyDormReviewsApi } from '@apis/dorm';
 
 export default function MyPageReviews() {
+  const router = useRouter();
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchReviews = async () => {
+    try {
+      setIsLoading(true);
+
+      // 명세서에 따라 파라미터 없이 호출 (토큰은 헤더에 포함됨)
+      const data = await getMyDormReviewsApi();
+
+      console.log('My Reviews Response:', data);
+
+      if (Array.isArray(data)) {
+        setReviews(data);
+      } else {
+        setReviews([]);
+      }
+    } catch (error: any) {
+      console.error('내 리뷰 조회 실패:', error);
+      setReviews([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
   return (
     <Wrapper>
       <Header>
@@ -16,110 +49,39 @@ export default function MyPageReviews() {
 
       <ScrollArea>
         <ReviewList>
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
+          {isLoading ? (
+            <LoadingText>로딩 중...</LoadingText>
+          ) : reviews.length > 0 ? (
+            reviews.map((review) => (
+              <DormReviewCard
+                key={review.id}
+                // 날짜 데이터가 없으면 오늘 날짜 혹은 임의의 값
+                date={
+                  review.createdAt
+                    ? new Date(review.createdAt).toLocaleDateString()
+                    : '2025.11.26'
+                }
+                // 내 리뷰이므로 이름은 '나' 또는 닉네임
+                name={review.nickname || '나'}
+                score={review.finalrate || 0}
+                stars={review.finalrate || 0}
+                tags={[
+                  review.buildName,
+                  review.buildNum,
+                  review.roomPeople ? `${review.roomPeople}인실` : null,
+                ].filter((tag): tag is string => Boolean(tag))}
+                evaluations={{
+                  방음: review.soundRate || '-',
+                  시설: review.facilityRate || '-',
+                  접근성: review.accessRate || '-',
+                  벌레: review.bugRate || '-',
+                }}
+                onClick={() => router.push(`/dorm/${review.id}`)}
+              />
+            ))
+          ) : (
+            <EmptyText>작성한 리뷰가 없습니다.</EmptyText>
+          )}
         </ReviewList>
       </ScrollArea>
     </Wrapper>
@@ -127,7 +89,7 @@ export default function MyPageReviews() {
 }
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 360px;
   height: 800px;
   background: ${({ theme }) => theme.colors.background};
   padding: 50px 10px 0;
@@ -184,4 +146,18 @@ const ReviewList = styled.div`
   flex-direction: column;
   gap: 13px;
   min-width: 0;
+`;
+
+const LoadingText = styled.div`
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+  font-size: 14px;
+`;
+
+const EmptyText = styled.div`
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+  font-size: 14px;
 `;

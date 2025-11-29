@@ -25,8 +25,8 @@ export const getDormReviewsApi = async (params?: {
   minFinalRate?: number;
 }) => {
   // params가 없으면 빈 객체로 전달 (전체 목록 조회)
-  const res = await axiosInstance.get('/dorm/review', { 
-    params: params || undefined 
+  const res = await axiosInstance.get('/dorm/review', {
+    params: params || undefined,
   });
   return res.data;
 };
@@ -57,3 +57,9 @@ export const uploadReviewImageApi = async (imageFile: File) => {
 };
 
 
+
+// 내 리뷰 조회
+export const getMyDormReviewsApi = async () => {
+  const res = await axiosInstance.get('/dorm/review/me');
+  return res.data;
+};

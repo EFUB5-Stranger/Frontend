@@ -46,8 +46,8 @@ export const deleteDormReviewApi = async (review_id: string | number) => {
 // 리뷰 이미지 업로드
 export const uploadReviewImageApi = async (imageFile: File) => {
   const formData = new FormData();
-  formData.append('image', imageFile);
-
+  formData.append('images', imageFile);
+  
   const res = await axiosInstance.post('/review/images', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -56,23 +56,7 @@ export const uploadReviewImageApi = async (imageFile: File) => {
   return res.data; // imageUrl 반환
 };
 
-// 댓글 작성
-export const createCommentApi = async (
-  review_id: string | number,
-  data: {
-    content: string;
-    anonymous: boolean;
-  }
-) => {
-  const res = await axiosInstance.post(`/review/${review_id}/comment`, data);
-  return res.data;
-};
 
-// 댓글 삭제
-export const deleteCommentApi = async (comment_id: string | number) => {
-  const res = await axiosInstance.delete(`/comment/${comment_id}`);
-  return res.status;
-};
 
 // 내 리뷰 조회
 export const getMyDormReviewsApi = async () => {

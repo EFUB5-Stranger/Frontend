@@ -7,6 +7,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import StarDisplay from '@/components/Dorm/StarDisplay';
 import EvaluationList from '@/components/Dorm/EvaluationList';
 import { getHouseReviewDetailApi } from '@apis/house';
+import { createCommentApi, deleteCommentApi, getCommentsApi } from '@apis/comment';
 
 interface ReviewDetail {
   id: number;
@@ -22,6 +23,14 @@ interface ReviewDetail {
   imageUrls: string[];
 }
 
+interface Comment {
+  commentId: number;
+  content: string;
+  nickname: string;
+  createdAt: string;
+  canDelete?: boolean;
+}
+
 export default function HouseDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -30,6 +39,8 @@ export default function HouseDetailPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [review, setReview] = useState<ReviewDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   const houseId = searchParams.get('houseId');
 
@@ -41,6 +52,10 @@ export default function HouseDetailPage() {
         setLoading(true);
         const data = await getHouseReviewDetailApi(houseId, params.id as string);
         setReview(data);
+        
+        // 댓글 데이터 로드
+        const commentsData = await getCommentsApi(params.id as string);
+        setComments(commentsData);
       } catch (error) {
         console.error('Failed to fetch review detail:', error);
       } finally {
@@ -50,31 +65,6 @@ export default function HouseDetailPage() {
 
     fetchReviewDetail();
   }, [params.id, houseId]);
-
-  // 임시 댓글 데이터 (댓글 API는 나중에 구현)
-  const comments = [
-    {
-      id: 1,
-      author: '구구',
-      date: '2025.09.27 17:50',
-      text: '맞아요 여기 벌레 너무 많이 나와요ㅠ',
-      canDelete: true,
-    },
-    {
-      id: 2,
-      author: '익명1',
-      date: '2025.09.27 17:50',
-      text: '저는 벌레 별로 안 나오던데요?',
-      isReported: false,
-    },
-    {
-      id: 3,
-      author: '익명2',
-      date: '2025.09.27 18:50',
-      text: '저는 벌레 별로 안 나오던데요?',
-      isReported: false,
-    },
-  ];
 
   if (loading) {
     return (
@@ -108,10 +98,45 @@ export default function HouseDetailPage() {
     );
   }
 
-  const handleSubmitComment = () => {
-    if (!commentText.trim()) return;
-    console.log('댓글 작성:', { text: commentText, anonymous: isAnonymous });
-    setCommentText('');
+  // 댓글 작성
+  const handleSubmitComment = async () => {
+    if (!commentText.trim()) {
+      alert('댓글 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsSubmittingComment(true);
+      await createCommentApi(params.id as string, {
+        content: commentText,
+        anonymous: isAnonymous
+      });
+      
+      // 댓글 목록 새로고침
+      const commentsData = await getCommentsApi(params.id as string);
+      setComments(commentsData);
+      setCommentText('');
+    } catch (error) {
+      console.error('댓글 작성 실패:', error);
+      alert('댓글 작성에 실패했습니다.');
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    if (!confirm('댓글을 삭제하시겠습니까?')) return;
+
+    try {
+      await deleteCommentApi(commentId);
+      // 댓글 목록 새로고침
+      const commentsData = await getCommentsApi(params.id as string);
+      setComments(commentsData);
+    } catch (error) {
+      console.error('댓글 삭제 실패:', error);
+      alert('댓글 삭제에 실패했습니다.');
+    }
   };
 
   return (
@@ -165,23 +190,25 @@ export default function HouseDetailPage() {
           <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
           
           {comments.map((comment) => (
-            <CommentItem key={comment.id}>
+            <CommentItem key={comment.commentId}>
               <CommentTopRow>
                 <CommentLeft>
-                  <CommentAuthor>{comment.author}</CommentAuthor>
-                  <CommentDate>{comment.date}</CommentDate>
+                  <CommentAuthor>{comment.nickname}</CommentAuthor>
+                  <CommentDate>{new Date(comment.createdAt).toLocaleString('ko-KR')}</CommentDate>
                 </CommentLeft>
                 {comment.canDelete && (
                   <CommentActions>
-                    <ActionButton>수정</ActionButton>
-                    <Divider>|</Divider>
-                    <ActionButton>삭제</ActionButton>
+                    <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
                   </CommentActions>
                 )}
               </CommentTopRow>
-              <CommentText>{comment.text}</CommentText>
+              <CommentText>{comment.content}</CommentText>
             </CommentItem>
           ))}
+          
+          {comments.length === 0 && (
+            <EmptyComment>첫 댓글을 남겨보세요!</EmptyComment>
+          )}
         </CommentsSection>
 
         <CommentInputSection>
@@ -204,8 +231,12 @@ export default function HouseDetailPage() {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="댓글 작성"
+              disabled={isSubmittingComment}
             />
-            <SubmitButton onClick={handleSubmitComment}>
+            <SubmitButton 
+              onClick={handleSubmitComment}
+              disabled={isSubmittingComment || !commentText.trim()}
+            >
               <Image src='/send.svg' alt='전송' width={17} height={17} />
             </SubmitButton>
           </InputRow>
@@ -539,4 +570,11 @@ const SubmitButton = styled.button`
   img {
     filter: brightness(0) invert(1);
   }
+`;
+
+const EmptyComment = styled.div`
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 14px;
 `;

@@ -1,15 +1,15 @@
 'use client';
 
 import styled from 'styled-components';
-import StarDisplay from './StarDisplay';
-import EvaluationList from './EvaluationList';
+import StarDisplay from '../Dorm/StarDisplay';
+import EvaluationList from '../Dorm/EvaluationList';
 
-interface DormCardProps {
+interface HouseReviewCardProps {
   date: string;
   name: string;
   score: number;
   stars: number;
-  tags: string[];
+  tags?: string[];
   evaluations: {
     방음: string;
     시설: string;
@@ -19,7 +19,7 @@ interface DormCardProps {
   onClick?: () => void;
 }
 
-export default function DormReviewCard({
+export default function HouseReviewCard({
   date,
   name,
   score,
@@ -27,34 +27,32 @@ export default function DormReviewCard({
   tags,
   evaluations,
   onClick,
-}: DormCardProps) {
+}: HouseReviewCardProps) {
   return (
     <Card onClick={onClick}>
-        <Skeleton />
-
-        <Info>
-          <TopRow>
-            <NameSection>
-              <Name>{name}</Name>
-              <DateText>{date}</DateText>
-            </NameSection>
-
-            <StarDisplay stars={stars} score={score} size="small" />
-          </TopRow>
-
+      <Skeleton />
+      <Info>
+        <TopRow>
+          <NameSection>
+            <Name>{name}</Name>
+            <DateText>{date}</DateText>
+          </NameSection>
+          <StarDisplay stars={stars} score={score} size="small" />
+        </TopRow>
+        
+        {tags && tags.length > 0 && (
           <Tags>
-            {tags.map((t, i) => (
-              <Tag key={i}>{t}</Tag>
+            {tags.map((tag, i) => (
+              <Tag key={i}>{tag}</Tag>
             ))}
           </Tags>
-
-          <EvaluationList evaluations={evaluations} size="small" />
-        </Info>
+        )}
+        
+        <EvaluationList evaluations={evaluations} size="small" />
+      </Info>
     </Card>
   );
 }
-
-/* ---------------- Styled Components ---------------- */
 
 const Card = styled.div`
   display: flex;
@@ -78,8 +76,6 @@ const Skeleton = styled.div`
   flex-shrink: 0;
   border-radius: 10px;
   background: #d9d9d9;
-`;
-`;
 `;
 
 const Info = styled.div`

@@ -25,15 +25,29 @@ export default function DormPage() {
     try {
       setIsLoading(true);
       
-      // 전체 목록 조회 (params 없이)
+      // 전체 목록 조회 (검색어 있으면 필터링)
       const data = await getDormReviewsApi();
       console.log('API Response:', data);
       console.log('Response type:', typeof data);
       console.log('Is array:', Array.isArray(data));
       
       if (Array.isArray(data)) {
-        setReviews(data);
-        console.log('Reviews loaded:', data.length);
+        let filteredReviews = data;
+        
+        // 검색어가 있으면 필터링
+        if (searchText.trim()) {
+          filteredReviews = data.filter(review => 
+            review.buildName?.toLowerCase().includes(searchText.toLowerCase()) ||
+            review.buildNum?.toLowerCase().includes(searchText.toLowerCase()) ||
+            review.nickname?.toLowerCase().includes(searchText.toLowerCase()) ||
+            review.review?.toLowerCase().includes(searchText.toLowerCase()) ||
+            review.tags?.some((tag: string) => tag.toLowerCase().includes(searchText.toLowerCase())) ||
+            review.roomPeople?.toString().includes(searchText)
+          );
+        }
+        
+        setReviews(filteredReviews);
+        console.log('Reviews loaded:', filteredReviews.length);
       } else {
         console.log('Unexpected data structure:', data);
         setReviews([]);
@@ -53,20 +67,40 @@ export default function DormPage() {
   useEffect(() => {
     fetchReviews();
   }, []);
+  
+  // 검색어 변경 시 자동 검색
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      if (searchText.trim() !== '') {
+        fetchReviews();
+      }
+    }, 500);
+    
+    return () => clearTimeout(delayedSearch);
+  }, [searchText]);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       fetchReviews();
     }
   };
+  
+  const handleClearSearch = () => {
+    setSearchText('');
+    fetchReviews();
+  };
 
   return (
-    <Wrapper onClick={() => setActiveFilter(null)}>
-      <Container onClick={(e) => e.stopPropagation()}>
+    <>
+      <Wrapper onClick={() => setActiveFilter(null)}>
         <Header>
+          <BackBtn onClick={() => router.back()}>
+            <Image src='/arrow_back.svg' width={9} height={15} alt='back' />
+          </BackBtn>
           <Title>기숙사 리뷰 조회</Title>
         </Header>
 
+        {/* 검색 */}
         <SearchSection>
           <SearchInputWrapper>
             <SearchIcon
@@ -84,6 +118,7 @@ export default function DormPage() {
           </SearchInputWrapper>
         </SearchSection>
 
+        {/* 필터 */}
         <FilterSection>
           <FilterButtonWrapper onClick={(e) => e.stopPropagation()}>
             <FilterButton
@@ -196,75 +231,92 @@ export default function DormPage() {
           </FilterButtonWrapper>
         </FilterSection>
 
-        <ReviewList>
-          {isLoading ? (
-            <LoadingText>로딩 중...</LoadingText>
-          ) : reviews.length > 0 ? (
-            reviews.map((review) => (
-              <DormReviewCard
-                key={review.id}
-                date={'2025.11.26'}
-                name={review.nickname || '익명'}
-                score={review.finalrate || 0}
-                stars={review.finalrate || 0}
-                tags={[review.buildName, review.buildNum, `${review.roomPeople}인실`].filter(Boolean)}
-                evaluations={{
-                  방음: review.soundRate || '-',
-                  시설: review.facilityRate || '-',
-                  접근성: review.accessRate || '-',
-                  벌레: review.bugRate || '-',
-                }}
-                onClick={() => router.push(`/dorm/${review.id}`)}
-              />
-            ))
-          ) : (
-            <EmptyText>등록된 리뷰가 없습니다.</EmptyText>
-          )}
-        </ReviewList>
-      </Container>
+        {/* 리스트 */}
+        <ScrollArea>
+          <ReviewList>
+            {isLoading ? (
+              <LoadingText>로딩 중...</LoadingText>
+            ) : reviews.length > 0 ? (
+              reviews.map((review) => (
+                <DormReviewCard
+                  key={review.id}
+                  date={'2025.11.26'}
+                  name={review.nickname || '익명'}
+                  score={review.finalrate || 0}
+                  stars={review.finalrate || 0}
+                  tags={[review.buildName, review.buildNum, `${review.roomPeople}인실`].filter(Boolean)}
+                  evaluations={{
+                    방음: review.soundRate || '-',
+                    시설: review.facilityRate || '-',
+                    접근성: review.accessRate || '-',
+                    벌레: review.bugRate || '-',
+                  }}
+                  onClick={() => router.push(`/dorm/${review.id}`)}
+                />
+              ))
+            ) : (
+              <EmptyText>등록된 리뷰가 없습니다.</EmptyText>
+            )}
+          </ReviewList>
+        </ScrollArea>
 
-      <FloatingButton onClick={() => router.push('/dorm/write')}>
-        <Image src='/writing.svg' alt='리뷰 작성' width={28} height={28} />
-        <span>리뷰 작성</span>
-      </FloatingButton>
-
+        <FloatingButton onClick={() => router.push('/dorm/write')}>
+          <Image src='/writing.svg' alt='리뷰 작성' width={28} height={28} />
+          <span>리뷰 작성</span>
+        </FloatingButton>
+      </Wrapper>
       <NavigationBar />
-    </Wrapper>
+    </>
   );
 }
 
 const Wrapper = styled.div`
   width: 100%;
-  min-height: ${({ theme }) => theme.layout.minHeight};
+  max-width: 360px;
+  height: 800px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 50px 20px 0;
   display: flex;
   flex-direction: column;
-  background-color: ${({ theme }) => theme.colors.background};
-  padding-bottom: 96px;
-  align-items: center;
-`;
-
-const Container = styled.div`
-  width: 360px;
-  padding: 0 20px;
-  overflow: visible;
+  margin: 0 auto;
 `;
 
 const Header = styled.div`
-  padding: 60px 0 24px 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+  margin-bottom: 20px;
 `;
 
-const Title = styled.h1`
+const BackBtn = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+`;
+
+const Title = styled.div`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #000;
+  font-family: ${({ theme }) => theme.fonts.main};
   font-size: 16px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-  text-align: center;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  white-space: nowrap;
 `;
 
 const SearchSection = styled.div`
   margin-bottom: 16px;
   display: flex;
   justify-content: center;
+  width: 100%;
 `;
 
 const SearchInputWrapper = styled.div`
@@ -454,7 +506,20 @@ const OptionButton = styled.button<{ $selected?: boolean }>`
 const ReviewList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 8px;
+`;
+
+const ScrollArea = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 20px;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const LoadingText = styled.div`

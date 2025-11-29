@@ -46,11 +46,21 @@ export default function ImageUpload({
   };
 
   const handleAddImageClick = () => {
+    console.log('Add image button clicked');
+    console.log('Image count:', imageCount, 'Max images:', maxImages);
+    console.log('File input ref:', fileInputRef.current);
+    
     if (imageCount >= maxImages) {
       alert(`이미지는 최대 ${maxImages}장까지 업로드 가능합니다.`);
       return;
     }
-    fileInputRef.current?.click();
+    
+    if (fileInputRef.current) {
+      console.log('Triggering file input click');
+      fileInputRef.current.click();
+    } else {
+      console.error('File input ref is null');
+    }
   };
 
   return (
@@ -60,7 +70,14 @@ export default function ImageUpload({
           <ImagePreview>📷</ImagePreview>
           <ImageCount>{imageCount} / {maxImages}</ImageCount>
         </ImageBox>
-        <AddImageBox onClick={handleAddImageClick} disabled={isUploading}>
+        <AddImageBox 
+          as="div"
+          onClick={handleAddImageClick} 
+          style={{ 
+            pointerEvents: isUploading ? 'none' : 'auto',
+            cursor: isUploading ? 'not-allowed' : 'pointer'
+          }}
+        >
           <PlusIcon>{isUploading ? '⏳' : '+'}</PlusIcon>
         </AddImageBox>
         <HiddenFileInput
@@ -120,7 +137,7 @@ const HiddenFileInput = styled.input`
   display: none;
 `;
 
-const AddImageBox = styled.button`
+const AddImageBox = styled.div`
   width: 70px;
   height: 70px;
   border-radius: 8px;
@@ -131,15 +148,11 @@ const AddImageBox = styled.button`
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  user-select: none;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
     background: #f8f8f8;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
   }
 `;
 

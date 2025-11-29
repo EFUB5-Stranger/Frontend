@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import StarDisplay from '@/components/Dorm/StarDisplay';
 import EvaluationList from '@/components/Dorm/EvaluationList';
-import { getDormReviewDetailApi, deleteDormReviewApi, createCommentApi, deleteCommentApi } from '@apis/dorm';
+import { getDormReviewDetailApi, deleteDormReviewApi } from '@apis/dorm';
+import { createCommentApi, deleteCommentApi, getCommentsApi } from '@apis/comment';
 
 interface Review {
   id: number;
@@ -51,24 +52,11 @@ export default function DormDetailPage() {
       const data = await getDormReviewDetailApi(params.id as string);
       setReview(data);
       
-      // 임시 댓글 데이터
-      setComments([
-        {
-          commentId: 1,
-          content: '맞아요 여기 벌레 너무 많이 나와요ㅠ',
-          nickname: 'ㄱㄱ',
-          createdAt: new Date().toISOString(),
-          canDelete: true,
-        },
-        {
-          commentId: 2,
-          content: '저는 벌레 별로 안 나오던데요?',
-          nickname: '익명1',
-          createdAt: new Date().toISOString(),
-        }
-      ]);
+      // 댓글 데이터
+      const commentsData = await getCommentsApi(params.id as string);
+      setComments(commentsData);
     } catch (error) {
-      console.error('리뷰 데이터 로드 실패:', error);
+      console.error('리뷰 또는 댓글 데이터 불러오기 실패:', error);
       alert('리뷰를 찾을 수 없습니다.');
       router.back();
     } finally {
@@ -91,12 +79,14 @@ export default function DormDetailPage() {
 
     try {
       setIsSubmittingComment(true);
-      const newComment = await createCommentApi(params.id as string, {
+      await createCommentApi(params.id as string, {
         content: commentText,
         anonymous: isAnonymous
       });
       
-      setComments([...comments, newComment]);
+      // 댓글 목록 새로고침
+      const commentsData = await getCommentsApi(params.id as string);
+      setComments(commentsData);
       setCommentText('');
     } catch (error) {
       console.error('댓글 작성 실패:', error);
@@ -112,7 +102,9 @@ export default function DormDetailPage() {
 
     try {
       await deleteCommentApi(commentId);
-      setComments(comments.filter(comment => comment.commentId !== commentId));
+      // 댓글 목록 새로고침
+      const commentsData = await getCommentsApi(params.id as string);
+      setComments(commentsData);
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
       alert('댓글 삭제에 실패했습니다.');

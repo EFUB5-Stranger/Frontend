@@ -32,9 +32,9 @@ export default function RoomInfo({
   const toggleBookmark = useBookmarkStore((s) => s.toggleBookmark);
   const isBookmarked = useBookmarkStore((s) => s.isBookmarked(id));
   const validThumbnail =
-  thumbnailUrl && !thumbnailUrl.includes('bookmark_unfilled.svg')
-    ? thumbnailUrl
-    : '/default_img.jpg';
+    thumbnailUrl && thumbnailUrl.startsWith('https://images.unsplash.com')
+      ? thumbnailUrl
+      : '/default_img.jpg';
 
 
   // 평점 상태 관리 (초기값은 부모가 준 값 혹은 0)
@@ -80,8 +80,8 @@ export default function RoomInfo({
         <Image
           src={validThumbnail}
           alt={title}
-          width={95}
-          height={95}
+          width={100}
+          height={100}
           style={{ borderRadius: '8px', objectFit: 'cover' }}
         />
         <div>
@@ -93,7 +93,7 @@ export default function RoomInfo({
               gap: '1px',
             }}
           >
-            <h3 style={{ margin: 0 }}>{title}</h3>
+            <h3 style={{ margin: 0  ,fontSize: '24px', fontFamily: 'Pretendard' }}>{title}</h3>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -105,7 +105,7 @@ export default function RoomInfo({
                   rate: currentRate,
                 });
               }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer',margin:'5px',top:'1.86rem'}}
             >
               <Image
                 src={
@@ -114,13 +114,17 @@ export default function RoomInfo({
                     : '/bookmark_unfilled.svg'
                 }
                 alt={isBookmarked ? '북마크 해제' : '북마크'}
-                width={27} // 1.7rem ≒ 27px
-                height={27} // 1.7rem ≒ 27px
+                width={17.5} // 1.7rem ≒ 27px
+                height={22.5} // 1.7rem ≒ 27px
+                
               />
             </button>
           </div>
-          <p>{address}</p>
-          <p>⭐ {formattedRate}</p>
+           <Rate>
+          <StarIcon src='/star.svg' alt='star' width={13} height={13} />
+          <span>{formattedRate}</span>
+        </Rate>
+          <p style={{ margin: '1px'  ,fontSize: '15px', fontFamily: 'Pretendard',color:'#999999'}}>{address}</p>
         </div>
       </div>
     );
@@ -225,7 +229,6 @@ const TitleBox = styled.div`
 
 const BookmarkIcon = styled(Image)`
   cursor: pointer;
-  /* Next.js Image 컴포넌트는 width/height가 필수지만 styled에서 덮어쓸 수 있음 */
 `;
 
 const RoomTitle = styled.div`

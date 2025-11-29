@@ -1,9 +1,9 @@
 /* 전체 페이지 */
 .mapPage {
-  display: flex;              /* flex 컨테이너 */
-  flex-direction: column;     /* 위에서 아래로 배치 */
-  align-items: center;        /* 가로 중앙 정렬 */
-  justify-content: flex-start;/* 세로는 위에서 시작 */
+  display: flex; /* flex 컨테이너 */
+  flex-direction: column; /* 위에서 아래로 배치 */
+  align-items: center; /* 가로 중앙 정렬 */
+  justify-content: flex-start; /* 세로는 위에서 시작 */
   width: 100%;
   height: 100vh;
   overflow: hidden;
@@ -22,7 +22,7 @@
 }
 
 .mapHeader {
-  position: relative; 
+  position: relative;
   align-items: center;
   display: flex;
   height: 48px;
@@ -58,9 +58,9 @@
   justify-content: center;
   align-items: center;
   border-radius: 0.9375rem;
-  border: 1px solid #CBCBCB;
-  background: #FFF;
-  margin-bottom: 1rem; 
+  border: 1px solid #cbcbcb;
+  background: #fff;
+  margin-bottom: 1rem;
 }
 .searchBar input {
   width: 100%;
@@ -71,8 +71,8 @@
 
 /* 지도 영역 */
 .mapArea {
-  flex-grow: 1; 
-  width: 22.5rem;             
+  flex-grow: 1;
+  width: 22.5rem;
   height: 100vh;
   position: relative;
   background-color: #333;
@@ -86,18 +86,18 @@
 /* 지도 위 플로팅 버튼 */
 .floatingButtons {
   position: absolute;
-  top: 20px;    
+  top: 20px;
   left: 20px;
   display: flex;
   gap: 10px;
-  z-index: 1000;   
+  z-index: 1000;
 }
 
 .filterBtn {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: flex;          /* 자취/하숙과 동일 */
+  width: flex; /* 자취/하숙과 동일 */
   height: 28px;
   padding: 6px 14px;
   border-radius: 16px;
@@ -117,8 +117,8 @@
 }
 
 .filterBtn.active {
-  background: var(--main-pri, #112D4E);
-  border-color: var(--main-pri, #112D4E);
+  background: var(--main-pri, #112d4e);
+  border-color: var(--main-pri, #112d4e);
   color: #fff;
   font-weight: 500;
 }
@@ -147,23 +147,23 @@
 
 /* 필터 팝업: 버튼 아래쪽에만 */
 .filterBtnWrapper {
-  position: relative; 
+  position: relative;
 }
 .filterPopup {
   margin-top: 10px;
-  width: 18rem;       /* 325px */
-  height: 6.rem;        /* 106px */
+  width: 18rem; /* 325px */
+  height: 6rem; /* 106px */
   border-radius: 0.9375rem;
-  border: 1px solid var(--main-pri, #112D4E);
-  background: #FFF;
+  border: 1px solid var(--main-pri, #112d4e);
+  background: #fff;
   display: flex;
-  flex-direction: column;  /* 세로 배치 */
+  flex-direction: column; /* 세로 배치 */
   justify-content: space-between;
   padding: 0.5rem 1rem;
   position: absolute;
-  top: 100%;               /* 버튼 바로 아래 */
+  top: 100%; /* 버튼 바로 아래 */
   left: 0;
-  z-index: 2000;        /* 지도 위에 표시 */
+  z-index: 2000; /* 지도 위에 표시 */
 }
 .subFilterRow {
   display: flex;
@@ -172,16 +172,18 @@
 }
 
 .subFilter {
-  width: 4.0625rem;        /* 65px */
-  height: 2.0625rem;       /* 33px */
-  border-radius: 0.9375rem;
+  width: 4.0625rem; /* 65px */
+  height: 2.0625rem; /* 33px */
+  border-radius: 15px;
   border: 1px solid transparent;
-  background: var(--main-sec, #DBE2EF);
+  background: #dddddd;
   cursor: pointer;
+  font-family: Pretendard;
+  font-size: 15px;
 }
 
 .subFilter.selected {
-  border: 1px solid var(--main-pri, #112D4E);
+  background-color: var(--main-sec, #dbe2ef);
 }
 
 .applyRow {
@@ -190,39 +192,39 @@
 }
 
 .applyBtn {
-  width: 4.625rem;         /* 74px */
-  height: 2.0625rem;       /* 33px */
-  border-radius: 0.9375rem;
+  width: 74px;
+  height: 33px;
+  border-radius: 15px;
   border: 1px solid transparent;
-  background: var(--main-pri, #112D4E);
-  color: #FFF;
+  background: var(--main-pri, #112d4e);
+  color: #fff;
   cursor: pointer;
-  margin-top: 1rem;;
+  margin-top: 1rem;
 }
 
 .bottomPopup {
   display: flex;
   flex-direction: column;
-  padding:1.5rem;
+  padding: 1.5rem;
   position: fixed;
   bottom: 0;
-  left: 50%;    
-  height: auto;  
-  min-height: 80px;    
-  max-height: 60vh; 
-  transform: translateX(-50%); 
-  width: 90%;            
-  max-width: 360px;       
+  left: 50%;
+  height: auto;
+  min-height: 80px;
+  max-height: 60vh;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 360px;
   background: #fff;
   border-top: 1px solid #ddd;
-  z-index: 3000;          
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-  border-radius: 12px 12px 0 0; 
+  z-index: 3000;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px 12px 0 0;
   gap: 1rem;
 }
 .topRow {
   display: flex;
-  
+
   justify-content: space-between; /* 좌우 배치 */
   padding: 16px 0 16px;
   margin-bottom: 1rem;
@@ -238,16 +240,15 @@
 
 .buildingInfo {
   flex: 1;
-  margin: 0 ;
+  margin: 0;
 }
 .bookmarkIcon {
- width: 1.09375rem;
-height: 1.40625rem;
+  width: 1.09375rem;
+  height: 1.40625rem;
   aspect-ratio: 1/1;
   cursor: pointer;
   flex-shrink: 0;
 }
-
 
 .bookmarkBtn {
   background: none;
@@ -255,41 +256,41 @@ height: 1.40625rem;
   font-size: 24px;
   cursor: pointer;
   width: 1.875rem;
-height: 1.875rem;
-aspect-ratio: 1/1;
+  height: 1.875rem;
+  aspect-ratio: 1/1;
 }
 .buildingName {
   width: flex;
-height: flex;
-color: #111;
-font-family: Pretendard;
-font-size: 1rem;
-font-style: normal;
-font-weight: 400;
-line-height: normal;
+  height: flex;
+  color: #111;
+  font-family: Pretendard;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }
 
 .buildingAddress {
   width: 13.0625rem;
-height: 1.4375rem;
-color: #999;
-font-family: Pretendard;
-font-size: 0.9375rem;
-font-style: normal;
-font-weight: 400;
-line-height: normal;
+  height: 1.4375rem;
+  color: #999;
+  font-family: Pretendard;
+  font-size: 0.9375rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }
 
 .reviewBtn {
   width: 312.002px;
   height: 3.125rem;
   border-radius: 0.9375rem;
-  background: #112D4E;
-  color: #FFF;
+  background: #112d4e;
+  color: #fff;
   border: none;
   font-family: Pretendard;
-font-size: 1.25rem;
-font-style: normal;
-font-weight: 400;
-line-height: normal;
+  font-size: 1.25rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }

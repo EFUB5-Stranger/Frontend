@@ -8,19 +8,25 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { getUserProfileApi, updateUserProfileApi } from '@apis/users';
 import { logoutApi } from '@apis/auth';
+import { getMyDormReviewsApi } from '@apis/dorm';
 
 export default function MyPage() {
   const router = useRouter();
 
+  // 프로필 관련 State
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [school, setSchool] = useState('');
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [newNickname, setNewNickname] = useState(nickname);
+  const [profileImage, setProfileImage] = useState('');
 
+  // 모달 관련 State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [newNickname, setNewNickname] = useState('');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const [profileImage, setProfileImage] = useState('');
+  // 리뷰 관련 State
+  const [myReviews, setMyReviews] = useState<any[]>([]);
+  const [isReviewLoading, setIsReviewLoading] = useState(true);
 
   // 이메일을 기준으로 이미지를 결정하는 함수
   const getProfileImageByEmail = (emailStr: string) => {
@@ -53,23 +59,33 @@ export default function MyPage() {
   };
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getUserProfileApi();
+        // 1. 프로필 조회
+        const profileData = await getUserProfileApi();
+        setNickname(profileData.nickname);
+        setNewNickname(profileData.nickname);
+        setEmail(profileData.email);
+        setSchool(profileData.school);
+        setProfileImage(getProfileImageByEmail(profileData.email));
 
-        setNickname(data.nickname);
-        setNewNickname(data.nickname);
-        setEmail(data.email);
-        setSchool(data.school);
+        // 2. 내 리뷰 조회
+        setIsReviewLoading(true);
+        const reviewData = await getMyDormReviewsApi();
 
-        const deterministicImg = getProfileImageByEmail(data.email);
-        setProfileImage(deterministicImg);
+        if (Array.isArray(reviewData)) {
+          setMyReviews(reviewData);
+        } else {
+          setMyReviews([]);
+        }
       } catch (error) {
-        console.error('프로필 조회 실패:', error);
+        console.error('데이터 조회 실패:', error);
+      } finally {
+        setIsReviewLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchData();
   }, []);
 
   return (
@@ -102,32 +118,38 @@ export default function MyPage() {
         </SectionHeader>
 
         <ReviewList>
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
-          <DormReviewCard
-            date='2025.09.27'
-            name='두둥'
-            score={4.0}
-            stars={4}
-            tags={['한우리집', '101동', '101호']}
-            evaluations={{
-              방음: '보통',
-              시설: '보통',
-              접근성: '좋음',
-              벌레: '많음',
-            }}
-          />
+          {myReviews.length > 0 ? (
+            myReviews.slice(0, 2).map((review) => (
+              <DormReviewCard
+                key={review.id}
+                date={
+                  review.createdAt
+                    ? new Date(review.createdAt).toLocaleDateString()
+                    : '2025.11.26'
+                }
+                name={review.nickname || '나'}
+                score={review.finalrate || 0}
+                stars={review.finalrate || 0}
+                tags={[
+                  review.buildName,
+                  review.buildNum,
+                  review.roomPeople ? `${review.roomPeople}인실` : null,
+                ].filter((tag): tag is string => Boolean(tag))}
+                evaluations={{
+                  방음: review.soundRate || '-',
+                  시설: review.facilityRate || '-',
+                  접근성: review.accessRate || '-',
+                  벌레: review.bugRate || '-',
+                }}
+                onClick={() => router.push(`/dorm/${review.id}`)}
+              />
+            ))
+          ) : (
+            // 리뷰가 없을 때 보여줄 빈 영역 (높이 215px)
+            <EmptyReviewArea>
+              {isReviewLoading ? '로딩 중...' : '작성한 리뷰가 없습니다.'}
+            </EmptyReviewArea>
+          )}
         </ReviewList>
 
         <MenuSection>
@@ -317,6 +339,18 @@ const ReviewList = styled.div`
   gap: 6px;
   padding-bottom: 23px;
   border-bottom: 1px solid #b6b6b6;
+`;
+
+const EmptyReviewArea = styled.div`
+  width: 100%;
+  height: 215px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #999;
+  font-size: 14px;
+  font-family: ${({ theme }) => theme.fonts.main};
+  background-color: #f9f9f9;
 `;
 
 const MenuSection = styled.div`

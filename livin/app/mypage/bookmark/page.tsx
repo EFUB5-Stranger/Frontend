@@ -4,9 +4,31 @@ import styled from 'styled-components';
 import Image from 'next/image';
 import RoomCard from '@/components/Home/Rooms/RoomCard';
 import { useBookmarkStore } from '../../stores/useBookmarkStore';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function BookmarkPage() {
+  const router = useRouter();
   const bookmarks = useBookmarkStore((state) => state.bookmarks);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <Wrapper>
+        <Header>
+          <BackBtn onClick={() => router.back()}>
+            <Image src='/arrow_back.svg' width={9} height={15} alt='back' />
+          </BackBtn>
+          <Title>북마크</Title>
+        </Header>
+        <LoadingText>로딩 중...</LoadingText>
+      </Wrapper>
+    );
+  }
 
   return (
     <Wrapper>
@@ -18,11 +40,15 @@ export default function BookmarkPage() {
       </Header>
 
       <ScrollArea>
-        <BookmarkGrid>
-          {bookmarks.map((room) => (
-            <RoomCard key={room.id} {...room} />
-          ))}
-        </BookmarkGrid>
+        {bookmarks.length > 0 ? (
+          <BookmarkGrid>
+            {bookmarks.map((room) => (
+              <RoomCard key={room.id} {...room} />
+            ))}
+          </BookmarkGrid>
+        ) : (
+          <EmptyText>북마크가 없습니다.</EmptyText>
+        )}
       </ScrollArea>
     </Wrapper>
   );
@@ -86,4 +112,18 @@ const BookmarkGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+`;
+
+const LoadingText = styled.div`
+  text-align: center;
+  padding: 60px 0;
+  color: #666;
+  font-size: 14px;
+`;
+
+const EmptyText = styled.div`
+  text-align: center;
+  padding: 60px 0;
+  color: #999;
+  font-size: 14px;
 `;

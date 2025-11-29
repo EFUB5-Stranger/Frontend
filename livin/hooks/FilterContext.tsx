@@ -5,12 +5,14 @@ type FilterType = 'building' | 'facility' | null;
 
 interface FilterContextType {
   activeFilter: string | null;
-   setActiveFilter: Dispatch<SetStateAction<FilterType>>;
+  setActiveFilter: Dispatch<SetStateAction<FilterType>>;
   toggleFilter: (filter: FilterType) => void;
   subFilters: string[];
   toggleSubFilter: (filter: string) => void;
   applyFilters: () => void;
   resetFilters: () => void; 
+  closePopup: () => void;
+  isPopupOpen: boolean;
 }
 
 const FilterContext = createContext<FilterContextType | null>(null);
@@ -18,11 +20,14 @@ const FilterContext = createContext<FilterContextType | null>(null);
 export function FilterProvider({ children }: { children: React.ReactNode }) {
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [subFilters, setSubFilters] = useState<string[]>([]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const toggleFilter = (type: FilterType) => {
     setActiveFilter(prev => (prev === type ? null : type));
     setSubFilters([]);
+     setIsPopupOpen(true); 
   };
+
 
   const toggleSubFilter = (name: string) => {
     setSubFilters(prev =>
@@ -36,6 +41,9 @@ const resetFilters = () => {
   const applyFilters = () => {
     console.log('적용된 필터:', activeFilter, subFilters);
   };
+  const closePopup = () => {
+  setIsPopupOpen(false);
+};
 
   return (
     <FilterContext.Provider
@@ -46,7 +54,10 @@ const resetFilters = () => {
         toggleFilter, 
         toggleSubFilter, 
         applyFilters,
-      resetFilters, }}
+        resetFilters, 
+        closePopup,
+        isPopupOpen,
+    }}
     >
       {children}
     </FilterContext.Provider>

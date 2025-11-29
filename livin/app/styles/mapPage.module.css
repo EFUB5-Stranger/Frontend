@@ -149,6 +149,16 @@
 .filterBtnWrapper {
   position: relative;
 }
+.filterContainer {
+  position: relative;
+  display: inline-block;
+}
+.popupBackdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent; /* 필요하면 rgba(0,0,0,0.2) */
+  z-index: 999;
+}
 .filterPopup {
   margin-top: 10px;
   width: 18rem; /* 325px */

@@ -58,14 +58,14 @@ export default function DormReviewCard({
 
 const Card = styled.div`
   display: flex;
-  gap: 14px;
-  min-height: 85px;
+  gap: 10px;
+  min-height: 70px;
   width: 100%;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
   transition: all 0.2s;
-  padding: 4px 0;
+  padding: 6px 0;
 
   &:hover {
     opacity: 0.8;
@@ -73,31 +73,39 @@ const Card = styled.div`
 `;
 
 const Skeleton = styled.div`
-  width: 85px;
-  height: 85px;
+  width: 70px;
+  height: 70px;
   flex-shrink: 0;
-  border-radius: 15px;
+  border-radius: 10px;
   background: #d9d9d9;
+`;
+`;
 `;
 
 const Info = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  min-height: 65px;
+  justify-content: space-between;
 `;
 
 const TopRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
+  align-items: flex-start;
+  margin-bottom: 0;
+  min-height: 20px;
 `;
 
 const NameSection = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+  max-width: 120px;
 `;
 
 const Name = styled.div`
@@ -105,30 +113,37 @@ const Name = styled.div`
   align-items: center;
   gap: 4px;
   color: #000;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const DateText = styled.span`
   color: #999;
   font-size: 8px;
   font-weight: 400;
+  white-space: nowrap;
 `;
 
 const Tags = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin: 2px 0;
+  min-height: 12px;
 `;
 
 const Tag = styled.div`
   display: inline-flex;
-  height: 15px;
-  padding: 2px 8px;
+  height: 13px;
+  padding: 1px 6px;
   justify-content: center;
   align-items: center;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #f5f5f5;
   color: #666;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 400;
 `;

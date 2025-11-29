@@ -48,6 +48,9 @@ const Container = styled.div<{ $gap: string }>`
   display: flex;
   align-items: center;
   gap: ${({ $gap }) => $gap};
+  justify-content: flex-end;
+  min-width: 80px;
+  flex-shrink: 0;
 `;
 
 const Score = styled.span<{ $fontSize: string; $color: string }>`

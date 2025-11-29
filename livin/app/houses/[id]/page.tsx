@@ -162,6 +162,10 @@ export default function BuildingDetailPage() {
                   name={review.nickname || '익명'}
                   score={review.finalRate}
                   stars={review.finalRate}
+                  tags={[
+                    houseDetail?.buildingName || '건물명',
+                    houseDetail?.type === 'PRIVATE' ? '자취' : '하숙'
+                  ].filter(Boolean)}
                   evaluations={{
                     방음: review.soundRate,
                     시설: review.facilityRate,
@@ -243,7 +247,7 @@ const BuildingImageLarge = styled.div`
 const BuildingInfoSection = styled.div`
   width: 100%;
   margin-bottom: 24px;
-  padding: 0 4px;
+  padding: 0;
 `;
 
 const BuildingInfoText = styled.div`
@@ -261,14 +265,15 @@ const BuildingInfoText = styled.div`
 const ReviewSection = styled.div`
   margin-top: 24px;
   margin-bottom: 20px;
-  padding: 0 4px;
+  padding: 0;
+  width: 100%;
 `;
 
 const ReviewHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 `;
 
 const ReviewTitle = styled.h3`
@@ -300,7 +305,7 @@ const ViewAllButton = styled.button`
 const ReviewList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  width: 100%;
 `;
 
 const NoReviews = styled.div`

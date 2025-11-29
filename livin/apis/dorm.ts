@@ -25,8 +25,8 @@ export const getDormReviewsApi = async (params?: {
   minFinalRate?: number;
 }) => {
   // params가 없으면 빈 객체로 전달 (전체 목록 조회)
-  const res = await axiosInstance.get('/dorm/review', { 
-    params: params || undefined 
+  const res = await axiosInstance.get('/dorm/review', {
+    params: params || undefined,
   });
   return res.data;
 };
@@ -47,7 +47,7 @@ export const deleteDormReviewApi = async (review_id: string | number) => {
 export const uploadReviewImageApi = async (imageFile: File) => {
   const formData = new FormData();
   formData.append('image', imageFile);
-  
+
   const res = await axiosInstance.post('/review/images', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -57,10 +57,13 @@ export const uploadReviewImageApi = async (imageFile: File) => {
 };
 
 // 댓글 작성
-export const createCommentApi = async (review_id: string | number, data: {
-  content: string;
-  anonymous: boolean;
-}) => {
+export const createCommentApi = async (
+  review_id: string | number,
+  data: {
+    content: string;
+    anonymous: boolean;
+  }
+) => {
   const res = await axiosInstance.post(`/review/${review_id}/comment`, data);
   return res.data;
 };
@@ -71,4 +74,8 @@ export const deleteCommentApi = async (comment_id: string | number) => {
   return res.status;
 };
 
-
+// 내 리뷰 조회
+export const getMyDormReviewsApi = async () => {
+  const res = await axiosInstance.get('/dorm/review/me');
+  return res.data;
+};

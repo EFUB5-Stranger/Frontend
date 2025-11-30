@@ -7,7 +7,11 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import StarDisplay from '@/components/Dorm/StarDisplay';
 import EvaluationList from '@/components/Dorm/EvaluationList';
 import { getHouseReviewDetailApi } from '@apis/house';
-import { createCommentApi, deleteCommentApi, getCommentsApi } from '@apis/comment';
+import {
+  createCommentApi,
+  deleteCommentApi,
+  getCommentsApi,
+} from '@apis/comment';
 
 interface ReviewDetail {
   id: number;
@@ -47,12 +51,15 @@ export default function HouseDetailPage() {
   useEffect(() => {
     const fetchReviewDetail = async () => {
       if (!params.id || !houseId) return;
-      
+
       try {
         setLoading(true);
-        const data = await getHouseReviewDetailApi(houseId, params.id as string);
+        const data = await getHouseReviewDetailApi(
+          houseId,
+          params.id as string
+        );
         setReview(data);
-        
+
         // 댓글 데이터 로드
         const commentsData = await getCommentsApi(params.id as string);
         setComments(commentsData);
@@ -72,7 +79,12 @@ export default function HouseDetailPage() {
         <Container>
           <Header>
             <BackButton onClick={() => router.back()}>
-              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+              <Image
+                src='/arrow_back.svg'
+                alt='뒤로가기'
+                width={15}
+                height={15}
+              />
             </BackButton>
             <Title>로딩 중...</Title>
             <Spacer />
@@ -88,7 +100,12 @@ export default function HouseDetailPage() {
         <Container>
           <Header>
             <BackButton onClick={() => router.back()}>
-              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+              <Image
+                src='/arrow_back.svg'
+                alt='뒤로가기'
+                width={15}
+                height={15}
+              />
             </BackButton>
             <Title>리뷰를 찾을 수 없습니다</Title>
             <Spacer />
@@ -109,9 +126,9 @@ export default function HouseDetailPage() {
       setIsSubmittingComment(true);
       await createCommentApi(params.id as string, {
         content: commentText,
-        anonymous: isAnonymous
+        anonymous: isAnonymous,
       });
-      
+
       // 댓글 목록 새로고침
       const commentsData = await getCommentsApi(params.id as string);
       setComments(commentsData);
@@ -144,14 +161,18 @@ export default function HouseDetailPage() {
       <Container>
         <Header>
           <BackButton onClick={() => router.back()}>
-            <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            <Image
+              src='/arrow_back.svg'
+              alt='뒤로가기'
+              width={15}
+              height={15}
+            />
           </BackButton>
           <Title>{review.buildName}</Title>
           <Spacer />
         </Header>
 
         <ReviewCard>
-
           <ProfileSection>
             <ProfileImage />
             <ProfileInfo>
@@ -159,7 +180,11 @@ export default function HouseDetailPage() {
                 <Name>익명</Name>
               </NameSection>
               <RatingRow>
-                <StarDisplay stars={review.finalRate} score={review.finalRate} size="medium" />
+                <StarDisplay
+                  stars={review.finalRate}
+                  score={review.finalRate}
+                  size='medium'
+                />
                 <DateText>2025.09.27</DateText>
               </RatingRow>
             </ProfileInfo>
@@ -171,12 +196,15 @@ export default function HouseDetailPage() {
             ))}
           </ImageSection>
 
-          <EvaluationList evaluations={{
-            방음: review.soundRate,
-            시설: review.facilityRate, 
-            접근성: review.accessRate,
-            벌레: review.bugRate,
-          }} size="medium" />
+          <EvaluationList
+            evaluations={{
+              방음: review.soundRate,
+              시설: review.facilityRate,
+              접근성: review.accessRate,
+              벌레: review.bugRate,
+            }}
+            size='medium'
+          />
 
           <ContentSection>
             <ContentTitle>후기</ContentTitle>
@@ -188,24 +216,30 @@ export default function HouseDetailPage() {
 
         <CommentsSection>
           <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
-          
+
           {comments.map((comment) => (
             <CommentItem key={comment.commentId}>
               <CommentTopRow>
                 <CommentLeft>
                   <CommentAuthor>{comment.nickname}</CommentAuthor>
-                  <CommentDate>{new Date(comment.createdAt).toLocaleString('ko-KR')}</CommentDate>
+                  <CommentDate>
+                    {new Date(comment.createdAt).toLocaleString('ko-KR')}
+                  </CommentDate>
                 </CommentLeft>
                 {comment.canDelete && (
                   <CommentActions>
-                    <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
+                    <ActionButton
+                      onClick={() => handleDeleteComment(comment.commentId)}
+                    >
+                      삭제
+                    </ActionButton>
                   </CommentActions>
                 )}
               </CommentTopRow>
               <CommentText>{comment.content}</CommentText>
             </CommentItem>
           ))}
-          
+
           {comments.length === 0 && (
             <EmptyComment>첫 댓글을 남겨보세요!</EmptyComment>
           )}
@@ -215,12 +249,12 @@ export default function HouseDetailPage() {
           <InputRow>
             <CheckboxWrapper>
               <Checkbox
-                type="checkbox"
-                id="anonymous"
+                type='checkbox'
+                id='anonymous'
                 checked={isAnonymous}
                 onChange={(e) => setIsAnonymous(e.target.checked)}
               />
-              <CheckboxLabel htmlFor="anonymous">
+              <CheckboxLabel htmlFor='anonymous'>
                 <CheckIcon $checked={isAnonymous}>
                   {isAnonymous && '✓'}
                 </CheckIcon>
@@ -230,10 +264,10 @@ export default function HouseDetailPage() {
             <CommentInput
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="댓글 작성"
+              placeholder='댓글 작성'
               disabled={isSubmittingComment}
             />
-            <SubmitButton 
+            <SubmitButton
               onClick={handleSubmitComment}
               disabled={isSubmittingComment || !commentText.trim()}
             >
@@ -247,7 +281,7 @@ export default function HouseDetailPage() {
 }
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 360px;
   min-height: 100vh;
   background-color: ${({ theme }) => theme.colors.background};
   padding-bottom: 120px;
@@ -517,8 +551,10 @@ const CheckIcon = styled.div<{ $checked: boolean }>`
   width: 20px;
   height: 20px;
   border-radius: 4px;
-  border: 1.5px solid ${({ $checked, theme }) => $checked ? theme.colors.primary : '#d0d0d0'};
-  background: ${({ $checked, theme }) => $checked ? theme.colors.primary : '#fff'};
+  border: 1.5px solid
+    ${({ $checked, theme }) => ($checked ? theme.colors.primary : '#d0d0d0')};
+  background: ${({ $checked, theme }) =>
+    $checked ? theme.colors.primary : '#fff'};
   display: flex;
   align-items: center;
   justify-content: center;

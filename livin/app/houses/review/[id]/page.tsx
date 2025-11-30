@@ -15,16 +15,15 @@ import {
 
 interface ReviewDetail {
   id: number;
-  buildName: string;
-  buildNum: string;
-  roomPeople: string;
-  review: string;
+  houseName: string;
   finalRate: number;
   facilityRate: string;
   soundRate: string;
   bugRate: string;
   accessRate: string;
+  review: string;
   imageUrls: string[];
+  anonym: boolean;
 }
 
 interface Comment {
@@ -122,9 +121,14 @@ export default function HouseDetailPage() {
       return;
     }
 
+    const reviewId = Number(params.id);
+    if (isNaN(reviewId)) {
+      alert('리뷰 ID가 올바르지 않습니다.');
+      return;
+    }
+
     try {
       setIsSubmittingComment(true);
-      const reviewId = Number(params.id);
       await createCommentApi(reviewId, {
         content: commentText,
         anonymous: isAnonymous,
@@ -169,7 +173,7 @@ export default function HouseDetailPage() {
               height={15}
             />
           </BackButton>
-          <Title>{review.buildName}</Title>
+          <Title>{review.houseName}</Title>
           <Spacer />
         </Header>
 

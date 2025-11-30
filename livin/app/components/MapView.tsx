@@ -180,18 +180,65 @@ export default function MapView({
 
     console.log('MapView 필터 상태:', activeFilter, subFilters);
 
-    markersRef.current.forEach(({ marker, category, data }) => {
-      let shouldShow = true;
+    const isBuildingFilterActive = activeFilter === 'building';
+    const isFacilityFilterActive = activeFilter === 'facility';
 
-      if (activeFilter === 'building') {
-        // 주거지 타입만 비교
-        shouldShow = subFilters.some((f) => filterMap[f] === data.type);
-      } else if (activeFilter === 'facility') {
-        // 편의시설 카테고리만 비교
-        shouldShow = subFilters.some((f) => filterMap[f] === category);
+    // 현재 subFilters에 포함된 주거지 타입 (PRIVATE, BOARDING)
+    const activeHouseTypes = subFilters
+      .map((f) => filterMap[f])
+      .filter((t) => ['PRIVATE', 'BOARDING'].includes(t));
+
+    // 현재 subFilters에 포함된 편의시설 카테고리 (cafe, food, store, transport)
+    const activeFacilityCategories = subFilters
+      .map((f) => filterMap[f])
+      .filter((c) => ['cafe', 'food', 'store', 'transport'].includes(c));
+
+    markersRef.current.forEach(({ marker, category, data }) => {
+      let shouldShow = true; // 기본값: 보여주기
+
+      const isHouseMarker = ['privateHouse', 'boardingHouse'].includes(
+        category
+      );
+      const isFacilityMarker = ['cafe', 'food', 'store', 'transport'].includes(
+        category
+      );
+
+      // 1. 주거지 마커 처리
+      if (isHouseMarker) {
+        // activeFilter가 'building'이거나 null일 때 주거지 필터링 로직 적용
+        // 'facility'가 활성화되면 주거지 필터는 비활성화 상태로 유지되므로, 전체 subFilters를 따름
+
+        // 마커의 서버 데이터 타입 ('PRIVATE' 또는 'BOARDING')을 가져옴
+        const markerHouseType = data.type;
+
+        // 현재 subFilters에 마커 타입이 포함되어 있는지 확인
+        shouldShow = activeHouseTypes.includes(markerHouseType);
+
+        // 2. 편의시설 마커 처리
+      } else if (isFacilityMarker) {
+        // activeFilter가 'facility'이거나 null일 때 시설 필터링 로직 적용
+        // 'building'이 활성화되면 시설 필터는 비활성화 상태로 유지되므로, 전체 subFilters를 따름
+
+        // 마커의 카테고리 ('cafe', 'food', 'store', 'transport')를 가져옴
+        // category가 곧 filterMap의 서버/카테고리 값과 일치함
+        const markerFacilityCategory = category;
+
+        // 현재 subFilters에 마커 카테고리가 포함되어 있는지 확인
+        shouldShow = activeFacilityCategories.includes(markerFacilityCategory);
       }
 
-      console.log('마커:', data.buildingName || category, '보임?', shouldShow);
+      // 3. activeFilter가 null이 아닌 경우, 'activeFilter'에 해당하지 않는 마커는 영향을 받지 않아야 함.
+      //    (즉, 'building' 활성화 시 시설 마커는 기존 subFilters 상태를 따름)
+      //    -> 위 1, 2번 로직이 activeFilter가 null일 때도 동작하도록 수정되었으므로 별도 분기 필요 없음.
+
+      console.log(
+        '마커:',
+        data.buildingName || category,
+        '카테고리:',
+        category,
+        '보임?',
+        shouldShow
+      );
 
       marker.setMap(shouldShow ? mapInstance.current : null);
     });

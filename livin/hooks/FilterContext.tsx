@@ -25,14 +25,16 @@ const FilterContext = createContext<FilterContextType | null>(null);
 
 export function FilterProvider({ children }: { children: React.ReactNode }) {
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
-  const [subFilters, setSubFilters] = useState<string[]>([
+  const initialSubFilters: string[] = [
     '자취방',
     '하숙',
     '편의점',
     '카페',
     '교통',
     '음식점',
-  ]);
+  ];
+
+  const [subFilters, setSubFilters] = useState<string[]>(initialSubFilters);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const toggleFilter = (type: FilterType) => {
@@ -47,7 +49,7 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
   };
   const resetFilters = () => {
     setActiveFilter(null);
-    setSubFilters([]);
+    setSubFilters(initialSubFilters); // 모든 필터를 다시 선택 상태로
   };
   const applyFilters = () => {
     console.log('적용된 필터:', activeFilter, subFilters);

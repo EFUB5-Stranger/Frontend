@@ -32,10 +32,9 @@ export default function RoomInfo({
   const toggleBookmark = useBookmarkStore((s) => s.toggleBookmark);
   const isBookmarked = useBookmarkStore((s) => s.isBookmarked(id));
   const validThumbnail =
-  thumbnailUrl && !thumbnailUrl.includes('bookmark_unfilled.svg')
-    ? thumbnailUrl
-    : '/default_img.jpg';
-
+    thumbnailUrl && thumbnailUrl.startsWith('https://images.unsplash.com')
+      ? thumbnailUrl
+      : '/default_img.jpg';
 
   // 평점 상태 관리 (초기값은 부모가 준 값 혹은 0)
   const [currentRate, setCurrentRate] = useState<number>(initialRate);
@@ -76,12 +75,18 @@ export default function RoomInfo({
   // 팝업용 레이아웃 (기존 유지)
   if (variant === 'popup') {
     return (
-      <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '1rem',
+        }}
+      >
         <Image
           src={validThumbnail}
           alt={title}
-          width={95}
-          height={95}
+          width={100}
+          height={100}
           style={{ borderRadius: '8px', objectFit: 'cover' }}
         />
         <div>
@@ -90,10 +95,24 @@ export default function RoomInfo({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              gap: '1px',
+              width: '190px',
+              gap: '8px',
+              marginBottom: '8px',
             }}
           >
-            <h3 style={{ margin: 0 }}>{title}</h3>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: '24px',
+                fontFamily: 'Pretendard',
+                flex: 1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {title}
+            </h3>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -105,7 +124,13 @@ export default function RoomInfo({
                   rate: currentRate,
                 });
               }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                flexShrink: 0,
+              }}
             >
               <Image
                 src={
@@ -114,13 +139,25 @@ export default function RoomInfo({
                     : '/bookmark_unfilled.svg'
                 }
                 alt={isBookmarked ? '북마크 해제' : '북마크'}
-                width={27} // 1.7rem ≒ 27px
-                height={27} // 1.7rem ≒ 27px
+                width={17.5} // 1.7rem ≒ 27px
+                height={22.5} // 1.7rem ≒ 27px
               />
             </button>
           </div>
-          <p>{address}</p>
-          <p>⭐ {formattedRate}</p>
+          <Rate>
+            <StarIcon src='/star.svg' alt='star' width={13} height={13} />
+            <span>{formattedRate}</span>
+          </Rate>
+          <p
+            style={{
+              marginTop: '10px',
+              fontSize: '15px',
+              fontFamily: 'Pretendard',
+              color: '#999999',
+            }}
+          >
+            {address}
+          </p>
         </div>
       </div>
     );
@@ -194,9 +231,9 @@ const Thumb = styled.div<{ $bgUrl?: string }>`
   position: relative;
   /* 이미지가 없으면 기본 색상 혹은 기본 이미지 표시 */
   background: ${({ $bgUrl }) =>
-      $bgUrl && !$bgUrl.includes('bookmark_unfilled.svg')
-        ? `url(${$bgUrl})`
-        : `url('/default_img.jpg')`};  
+    $bgUrl && !$bgUrl.includes('bookmark_unfilled.svg')
+      ? `url(${$bgUrl})`
+      : `url('/default_img.jpg')`};
   background-color: lightgray;
   background-position: 50%;
   background-size: cover;
@@ -225,7 +262,6 @@ const TitleBox = styled.div`
 
 const BookmarkIcon = styled(Image)`
   cursor: pointer;
-  /* Next.js Image 컴포넌트는 width/height가 필수지만 styled에서 덮어쓸 수 있음 */
 `;
 
 const RoomTitle = styled.div`

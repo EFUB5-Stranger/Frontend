@@ -3,6 +3,8 @@ import { useRef, useEffect } from 'react';
 import { useMapContext } from 'hooks/MapContext';
 import styles from '@/styles/mapPage.module.css';
 import RoomInfo from '@/components/Home/Rooms/RoomInfo';
+import { useRouter } from 'next/navigation';
+
 
 interface BottomPopupProps {
   onHeightChange?: (height: number) => void;
@@ -11,6 +13,7 @@ interface BottomPopupProps {
 export default function BottomPopup({ onHeightChange }: BottomPopupProps) {
   const { selectedBuilding } = useMapContext();
   const popupRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (selectedBuilding && popupRef.current && onHeightChange) {
@@ -37,7 +40,13 @@ export default function BottomPopup({ onHeightChange }: BottomPopupProps) {
       )}
 
       <div className={styles.bottomRow}>
-        <button className={styles.reviewBtn}>리뷰 보기</button>
+        <button className={styles.reviewBtn}
+        
+onClick={() =>
+  router.push(`/houses/review/${selectedBuilding.id}?houseId=${selectedBuilding.id}`)
+}
+
+        >리뷰 확인하기</button>
       </div>
     </div>
   );

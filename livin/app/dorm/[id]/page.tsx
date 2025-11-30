@@ -8,7 +8,11 @@ import StarDisplay from '@/components/Dorm/StarDisplay';
 import EvaluationList from '@/components/Dorm/EvaluationList';
 
 import { getDormReviewDetailApi, deleteDormReviewApi } from '@apis/dorm';
-import { createCommentApi, deleteCommentApi, getCommentsApi } from '@apis/comment';
+import {
+  createCommentApi,
+  deleteCommentApi,
+  getCommentsApi,
+} from '@apis/comment';
 
 // 댓글 타입 정의
 interface Comment {
@@ -81,7 +85,7 @@ export default function DormDetailPage() {
       const reviewId = Number(params.id);
       await createCommentApi(reviewId, {
         content: commentText,
-        anonymous: isAnonymous
+        anonymous: isAnonymous,
       });
       // 댓글 목록 새로고침
       const commentsData = await getCommentsApi(reviewId);
@@ -142,7 +146,12 @@ export default function DormDetailPage() {
       <Container>
         <Header>
           <BackButton onClick={() => router.back()}>
-            <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            <Image
+              src='/arrow_back.svg'
+              alt='뒤로가기'
+              width={15}
+              height={15}
+            />
           </BackButton>
           <Title>리뷰 상세 조회</Title>
           <DeleteButton onClick={handleDeleteReview}>
@@ -161,7 +170,9 @@ export default function DormDetailPage() {
             <ProfileInfo>
               <TopRow>
                 <NameSection>
-                  <Name>{review.anonym ? '익명' : (review.nickname || '사용자')}</Name>
+                  <Name>
+                    {review.anonym ? '익명' : review.nickname || '사용자'}
+                  </Name>
                 </NameSection>
                 <TagRow>
                   <Tag>{review.buildName}</Tag>
@@ -170,8 +181,16 @@ export default function DormDetailPage() {
                 </TagRow>
               </TopRow>
               <RatingRow>
-                <StarDisplay stars={review.finalRate} score={review.finalRate} size="medium" />
-                <DateText>{review.createdAt ? new Date(review.createdAt).toLocaleDateString('ko-KR') : ''}</DateText>
+                <StarDisplay
+                  stars={review.finalRate}
+                  score={review.finalRate}
+                  size='medium'
+                />
+                <DateText>
+                  {review.createdAt
+                    ? new Date(review.createdAt).toLocaleDateString('ko-KR')
+                    : ''}
+                </DateText>
               </RatingRow>
             </ProfileInfo>
           </ProfileSection>
@@ -179,19 +198,23 @@ export default function DormDetailPage() {
           {review.imageUrls && review.imageUrls.length > 0 && (
             <ImageSection>
               {review.imageUrls.map((url, index) => (
-                <ReviewImage key={index} src={url} alt={`리뷰 이미지 ${index + 1}`} />
+                <ReviewImage
+                  key={index}
+                  src={url}
+                  alt={`리뷰 이미지 ${index + 1}`}
+                />
               ))}
             </ImageSection>
           )}
 
-          <EvaluationList 
+          <EvaluationList
             evaluations={{
               방음: review.soundRate,
               시설: review.facilityRate,
               접근성: review.accessRate,
               벌레: review.bugRate,
-            }} 
-            size="medium" 
+            }}
+            size='medium'
           />
 
           <ContentSection>
@@ -229,12 +252,12 @@ export default function DormDetailPage() {
           <InputRow>
             <CheckboxWrapper>
               <Checkbox
-                type="checkbox"
-                id="anonymous"
+                type='checkbox'
+                id='anonymous'
                 checked={isAnonymous}
                 onChange={(e) => setIsAnonymous(e.target.checked)}
               />
-              <CheckboxLabel htmlFor="anonymous">
+              <CheckboxLabel htmlFor='anonymous'>
                 <CheckIcon $checked={isAnonymous}>
                   {isAnonymous && '✓'}
                 </CheckIcon>
@@ -244,10 +267,10 @@ export default function DormDetailPage() {
             <CommentInput
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="댓글 작성"
+              placeholder='댓글 작성'
               disabled={isSubmittingComment}
             />
-            <SubmitButton 
+            <SubmitButton
               onClick={handleSubmitComment}
               disabled={isSubmittingComment || !commentText.trim()}
             >
@@ -426,16 +449,16 @@ const ImageSection = styled.div`
   gap: 14px;
   margin-bottom: 18px;
   overflow-x: auto;
-  
+
   &::-webkit-scrollbar {
     height: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 3px;
@@ -587,8 +610,10 @@ const CheckIcon = styled.div<{ $checked: boolean }>`
   width: 20px;
   height: 20px;
   border-radius: 4px;
-  border: 1.5px solid ${({ $checked, theme }) => $checked ? theme.colors.primary : '#d0d0d0'};
-  background: ${({ $checked, theme }) => $checked ? theme.colors.primary : '#fff'};
+  border: 1.5px solid
+    ${({ $checked, theme }) => ($checked ? theme.colors.primary : '#d0d0d0')};
+  background: ${({ $checked, theme }) =>
+    $checked ? theme.colors.primary : '#fff'};
   display: flex;
   align-items: center;
   justify-content: center;

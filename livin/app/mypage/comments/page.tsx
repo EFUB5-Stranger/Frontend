@@ -73,7 +73,7 @@ export default function MyPageComments() {
               >
                 <CommentHeader>
                   {/* API에 기숙사 이름이 없으므로 '작성한 댓글' 등으로 대체하거나 생략 */}
-                  <DormName>작성한 댓글</DormName>
+                  <DormName>{comment.nickname}</DormName>
                   <DateText>
                     {/* API 날짜 형식이 "YYYY-MM-DD HH:MM"이므로 그대로 사용하거나 포맷팅 */}
                     {comment.createdAt}

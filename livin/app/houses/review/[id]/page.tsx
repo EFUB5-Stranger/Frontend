@@ -25,10 +25,9 @@ interface ReviewDetail {
 
 interface Comment {
   commentId: number;
-  content: string;
   nickname: string;
+  content: string;
   createdAt: string;
-  canDelete?: boolean;
 }
 
 export default function HouseDetailPage() {
@@ -47,15 +46,16 @@ export default function HouseDetailPage() {
   useEffect(() => {
     const fetchReviewDetail = async () => {
       if (!params.id || !houseId) return;
-      
+
       try {
         setLoading(true);
         const data = await getHouseReviewDetailApi(houseId, params.id as string);
         setReview(data);
-        
+
         // 댓글 데이터 로드
-        const commentsData = await getCommentsApi(params.id as string);
-        setComments(commentsData);
+        const reviewId = Number(params.id);
+        const commentsData = await getCommentsApi(reviewId);
+        setComments(commentsData.comments);
       } catch (error) {
         console.error('Failed to fetch review detail:', error);
       } finally {
@@ -107,14 +107,14 @@ export default function HouseDetailPage() {
 
     try {
       setIsSubmittingComment(true);
-      await createCommentApi(params.id as string, {
+      const reviewId = Number(params.id);
+      await createCommentApi(reviewId, {
         content: commentText,
         anonymous: isAnonymous
       });
-      
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      const commentsData = await getCommentsApi(reviewId);
+      setComments(commentsData.comments);
       setCommentText('');
     } catch (error) {
       console.error('댓글 작성 실패:', error);
@@ -129,10 +129,11 @@ export default function HouseDetailPage() {
     if (!confirm('댓글을 삭제하시겠습니까?')) return;
 
     try {
+      const reviewId = Number(params.id);
       await deleteCommentApi(commentId);
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      const commentsData = await getCommentsApi(reviewId);
+      setComments(commentsData.comments);
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
       alert('댓글 삭제에 실패했습니다.');
@@ -178,7 +179,7 @@ export default function HouseDetailPage() {
 
           <EvaluationList evaluations={{
             방음: review.soundRate,
-            시설: review.facilityRate, 
+            시설: review.facilityRate,
             접근성: review.accessRate,
             벌레: review.bugRate,
           }} size="medium" />
@@ -193,24 +194,22 @@ export default function HouseDetailPage() {
 
         <CommentsSection>
           <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
-          
-          {comments.map((comment) => (
+
+          {Array.isArray(comments) && comments.map((comment) => (
             <CommentItem key={comment.commentId}>
               <CommentTopRow>
                 <CommentLeft>
                   <CommentAuthor>{comment.nickname}</CommentAuthor>
                   <CommentDate>{new Date(comment.createdAt).toLocaleString('ko-KR')}</CommentDate>
                 </CommentLeft>
-                {comment.canDelete && (
-                  <CommentActions>
-                    <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
-                  </CommentActions>
-                )}
+                <CommentActions>
+                  <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
+                </CommentActions>
               </CommentTopRow>
               <CommentText>{comment.content}</CommentText>
             </CommentItem>
           ))}
-          
+
           {comments.length === 0 && (
             <EmptyComment>첫 댓글을 남겨보세요!</EmptyComment>
           )}
@@ -238,7 +237,7 @@ export default function HouseDetailPage() {
               placeholder="댓글 작성"
               disabled={isSubmittingComment}
             />
-            <SubmitButton 
+            <SubmitButton
               onClick={handleSubmitComment}
               disabled={isSubmittingComment || !commentText.trim()}
             >

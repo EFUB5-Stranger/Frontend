@@ -6,8 +6,17 @@ import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import StarDisplay from '@/components/Dorm/StarDisplay';
 import EvaluationList from '@/components/Dorm/EvaluationList';
+
 import { getDormReviewDetailApi, deleteDormReviewApi } from '@apis/dorm';
 import { createCommentApi, deleteCommentApi, getCommentsApi } from '@apis/comment';
+
+// 댓글 타입 정의
+interface Comment {
+  commentId: number;
+  nickname: string;
+  content: string;
+  createdAt: string;
+}
 
 interface Review {
   id: number;
@@ -26,14 +35,6 @@ interface Review {
   anonym?: boolean;
 }
 
-interface Comment {
-  commentId: number;
-  userId?: number;
-  content: string;
-  nickname: string;
-  createdAt: string;
-}
-
 export default function DormDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -47,12 +48,12 @@ export default function DormDetailPage() {
   const loadReviewData = async () => {
     try {
       setIsLoading(true);
-      const data = await getDormReviewDetailApi(params.id as string);
+      const reviewId = Number(params.id);
+      const data = await getDormReviewDetailApi(reviewId);
       setReview(data);
-      
       // 댓글 데이터
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      const commentsData = await getCommentsApi(reviewId);
+      setComments(commentsData.comments);
     } catch (error) {
       console.error('리뷰 또는 댓글 데이터 불러오기 실패:', error);
       alert('리뷰를 찾을 수 없습니다.');
@@ -77,14 +78,14 @@ export default function DormDetailPage() {
 
     try {
       setIsSubmittingComment(true);
-      await createCommentApi(params.id as string, {
+      const reviewId = Number(params.id);
+      await createCommentApi(reviewId, {
         content: commentText,
         anonymous: isAnonymous
       });
-      
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      const commentsData = await getCommentsApi(reviewId);
+      setComments(commentsData.comments);
       setCommentText('');
     } catch (error) {
       console.error('댓글 작성 실패:', error);
@@ -99,10 +100,11 @@ export default function DormDetailPage() {
     if (!confirm('댓글을 삭제하시겠습니까?')) return;
 
     try {
+      const reviewId = Number(params.id);
       await deleteCommentApi(commentId);
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      const commentsData = await getCommentsApi(reviewId);
+      setComments(commentsData.comments);
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
       alert('댓글 삭제에 실패했습니다.');
@@ -114,7 +116,8 @@ export default function DormDetailPage() {
     if (!confirm('리뷰를 삭제하시겠습니까?')) return;
 
     try {
-      await deleteDormReviewApi(params.id as string);
+      const reviewId = Number(params.id);
+      await deleteDormReviewApi(reviewId);
       alert('리뷰가 삭제되었습니다.');
       router.push('/dorm');
     } catch (error) {
@@ -209,11 +212,9 @@ export default function DormDetailPage() {
                   <CommentAuthor>{comment.nickname}</CommentAuthor>
                   <CommentDate>{new Date(comment.createdAt).toLocaleString('ko-KR')}</CommentDate>
                 </CommentLeft>
-                {comment.canDelete && (
                   <CommentActions>
                     <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
                   </CommentActions>
-                )}
               </CommentTopRow>
               <CommentText>{comment.content}</CommentText>
             </CommentItem>

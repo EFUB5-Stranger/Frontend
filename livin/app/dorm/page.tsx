@@ -40,8 +40,6 @@ export default function DormPage() {
             review.buildName?.toLowerCase().includes(searchText.toLowerCase()) ||
             review.buildNum?.toLowerCase().includes(searchText.toLowerCase()) ||
             review.nickname?.toLowerCase().includes(searchText.toLowerCase()) ||
-            review.review?.toLowerCase().includes(searchText.toLowerCase()) ||
-            review.tags?.some((tag: string) => tag.toLowerCase().includes(searchText.toLowerCase())) ||
             review.roomPeople?.toString().includes(searchText)
           );
         }
@@ -238,21 +236,27 @@ export default function DormPage() {
               <LoadingText>로딩 중...</LoadingText>
             ) : reviews.length > 0 ? (
               reviews.map((review) => (
-                <DormReviewCard
-                  key={review.id}
-                  date={'2025.11.26'}
-                  name={review.nickname || '익명'}
-                  score={review.finalrate || 0}
-                  stars={review.finalrate || 0}
-                  tags={[review.buildName, review.buildNum, `${review.roomPeople}인실`].filter(Boolean)}
-                  evaluations={{
-                    방음: review.soundRate || '-',
-                    시설: review.facilityRate || '-',
-                    접근성: review.accessRate || '-',
-                    벌레: review.bugRate || '-',
-                  }}
-                  onClick={() => router.push(`/dorm/${review.id}`)}
-                />
+                <div key={review.id}>
+                  <DormReviewCard
+                    date={review.createdAt}
+                    name={review.nickname || '익명'}
+                    score={review.finalrate || 0}
+                    stars={review.finalrate || 0}
+                    tags={[review.buildName, review.buildNum, `${review.roomPeople}인실`].filter(Boolean)}
+                    evaluations={{
+                      방음: review.soundRate || '-',
+                      시설: review.facilityRate || '-',
+                      접근성: review.accessRate || '-',
+                      벌레: review.bugRate || '-',
+                    }}
+                    onClick={() => router.push(`/dorm/${review.id}`)}
+                    thumbnailUrl={
+                      Array.isArray(review.imageUrls) && review.imageUrls[0]
+                        ? review.imageUrls[0]
+                        : undefined
+                    }
+                  />
+                </div>
               ))
             ) : (
               <EmptyText>등록된 리뷰가 없습니다.</EmptyText>
@@ -536,6 +540,7 @@ const EmptyText = styled.div`
   font-size: 14px;
 `;
 
+
 const FloatingButton = styled.button`
   position: fixed;
   bottom: 120px;
@@ -573,4 +578,19 @@ const FloatingButton = styled.button`
   }
 
   transition: transform 0.2s;
+`;
+
+// 리뷰 썸네일 이미지 리스트
+const ImageList = styled.div`
+  display: flex;
+  gap: 10px;
+  margin: 8px 0 16px 0;
+`;
+
+const ReviewImage = styled.img`
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #f5f5f5;
 `;

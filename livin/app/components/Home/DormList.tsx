@@ -37,7 +37,12 @@ export default function DormList() {
         // 2. 데이터가 있고 배열인 경우 랜덤 선택
         if (Array.isArray(data) && data.length > 0) {
           const randomIndex = Math.floor(Math.random() * data.length);
-          setRandomReview(data[randomIndex]);
+          // createdAt이 없으므로 임의로 추가
+          const review = data[randomIndex];
+          setRandomReview({
+            ...review,
+            createdAt: review.createdAt || '',
+          });
         }
       } catch (error) {
         console.error('기숙사 리뷰 로딩 실패:', error);

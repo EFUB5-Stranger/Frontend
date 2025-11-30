@@ -7,7 +7,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import EvaluationItem from '@/components/Dorm/EvaluationItem';
 import StarRating from '@/components/Dorm/StarRating';
 import ImageUpload from '@/components/Common/ImageUpload';
-import { createHouseReviewApi, uploadReviewImageApi, getHouseDetailApi } from '@apis/house';
+import {
+  createHouseReviewApi,
+  uploadReviewImageApi,
+  getHouseDetailApi,
+} from '@apis/house';
 
 interface HouseDetail {
   houseId: number;
@@ -24,14 +28,14 @@ interface HouseDetail {
 
 // API 요구사항에 맞는 타입 매핑
 interface RatingMapping {
-  '더러워요': 'DIRTY';
-  '보통이에요': 'NORMAL';
-  '깨끗해요': 'CLEAN';
-  '나빠요': 'BAD';
-  '좋아요': 'GOOD';
-  '조용해요': 'NONE';
-  '시끄러워요': 'OFTEN';
-  '없어요': 'NONE';
+  더러워요: 'DIRTY';
+  보통이에요: 'NORMAL';
+  깨끗해요: 'CLEAN';
+  나빠요: 'BAD';
+  좋아요: 'GOOD';
+  조용해요: 'NONE';
+  시끄러워요: 'OFTEN';
+  없어요: 'NONE';
   '가끔 나와요': 'SOMETIMES';
   '자주 나와요': 'OFTEN';
 }
@@ -40,14 +44,14 @@ export default function HouseWritePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const houseId = searchParams.get('houseId');
-  
+
   const [ratings, setRatings] = useState({
     시설: '',
     접근성: '',
     방음: '',
     벌레: '',
   });
-  
+
   const [overallRating, setOverallRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [images, setImages] = useState<string[]>([]);
@@ -60,7 +64,7 @@ export default function HouseWritePage() {
   useEffect(() => {
     const fetchHouseDetail = async () => {
       if (!houseId) return;
-      
+
       try {
         setLoading(true);
         const data = await getHouseDetailApi(houseId);
@@ -80,27 +84,27 @@ export default function HouseWritePage() {
   const mapRatingToEnum = (category: string, value: string): string => {
     const mappings: Record<string, Record<string, string>> = {
       시설: {
-        '더러워요': 'DIRTY',
-        '보통이에요': 'NORMAL',
-        '깨끗해요': 'CLEAN'
+        더러워요: 'DIRTY',
+        보통이에요: 'NORMAL',
+        깨끗해요: 'CLEAN',
       },
       접근성: {
-        '나빠요': 'BAD',
-        '보통이에요': 'NORMAL',
-        '좋아요': 'GOOD'
+        나빠요: 'BAD',
+        보통이에요: 'NORMAL',
+        좋아요: 'GOOD',
       },
       방음: {
-        '조용해요': 'NONE',
-        '보통이에요': 'SOMETIMES',
-        '시끄러워요': 'OFTEN'
+        조용해요: 'NONE',
+        보통이에요: 'SOMETIMES',
+        시끄러워요: 'OFTEN',
       },
       벌레: {
-        '없어요': 'NONE',
+        없어요: 'NONE',
         '가끔 나와요': 'SOMETIMES',
-        '자주 나와요': 'OFTEN'
-      }
+        '자주 나와요': 'OFTEN',
+      },
     };
-    
+
     return mappings[category]?.[value] || '';
   };
 
@@ -110,9 +114,9 @@ export default function HouseWritePage() {
       const imageUrl = await uploadReviewImageApi(file);
       // imageUrl이 배열(string[])로 올 경우 첫 번째 값만 사용
       if (Array.isArray(imageUrl)) {
-        setImages(prev => [...prev, ...imageUrl]);
+        setImages((prev) => [...prev, ...imageUrl]);
       } else {
-        setImages(prev => [...prev, imageUrl]);
+        setImages((prev) => [...prev, imageUrl]);
       }
     } catch (error) {
       console.error('Failed to upload image:', error);
@@ -146,12 +150,24 @@ export default function HouseWritePage() {
 
     try {
       setIsSubmitting(true);
-      
+
       const reviewData = {
-        facilityRate: mapRatingToEnum('시설', ratings.시설) as 'DIRTY' | 'NORMAL' | 'CLEAN',
-        accessRate: mapRatingToEnum('접근성', ratings.접근성) as 'BAD' | 'NORMAL' | 'GOOD', 
-        soundRate: mapRatingToEnum('방음', ratings.방음) as 'NONE' | 'SOMETIMES' | 'OFTEN',
-        bugRate: mapRatingToEnum('벌레', ratings.벌레) as 'NONE' | 'SOMETIMES' | 'OFTEN',
+        facilityRate: mapRatingToEnum('시설', ratings.시설) as
+          | 'DIRTY'
+          | 'NORMAL'
+          | 'CLEAN',
+        accessRate: mapRatingToEnum('접근성', ratings.접근성) as
+          | 'BAD'
+          | 'NORMAL'
+          | 'GOOD',
+        soundRate: mapRatingToEnum('방음', ratings.방음) as
+          | 'NONE'
+          | 'SOMETIMES'
+          | 'OFTEN',
+        bugRate: mapRatingToEnum('벌레', ratings.벌레) as
+          | 'NONE'
+          | 'SOMETIMES'
+          | 'OFTEN',
         finalRate: overallRating,
         review: reviewText.trim(),
         anonym: isAnonymous,
@@ -175,7 +191,12 @@ export default function HouseWritePage() {
         <Container>
           <Header>
             <BackButton onClick={() => router.back()}>
-              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+              <Image
+                src='/arrow_back.svg'
+                alt='뒤로가기'
+                width={15}
+                height={15}
+              />
             </BackButton>
             <Title>{loading ? '로딩 중...' : '건물을 찾을 수 없습니다'}</Title>
             <Spacer />
@@ -190,7 +211,12 @@ export default function HouseWritePage() {
       <Container>
         <Header>
           <BackButton onClick={() => router.back()}>
-            <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            <Image
+              src='/arrow_back.svg'
+              alt='뒤로가기'
+              width={15}
+              height={15}
+            />
           </BackButton>
           <Title>리뷰 작성</Title>
           <Spacer />
@@ -199,7 +225,13 @@ export default function HouseWritePage() {
         <Content>
           {/* 건물 정보 */}
           <HouseInfoCard>
-            <HouseImage style={{ backgroundImage: houseDetail.imageUrl ? `url(${houseDetail.imageUrl})` : 'none' }} />
+            <HouseImage
+              style={{
+                backgroundImage: houseDetail.imageUrl
+                  ? `url(${houseDetail.imageUrl})`
+                  : 'none',
+              }}
+            />
             <HouseDetails>
               <HouseName>{houseDetail.buildingName}</HouseName>
               <HouseAddress>{houseDetail.address}</HouseAddress>
@@ -216,32 +248,32 @@ export default function HouseWritePage() {
             </SectionHeader>
 
             <EvaluationItem
-              icon="🏠"
-              name="시설"
+              icon='🏠'
+              name='시설'
               options={['더러워요', '보통이에요', '깨끗해요']}
               selectedValue={ratings.시설}
               onSelect={(value) => setRatings({ ...ratings, 시설: value })}
             />
 
             <EvaluationItem
-              icon="🏢"
-              name="접근성"
+              icon='🏢'
+              name='접근성'
               options={['나빠요', '보통이에요', '좋아요']}
               selectedValue={ratings.접근성}
               onSelect={(value) => setRatings({ ...ratings, 접근성: value })}
             />
 
             <EvaluationItem
-              icon="🔇"
-              name="방음"
+              icon='🔇'
+              name='방음'
               options={['조용해요', '보통이에요', '시끄러워요']}
               selectedValue={ratings.방음}
               onSelect={(value) => setRatings({ ...ratings, 방음: value })}
             />
 
             <EvaluationItem
-              icon="🐛"
-              name="벌레"
+              icon='🐛'
+              name='벌레'
               options={['없어요', '가끔 나와요', '자주 나와요']}
               selectedValue={ratings.벌레}
               onSelect={(value) => setRatings({ ...ratings, 벌레: value })}
@@ -259,7 +291,7 @@ export default function HouseWritePage() {
             <StarRating
               rating={overallRating}
               onRate={setOverallRating}
-              label="전반적인 만족도를 평가해주세요."
+              label='전반적인 만족도를 평가해주세요.'
             />
           </Section>
 
@@ -274,8 +306,8 @@ export default function HouseWritePage() {
             <ReviewTextArea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="자취방/하숙, 생활 경험을 솔직하게 공유해주세요
-(최소 15자, 최대 200자)"
+              placeholder='자취방/하숙, 생활 경험을 솔직하게 공유해주세요
+(최소 15자, 최대 200자)'
               maxLength={200}
             />
             <CharCount>{reviewText.length} / 200</CharCount>
@@ -307,7 +339,7 @@ export default function HouseWritePage() {
 }
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 360px;
   min-height: 100vh;
   background-color: ${({ theme }) => theme.colors.background};
   padding-bottom: 100px;

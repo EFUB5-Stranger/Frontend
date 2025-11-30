@@ -4,7 +4,7 @@ import { useMapContext } from 'hooks/MapContext';
 import styles from '@/styles/mapPage.module.css';
 import RoomInfo from '@/components/Home/Rooms/RoomInfo';
 import { useRouter } from 'next/navigation';
-
+import { getHouseReviewsApi } from '@apis/house';
 
 interface BottomPopupProps {
   onHeightChange?: (height: number) => void;
@@ -40,13 +40,14 @@ export default function BottomPopup({ onHeightChange }: BottomPopupProps) {
       )}
 
       <div className={styles.bottomRow}>
-        <button className={styles.reviewBtn}
-        
-onClick={() =>
-  router.push(`/houses/review/${selectedBuilding.id}?houseId=${selectedBuilding.id}`)
-}
+        <button
+  className={styles.reviewBtn}
+  onClick={() => router.push(`/houses/${selectedBuilding.id}`)}
+>
+  리뷰 확인하기
+</button>
 
-        >리뷰 확인하기</button>
+
       </div>
     </div>
   );

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams ,useSearchParams} from 'next/navigation';
 import HouseReviewCard from '@/components/House/HouseReviewCard';
 import FloatingWriteButton from '@/components/Common/FloatingWriteButton';
 import { getHouseReviewsApi, getHouseDetailApi } from '@apis/house';

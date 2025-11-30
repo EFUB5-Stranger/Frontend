@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 
 interface RoomInfoProps {
   id: number;
+  reviewId?: number;
   type: BuildingType;
   title: string;
   address: string;

@@ -141,6 +141,11 @@ export default function MyPage() {
                   접근성: review.accessRate || '-',
                   벌레: review.bugRate || '-',
                 }}
+                thumbnailUrl={
+                  Array.isArray(review.imageUrls) && review.imageUrls[0]
+                    ? review.imageUrls[0]
+                    : undefined
+                }
                 onClick={() => router.push(`/dorm/${review.id}`)}
               />
             ))

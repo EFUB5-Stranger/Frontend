@@ -9,6 +9,7 @@ interface BookmarkPayload {
   title: string;
   address: string;
   rate: number;
+  imageUrl?: string | null;
 }
 
 interface BookmarkStore {

@@ -3,6 +3,7 @@
 import styled from 'styled-components';
 import Image from 'next/image';
 import RoomCard from '@/components/Home/Rooms/RoomCard';
+import RoomInfo from '@/components/Home/Rooms/RoomInfo';
 import { useBookmarkStore } from '../../stores/useBookmarkStore';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -43,7 +44,17 @@ export default function BookmarkPage() {
         {bookmarks.length > 0 ? (
           <BookmarkGrid>
             {bookmarks.map((room) => (
-              <RoomCard key={room.id} {...room} />
+              <RoomInfo
+                key={room.id}
+                id={room.id}
+                type={room.type}
+                title={room.title}
+                address={room.address}
+                rate={room.rate}
+                thumbnailUrl={room.imageUrl || undefined}
+                onClick={() => router.push(`/houses/${room.id}`)}
+                variant='card'
+              />
             ))}
           </BookmarkGrid>
         ) : (

@@ -47,7 +47,9 @@ export default function DormList() {
       {!isLoading && randomReview ? (
         <DormReviewCard
           key={randomReview.id}
-          date={getFormattedDate((randomReview as DormList & { createdAt?: string }).createdAt)}
+          date={getFormattedDate(
+            (randomReview as DormList & { createdAt?: string }).createdAt
+          )}
           name={randomReview.nickname || '익명'}
           score={randomReview.finalrate || 0}
           stars={randomReview.finalrate || 0}
@@ -62,6 +64,12 @@ export default function DormList() {
             접근성: randomReview.accessRate || '-',
             벌레: randomReview.bugRate || '-',
           }}
+          thumbnailUrl={
+            Array.isArray(randomReview.imageUrl) &&
+            randomReview.imageUrl.length > 0
+              ? (randomReview.imageUrl as string[])[0] // 수정된 부분
+              : undefined
+          }
           onClick={() => router.push(`/dorm/${randomReview.id}`)}
         />
       ) : (

@@ -6,12 +6,21 @@ import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import StarDisplay from '@/components/Dorm/StarDisplay';
 import EvaluationList from '@/components/Dorm/EvaluationList';
+
 import { getDormReviewDetailApi, deleteDormReviewApi } from '@apis/dorm';
 import {
   createCommentApi,
   deleteCommentApi,
   getCommentsApi,
 } from '@apis/comment';
+
+// 댓글 타입 정의
+interface Comment {
+  commentId: number;
+  nickname: string;
+  content: string;
+  createdAt: string;
+}
 
 interface Review {
   id: number;
@@ -28,16 +37,6 @@ interface Review {
   createdAt?: string;
   nickname?: string;
   anonym?: boolean;
-  canDelete?: boolean;
-}
-
-interface Comment {
-  commentId: number;
-  userId?: number;
-  content: string;
-  nickname: string;
-  createdAt: string;
-  canDelete?: boolean;
 }
 
 export default function DormDetailPage() {
@@ -53,12 +52,12 @@ export default function DormDetailPage() {
   const loadReviewData = async () => {
     try {
       setIsLoading(true);
-      const data = await getDormReviewDetailApi(params.id as string);
+      const reviewId = Number(params.id);
+      const data = await getDormReviewDetailApi(reviewId);
       setReview(data);
-
       // 댓글 데이터
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      const commentsData = await getCommentsApi(reviewId);
+      setComments(commentsData.comments);
     } catch (error) {
       console.error('리뷰 또는 댓글 데이터 불러오기 실패:', error);
       alert('리뷰를 찾을 수 없습니다.');
@@ -83,14 +82,14 @@ export default function DormDetailPage() {
 
     try {
       setIsSubmittingComment(true);
-      await createCommentApi(params.id as string, {
+      const reviewId = Number(params.id);
+      await createCommentApi(reviewId, {
         content: commentText,
         anonymous: isAnonymous,
       });
-
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      const commentsData = await getCommentsApi(reviewId);
+      setComments(commentsData.comments);
       setCommentText('');
     } catch (error) {
       console.error('댓글 작성 실패:', error);
@@ -105,10 +104,11 @@ export default function DormDetailPage() {
     if (!confirm('댓글을 삭제하시겠습니까?')) return;
 
     try {
+      const reviewId = Number(params.id);
       await deleteCommentApi(commentId);
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      const commentsData = await getCommentsApi(reviewId);
+      setComments(commentsData.comments);
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
       alert('댓글 삭제에 실패했습니다.');
@@ -120,7 +120,8 @@ export default function DormDetailPage() {
     if (!confirm('리뷰를 삭제하시겠습니까?')) return;
 
     try {
-      await deleteDormReviewApi(params.id as string);
+      const reviewId = Number(params.id);
+      await deleteDormReviewApi(reviewId);
       alert('리뷰가 삭제되었습니다.');
       router.push('/dorm');
     } catch (error) {
@@ -153,17 +154,19 @@ export default function DormDetailPage() {
             />
           </BackButton>
           <Title>리뷰 상세 조회</Title>
-          {review.canDelete && (
-            <DeleteButton onClick={handleDeleteReview}>
-              <Image src='/trash.svg' alt='삭제' width={16} height={16} />
-            </DeleteButton>
-          )}
-          {!review.canDelete && <Spacer />}
+          <DeleteButton onClick={handleDeleteReview}>
+            <Image src='/trash.svg' alt='삭제' width={16} height={16} />
+          </DeleteButton>
         </Header>
 
         <ReviewCard>
           <ProfileSection>
-            <ProfileImage />
+            <ProfileImage
+              src={'/profile_white.svg'}
+              alt='프로필 이미지'
+              width={50}
+              height={50}
+            />
             <ProfileInfo>
               <TopRow>
                 <NameSection>
@@ -224,31 +227,22 @@ export default function DormDetailPage() {
 
         <CommentsSection>
           <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
-
-          {Array.isArray(comments) &&
-            comments.map((comment) => (
-              <CommentItem key={comment.commentId}>
-                <CommentTopRow>
-                  <CommentLeft>
-                    <CommentAuthor>{comment.nickname}</CommentAuthor>
-                    <CommentDate>
-                      {new Date(comment.createdAt).toLocaleString('ko-KR')}
-                    </CommentDate>
-                  </CommentLeft>
-                  {comment.canDelete && (
-                    <CommentActions>
-                      <ActionButton
-                        onClick={() => handleDeleteComment(comment.commentId)}
-                      >
-                        삭제
-                      </ActionButton>
-                    </CommentActions>
-                  )}
-                </CommentTopRow>
-                <CommentText>{comment.content}</CommentText>
-              </CommentItem>
-            ))}
-
+          
+          {Array.isArray(comments) && comments.map((comment) => (
+            <CommentItem key={comment.commentId}>
+              <CommentTopRow>
+                <CommentLeft>
+                  <CommentAuthor>{comment.nickname}</CommentAuthor>
+                  <CommentDate>{new Date(comment.createdAt).toLocaleString('ko-KR')}</CommentDate>
+                </CommentLeft>
+                  <CommentActions>
+                    <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
+                  </CommentActions>
+              </CommentTopRow>
+              <CommentText>{comment.content}</CommentText>
+            </CommentItem>
+          ))}
+          
           {comments.length === 0 && (
             <EmptyComment>첫 댓글을 남겨보세요!</EmptyComment>
           )}
@@ -387,11 +381,11 @@ const ProfileSection = styled.div`
   margin-bottom: 14px;
 `;
 
-const ProfileImage = styled.div`
-  width: 60px;
-  height: 60px;
+const ProfileImage = styled(Image)`
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: #d9d9d9;
+  object-fit: cover;
   flex-shrink: 0;
 `;
 

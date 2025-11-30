@@ -17,6 +17,7 @@ interface DormCardProps {
     벌레: string;
   };
   onClick?: () => void;
+  thumbnailUrl?: string;
 }
 
 export default function DormReviewCard({
@@ -27,32 +28,41 @@ export default function DormReviewCard({
   tags,
   evaluations,
   onClick,
+  thumbnailUrl,
 }: DormCardProps) {
   return (
     <Card onClick={onClick}>
+      {thumbnailUrl ? (
+        <Thumbnail src={thumbnailUrl} alt="리뷰 이미지" />
+      ) : (
         <Skeleton />
-
-        <Info>
-          <TopRow>
-            <NameSection>
-              <Name>{name}</Name>
-              <DateText>{date}</DateText>
-            </NameSection>
-
-            <StarDisplay stars={stars} score={score} size="small" />
-          </TopRow>
-
-          <Tags>
-            {tags.map((t, i) => (
-              <Tag key={i}>{t}</Tag>
-            ))}
-          </Tags>
-
-          <EvaluationList evaluations={evaluations} size="small" />
-        </Info>
+      )}
+      <Info>
+        <TopRow>
+          <NameSection>
+            <Name>{name}</Name>
+            <DateText>{date}</DateText>
+          </NameSection>
+          <StarDisplay stars={stars} score={score} size="small" />
+        </TopRow>
+        <Tags>
+          {tags.map((t, i) => (
+            <Tag key={i}>{t}</Tag>
+          ))}
+        </Tags>
+        <EvaluationList evaluations={evaluations} size="small" />
+      </Info>
     </Card>
   );
 }
+const Thumbnail = styled.img`
+  width: 70px;
+  height: 70px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #d9d9d9;
+`;
 
 /* ---------------- Styled Components ---------------- */
 

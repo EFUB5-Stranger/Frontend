@@ -12,27 +12,26 @@ import {
   deleteCommentApi,
   getCommentsApi,
 } from '@apis/comment';
+import axiosInstance from '@apis/axiosInstance';
 
 interface ReviewDetail {
   id: number;
-  buildName: string;
-  buildNum: string;
-  roomPeople: string;
-  review: string;
+  houseName: string;
   finalRate: number;
   facilityRate: string;
   soundRate: string;
   bugRate: string;
   accessRate: string;
+  review: string;
   imageUrls: string[];
+  anonym: boolean;
 }
 
 interface Comment {
   commentId: number;
-  content: string;
   nickname: string;
+  content: string;
   createdAt: string;
-  canDelete?: boolean;
 }
 
 export default function HouseDetailPage() {
@@ -61,8 +60,18 @@ export default function HouseDetailPage() {
         setReview(data);
 
         // 댓글 데이터 로드
-        const commentsData = await getCommentsApi(params.id as string);
-        setComments(commentsData);
+        const reviewId = Number(params.id);
+        console.log('[DEBUG] 하숙/자취 댓글 조회 시작 - reviewId:', reviewId, 'houseId:', houseId);
+        // comment.ts must not be changed; use direct axios call for house-scoped endpoint
+        let commentsData;
+        if (houseId) {
+          const res = await axiosInstance.get(`/house/${houseId}/review/${reviewId}/comment`);
+          commentsData = res.data;
+        } else {
+          commentsData = await getCommentsApi(reviewId);
+        }
+        console.log('[DEBUG] 하숙/자취 댓글 조회 응답:', commentsData);
+        setComments(commentsData.comments);
       } catch (error) {
         console.error('Failed to fetch review detail:', error);
       } finally {
@@ -122,16 +131,27 @@ export default function HouseDetailPage() {
       return;
     }
 
+    const reviewId = Number(params.id);
+    if (isNaN(reviewId)) {
+      alert('리뷰 ID가 올바르지 않습니다.');
+      return;
+    }
+
     try {
       setIsSubmittingComment(true);
-      await createCommentApi(params.id as string, {
+      await createCommentApi(reviewId, {
         content: commentText,
         anonymous: isAnonymous,
       });
-
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      let commentsData;
+      if (houseId) {
+        const res = await axiosInstance.get(`/house/${houseId}/review/${reviewId}/comment`);
+        commentsData = res.data;
+      } else {
+        commentsData = await getCommentsApi(reviewId);
+      }
+      setComments(commentsData.comments);
       setCommentText('');
     } catch (error) {
       console.error('댓글 작성 실패:', error);
@@ -146,10 +166,17 @@ export default function HouseDetailPage() {
     if (!confirm('댓글을 삭제하시겠습니까?')) return;
 
     try {
+      const reviewId = Number(params.id);
       await deleteCommentApi(commentId);
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(params.id as string);
-      setComments(commentsData);
+      let commentsData;
+      if (houseId) {
+        const res = await axiosInstance.get(`/house/${houseId}/review/${reviewId}/comment`);
+        commentsData = res.data;
+      } else {
+        commentsData = await getCommentsApi(reviewId);
+      }
+      setComments(commentsData.comments);
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
       alert('댓글 삭제에 실패했습니다.');
@@ -168,13 +195,18 @@ export default function HouseDetailPage() {
               height={15}
             />
           </BackButton>
-          <Title>{review.buildName}</Title>
+          <Title>{review.houseName}</Title>
           <Spacer />
         </Header>
 
         <ReviewCard>
           <ProfileSection>
-            <ProfileImage />
+            <ProfileImage
+              src={'/profile_gray.svg'}
+              alt='프로필 이미지'
+              width={50}
+              height={50}
+            />
             <ProfileInfo>
               <NameSection>
                 <Name>익명</Name>
@@ -196,15 +228,12 @@ export default function HouseDetailPage() {
             ))}
           </ImageSection>
 
-          <EvaluationList
-            evaluations={{
-              방음: review.soundRate,
-              시설: review.facilityRate,
-              접근성: review.accessRate,
-              벌레: review.bugRate,
-            }}
-            size='medium'
-          />
+          <EvaluationList evaluations={{
+            방음: review.soundRate,
+            시설: review.facilityRate,
+            접근성: review.accessRate,
+            벌레: review.bugRate,
+          }} size="medium" />
 
           <ContentSection>
             <ContentTitle>후기</ContentTitle>
@@ -217,7 +246,7 @@ export default function HouseDetailPage() {
         <CommentsSection>
           <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
 
-          {comments.map((comment) => (
+          {Array.isArray(comments) && comments.map((comment) => (
             <CommentItem key={comment.commentId}>
               <CommentTopRow>
                 <CommentLeft>
@@ -226,15 +255,9 @@ export default function HouseDetailPage() {
                     {new Date(comment.createdAt).toLocaleString('ko-KR')}
                   </CommentDate>
                 </CommentLeft>
-                {comment.canDelete && (
-                  <CommentActions>
-                    <ActionButton
-                      onClick={() => handleDeleteComment(comment.commentId)}
-                    >
-                      삭제
-                    </ActionButton>
-                  </CommentActions>
-                )}
+                <CommentActions>
+                  <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
+                </CommentActions>
               </CommentTopRow>
               <CommentText>{comment.content}</CommentText>
             </CommentItem>
@@ -348,11 +371,11 @@ const ProfileSection = styled.div`
   margin-bottom: 14px;
 `;
 
-const ProfileImage = styled.div`
-  width: 60px;
-  height: 60px;
+const ProfileImage = styled(Image)`
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: #d9d9d9;
+  object-fit: cover;
   flex-shrink: 0;
 `;
 

@@ -227,22 +227,29 @@ export default function DormDetailPage() {
 
         <CommentsSection>
           <CommentsHeader>댓글 {comments.length}개</CommentsHeader>
-          
-          {Array.isArray(comments) && comments.map((comment) => (
-            <CommentItem key={comment.commentId}>
-              <CommentTopRow>
-                <CommentLeft>
-                  <CommentAuthor>{comment.nickname}</CommentAuthor>
-                  <CommentDate>{new Date(comment.createdAt).toLocaleString('ko-KR')}</CommentDate>
-                </CommentLeft>
+
+          {Array.isArray(comments) &&
+            comments.map((comment) => (
+              <CommentItem key={comment.commentId}>
+                <CommentTopRow>
+                  <CommentLeft>
+                    <CommentAuthor>{comment.nickname}</CommentAuthor>
+                    <CommentDate>
+                      {new Date(comment.createdAt).toLocaleString('ko-KR')}
+                    </CommentDate>
+                  </CommentLeft>
                   <CommentActions>
-                    <ActionButton onClick={() => handleDeleteComment(comment.commentId)}>삭제</ActionButton>
+                    <ActionButton
+                      onClick={() => handleDeleteComment(comment.commentId)}
+                    >
+                      삭제
+                    </ActionButton>
                   </CommentActions>
-              </CommentTopRow>
-              <CommentText>{comment.content}</CommentText>
-            </CommentItem>
-          ))}
-          
+                </CommentTopRow>
+                <CommentText>{comment.content}</CommentText>
+              </CommentItem>
+            ))}
+
           {comments.length === 0 && (
             <EmptyComment>첫 댓글을 남겨보세요!</EmptyComment>
           )}
@@ -284,7 +291,7 @@ export default function DormDetailPage() {
 }
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 360px;
   min-height: 100vh;
   background-color: ${({ theme }) => theme.colors.background};
   padding-bottom: 120px;

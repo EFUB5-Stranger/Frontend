@@ -18,8 +18,6 @@ export const Card = styled.div`
   width: ${({ theme }) => theme.layout.maxWidth};
   min-height: ${({ theme }) => theme.layout.minHeight};
   background-color: #fff;
-  box-shadow: ${({ theme }) => theme.style.shadowMd};
-  border-radius: ${({ theme }) => theme.style.radiusBase};
   padding: 50px 16px;
   display: flex;
   flex-direction: column;

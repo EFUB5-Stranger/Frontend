@@ -218,7 +218,7 @@ export default function NewHouseStep1() {
     <Wrapper>
       <ScrollArea>
         <Header>
-          <BackBtn onClick={() => history.back()}>
+          <BackBtn onClick={() => router.back()}>
             <Image src='/arrow_back.svg' width={9} height={15} alt='back' />
           </BackBtn>
           <Title>건물 등록하기</Title>

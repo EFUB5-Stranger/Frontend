@@ -41,7 +41,7 @@ export default function MyPageReviews() {
   return (
     <Wrapper>
       <Header>
-        <BackBtn onClick={() => history.back()}>
+        <BackBtn onClick={() => router.back()}>
           <Image src='/arrow_back.svg' width={9} height={15} alt='back' />
         </BackBtn>
         <Title>내가 작성한 리뷰</Title>

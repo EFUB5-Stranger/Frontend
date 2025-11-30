@@ -47,6 +47,11 @@ export default function MyPageComments() {
     fetchComments();
   }, []);
 
+  const handleCommentClick = (commentId?: number) => {
+    // 아직 정의되지 않아서 일단 로그 출력으로 대체
+    console.log('comment clicked', commentId);
+  };
+
   return (
     <Wrapper>
       <Header>
@@ -64,7 +69,7 @@ export default function MyPageComments() {
             comments.map((comment) => (
               <CommentItem
                 key={comment.commentId}
-                onClick={() => handleCommentClick()}
+                onClick={() => handleCommentClick(comment.commentId)}
               >
                 <CommentHeader>
                   {/* API에 기숙사 이름이 없으므로 '작성한 댓글' 등으로 대체하거나 생략 */}

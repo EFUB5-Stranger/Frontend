@@ -12,6 +12,7 @@ import {
   deleteCommentApi,
   getCommentsApi,
 } from '@apis/comment';
+import axiosInstance from '@apis/axiosInstance';
 
 interface ReviewDetail {
   id: number;
@@ -60,7 +61,16 @@ export default function HouseDetailPage() {
 
         // 댓글 데이터 로드
         const reviewId = Number(params.id);
-        const commentsData = await getCommentsApi(reviewId);
+        console.log('[DEBUG] 하숙/자취 댓글 조회 시작 - reviewId:', reviewId, 'houseId:', houseId);
+        // comment.ts must not be changed; use direct axios call for house-scoped endpoint
+        let commentsData;
+        if (houseId) {
+          const res = await axiosInstance.get(`/house/${houseId}/review/${reviewId}/comment`);
+          commentsData = res.data;
+        } else {
+          commentsData = await getCommentsApi(reviewId);
+        }
+        console.log('[DEBUG] 하숙/자취 댓글 조회 응답:', commentsData);
         setComments(commentsData.comments);
       } catch (error) {
         console.error('Failed to fetch review detail:', error);
@@ -134,7 +144,13 @@ export default function HouseDetailPage() {
         anonymous: isAnonymous,
       });
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(reviewId);
+      let commentsData;
+      if (houseId) {
+        const res = await axiosInstance.get(`/house/${houseId}/review/${reviewId}/comment`);
+        commentsData = res.data;
+      } else {
+        commentsData = await getCommentsApi(reviewId);
+      }
       setComments(commentsData.comments);
       setCommentText('');
     } catch (error) {
@@ -153,7 +169,13 @@ export default function HouseDetailPage() {
       const reviewId = Number(params.id);
       await deleteCommentApi(commentId);
       // 댓글 목록 새로고침
-      const commentsData = await getCommentsApi(reviewId);
+      let commentsData;
+      if (houseId) {
+        const res = await axiosInstance.get(`/house/${houseId}/review/${reviewId}/comment`);
+        commentsData = res.data;
+      } else {
+        commentsData = await getCommentsApi(reviewId);
+      }
       setComments(commentsData.comments);
     } catch (error) {
       console.error('댓글 삭제 실패:', error);

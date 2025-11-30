@@ -6,25 +6,11 @@ import DormReviewCard from '../Dorm/DormReviewCard';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getDormReviewsApi } from '@apis/dorm';
-
-interface ReviewData {
-  id: number;
-  createdAt: string;
-  nickname: string;
-  finalRate?: number;
-  finalrate?: number;
-  buildName: string;
-  buildNum: string;
-  roomPeople: number | string;
-  soundRate: string;
-  facilityRate: string;
-  accessRate: string;
-  bugRate: string;
-}
+import type { DormList } from '@apis/dorm';
 
 export default function DormList() {
   const router = useRouter();
-  const [randomReview, setRandomReview] = useState<ReviewData | null>(null);
+  const [randomReview, setRandomReview] = useState<DormList | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -37,12 +23,7 @@ export default function DormList() {
         // 2. 데이터가 있고 배열인 경우 랜덤 선택
         if (Array.isArray(data) && data.length > 0) {
           const randomIndex = Math.floor(Math.random() * data.length);
-          // createdAt이 없으므로 임의로 추가
-          const review = data[randomIndex];
-          setRandomReview({
-            ...review,
-            createdAt: review.createdAt || '',
-          });
+          setRandomReview(data[randomIndex]);
         }
       } catch (error) {
         console.error('기숙사 리뷰 로딩 실패:', error);
@@ -66,10 +47,10 @@ export default function DormList() {
       {!isLoading && randomReview ? (
         <DormReviewCard
           key={randomReview.id}
-          date={getFormattedDate(randomReview.createdAt)}
+          date={getFormattedDate((randomReview as DormList & { createdAt?: string }).createdAt)}
           name={randomReview.nickname || '익명'}
-          score={randomReview.finalRate || randomReview.finalrate || 0}
-          stars={randomReview.finalRate || randomReview.finalrate || 0}
+          score={randomReview.finalrate || 0}
+          stars={randomReview.finalrate || 0}
           tags={[
             randomReview.buildName,
             randomReview.buildNum,

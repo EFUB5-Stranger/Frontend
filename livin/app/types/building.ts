@@ -9,4 +9,5 @@ export interface Building {
   rate?: number;
   thumbnailUrl?: string;
   bookmarked?: boolean;
+  reviewId?: number;
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
-import { useRouter, useParams ,useSearchParams} from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import HouseReviewCard from '@/components/House/HouseReviewCard';
 import FloatingWriteButton from '@/components/Common/FloatingWriteButton';
 import { getHouseReviewsApi, getHouseDetailApi } from '@apis/house';
@@ -30,8 +30,22 @@ interface HouseReview {
   createdAt: string;
   finalRate: number;
   facilityRate: 'BAD' | 'NORMAL' | 'GOOD' | 'VERY_GOOD';
-  soundRate: 'NONE' | 'SOMETIMES' | 'OFTEN' | 'BAD' | 'NORMAL' | 'GOOD' | 'VERY_GOOD';
-  bugRate: 'NONE' | 'SOMETIMES' | 'OFTEN' | 'BAD' | 'NORMAL' | 'GOOD' | 'VERY_GOOD';
+  soundRate:
+    | 'NONE'
+    | 'SOMETIMES'
+    | 'OFTEN'
+    | 'BAD'
+    | 'NORMAL'
+    | 'GOOD'
+    | 'VERY_GOOD';
+  bugRate:
+    | 'NONE'
+    | 'SOMETIMES'
+    | 'OFTEN'
+    | 'BAD'
+    | 'NORMAL'
+    | 'GOOD'
+    | 'VERY_GOOD';
   accessRate: 'BAD' | 'NORMAL' | 'GOOD' | 'VERY_GOOD';
   imageUrls: string[];
   nickname: string;
@@ -46,23 +60,25 @@ export default function BuildingDetailPage() {
   const [loading, setLoading] = useState(true);
 
   // 평점 계산
-  const averageRating = reviews?.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.finalRate, 0) / reviews.length 
-    : 0;
+  const averageRating =
+    reviews?.length > 0
+      ? reviews.reduce((sum, review) => sum + review.finalRate, 0) /
+        reviews.length
+      : 0;
 
   useEffect(() => {
     const fetchData = async () => {
       if (!params.id) return;
-      
+
       try {
         setLoading(true);
-        
+
         // 건물 상세와 리뷰 목록 병렬 호출
         const [houseDetailData, reviewsData] = await Promise.all([
           getHouseDetailApi(params.id as string),
-          getHouseReviewsApi(params.id as string)
+          getHouseReviewsApi(params.id as string),
         ]);
-        
+
         setHouseDetail(houseDetailData);
         console.log('Reviews API Response:', reviewsData);
         // API 응답이 직접 배열로 오므로 content 없이 직접 사용
@@ -83,7 +99,12 @@ export default function BuildingDetailPage() {
         <Container>
           <Header>
             <BackButton onClick={() => router.back()}>
-              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+              <Image
+                src='/arrow_back.svg'
+                alt='뒤로가기'
+                width={15}
+                height={15}
+              />
             </BackButton>
             <Title>로딩 중...</Title>
             <Spacer />
@@ -99,7 +120,12 @@ export default function BuildingDetailPage() {
         <Container>
           <Header>
             <BackButton onClick={() => router.back()}>
-              <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+              <Image
+                src='/arrow_back.svg'
+                alt='뒤로가기'
+                width={15}
+                height={15}
+              />
             </BackButton>
             <Title>건물을 찾을 수 없습니다</Title>
             <Spacer />
@@ -114,41 +140,64 @@ export default function BuildingDetailPage() {
       <Container>
         <Header>
           <BackButton onClick={() => router.back()}>
-            <Image src='/arrow_back.svg' alt='뒤로가기' width={15} height={15} />
+            <Image
+              src='/arrow_back.svg'
+              alt='뒤로가기'
+              width={15}
+              height={15}
+            />
           </BackButton>
           <Title>{houseDetail.buildingName}</Title>
           <Spacer />
         </Header>
 
-        <BuildingImageLarge style={{ backgroundImage: houseDetail.imageUrl ? `url(${houseDetail.imageUrl})` : 'none' }} />
+        <BuildingImageLarge
+          style={{
+            backgroundImage: houseDetail.imageUrl
+              ? `url(${houseDetail.imageUrl})`
+              : 'none',
+          }}
+        />
 
         <BuildingInfoSection>
           <BuildingInfoText>
-            {houseDetail.address}<br/>
-            지상 {houseDetail.floor}층, 
-            주차 {houseDetail.parking ? '가능' : '불가'}, 
-            엘리베이터 {houseDetail.elevator ? '있음' : '없음'}
+            {houseDetail.address}
+            <br />
+            지상 {houseDetail.floor}층, 주차{' '}
+            {houseDetail.parking ? '가능' : '불가'}, 엘리베이터{' '}
+            {houseDetail.elevator ? '있음' : '없음'}
             {houseDetail.options && (
-              <><br/>옵션: {houseDetail.options}</>
+              <>
+                <br />
+                옵션: {houseDetail.options}
+              </>
             )}
           </BuildingInfoText>
         </BuildingInfoSection>
 
         <ReviewSection>
           <ReviewHeader>
-            <ReviewTitle>리뷰 평점 {averageRating.toFixed(1)} · {reviews?.length || 0}개</ReviewTitle>
+            <ReviewTitle>
+              리뷰 평점 {averageRating.toFixed(1)} · {reviews?.length || 0}개
+            </ReviewTitle>
             <Stars>
               {[1, 2, 3, 4, 5].map((star) => (
                 <Image
                   key={star}
-                  src={star <= Math.floor(averageRating) ? '/star.svg' : '/star_unfilled.svg'}
+                  src={
+                    star <= Math.floor(averageRating)
+                      ? '/star.svg'
+                      : '/star_unfilled.svg'
+                  }
                   alt='star'
                   width={16}
                   height={16}
                 />
               ))}
             </Stars>
-            <ViewAllButton onClick={() => router.push(`/houses/review/${params.id}`)}>
+            <ViewAllButton
+              onClick={() => router.push(`/houses/review/${params.id}`)}
+            >
               전체 보기
             </ViewAllButton>
           </ReviewHeader>
@@ -164,7 +213,7 @@ export default function BuildingDetailPage() {
                   stars={review.finalRate}
                   tags={[
                     houseDetail?.buildingName || '건물명',
-                    houseDetail?.type === 'PRIVATE' ? '자취' : '하숙'
+                    houseDetail?.type === 'PRIVATE' ? '자취' : '하숙',
                   ].filter(Boolean)}
                   evaluations={{
                     방음: review.soundRate,
@@ -172,7 +221,11 @@ export default function BuildingDetailPage() {
                     접근성: review.accessRate,
                     벌레: review.bugRate,
                   }}
-                  onClick={() => router.push(`/houses/review/${review.id}?houseId=${params.id}`)}
+                  onClick={() =>
+                    router.push(
+                      `/houses/review/${review.id}?houseId=${params.id}`
+                    )
+                  }
                 />
               ))
             ) : (
@@ -188,7 +241,7 @@ export default function BuildingDetailPage() {
 }
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 360px;
   min-height: 100vh;
   background-color: ${({ theme }) => theme.colors.background};
   padding-bottom: 120px;

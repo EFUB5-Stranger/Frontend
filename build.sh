@@ -1,5 +1,5 @@
 #!/bin/sh
 cd ../
 mkdir output
-cp -R ./[livin]/* ./output
-cp -R ./output ./[livin]/
+cp -R ./Frontend/* ./output
+cp -R ./output ./Frontend/

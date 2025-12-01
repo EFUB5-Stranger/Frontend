@@ -47,24 +47,21 @@ export default function RoomInfo({
         // 리뷰 목록 조회 API 호출
         const res = await getHouseReviewsApi(id);
 
-        // API 응답 구조가 { content: [...] } 라고 가정 (이전 이미지 기반)
-        const reviews = res.content || [];
+        const reviews = Array.isArray(res) ? res : [];
 
         if (reviews.length > 0) {
-          // 평균 계산
           const sum = reviews.reduce(
             (acc: number, review: any) => acc + review.finalRate,
             0
           );
           const avg = sum / reviews.length;
+
           setCurrentRate(avg);
         } else {
-          // 리뷰 없으면 0점
           setCurrentRate(0);
         }
       } catch (error) {
         console.error(`리뷰 평점 조회 실패 (ID: ${id})`, error);
-        // 에러 시 기존 값 유지 혹은 0 처리
       }
     };
 
